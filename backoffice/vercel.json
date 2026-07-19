@@ -1,0 +1,11 @@
+{
+  "buildCommand": "",
+  "outputDirectory": "site/combis",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://mitehuacan.pages.dev/api/:path*" }
+  ],
+  "redirects": [
+    { "source": "/qr/:id", "destination": "/?qr=:id", "permanent": false }
+  ]
+}
