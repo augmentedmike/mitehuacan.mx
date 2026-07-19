@@ -327,6 +327,25 @@
            padding: 10px 16px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
            opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 90vw; text-align: center; }
   #toast.show { opacity: 1; }
+  /* first-run intro: popover card + pulsing ring around the current step's control */
+  #intro { position: fixed; margin: 0; width: min(290px, calc(100vw - 28px)); z-index: 95;
+           background: var(--panel); color: var(--ink); border: 1px solid var(--line);
+           border-radius: 14px; padding: 14px 16px; font: inherit; font-size: 14px; line-height: 1.45;
+           box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+  #intro:popover-open { display: block; }
+  #intro .n { display: inline-block; min-width: 21px; height: 21px; border-radius: 50%;
+              background: var(--accent); color: #fff; font-size: 12px; font-weight: 700;
+              text-align: center; line-height: 21px; margin-right: 7px; }
+  #intro .btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+  #intro button { border: none; border-radius: 9px; padding: 7px 14px; font: inherit; font-size: 13px;
+                  font-weight: 600; cursor: pointer; background: var(--chip); color: var(--ink-2); }
+  #intro button.pri { background: var(--accent); color: #fff; }
+  .intro-ring { position: fixed; z-index: 29; pointer-events: none; border: 2.5px solid var(--accent);
+                border-radius: 14px; animation: introPulse 1.6s ease-out infinite; }
+  @keyframes introPulse {
+    0% { box-shadow: 0 0 0 0 rgba(68,118,255,.55); }
+    100% { box-shadow: 0 0 0 14px rgba(68,118,255,0); }
+  }
   /* topbar: text links on wide screens (incl. the credit), icon buttons on phones */
   @media (max-width: 700px) { #topbar nav { display: none; } }
   #topbar-seg { display: none; }
@@ -485,6 +504,12 @@ const I18N = {
     builtBy: 'Hecho por Tylt',
     routesServing: (n, l) => n + (n === 1 ? ' ruta pasa por ' : ' rutas pasan por ') + '“' + l + '”',
     tripDetail: 'Detalles del viaje',
+    introLoc: 'Toca aquí para ubicarte en el mapa',
+    introSearch: 'Escribe a dónde vas — por ejemplo “Walmart”',
+    introPick: 'Elige un resultado de la lista',
+    introRoute: '¡Listo! Estas son tus combis — toca una opción para ver la ruta',
+    introSkip: 'Saltar',
+    introDone: 'Entendido',
     locFailed: 'No se pudo obtener tu ubicación — usa el pin arrastrable del mapa',
     locDenied: 'Ubicación bloqueada — actívala en los permisos del navegador',
     tripTitle: 'Cómo llegar a',
@@ -575,6 +600,12 @@ const I18N = {
     builtBy: 'Built by Tylt',
     routesServing: (n, l) => n + (n === 1 ? ' route serves ' : ' routes serve ') + '“' + l + '”',
     tripDetail: 'Trip details',
+    introLoc: 'Tap here to find yourself on the map',
+    introSearch: 'Type where you’re going — e.g. “Walmart”',
+    introPick: 'Pick a result from the list',
+    introRoute: 'Done! These are your combis — tap an option to see the route',
+    introSkip: 'Skip',
+    introDone: 'Got it',
     locFailed: 'Couldn’t get your location — use the draggable pin on the map',
     locDenied: 'Location blocked — enable it in your browser permissions',
     tripTitle: 'Getting to',
@@ -2782,6 +2813,103 @@ document.querySelectorAll('.filters button').forEach(b => {
     applyFilter();
   };
 });
+/* ---------- first-run intro: a 4-step coach-marks timeline. Each step is a
+   popover (native Popover API, top layer) anchored to the control it teaches,
+   with a pulsing ring. Steps advance when the user DOES the thing — clicking
+   next is never required. Shows once (localStorage.mtIntro). ---------- */
+(() => {
+  try { if (localStorage.mtIntro) return; } catch (e) { return; }
+  const STEPS = [
+    {key: 'introLoc',    el: () => document.querySelector('.maplibregl-ctrl-geolocate')},
+    {key: 'introSearch', el: () => document.getElementById('ml-search')},
+    {key: 'introPick',   el: () => document.getElementById('ml-sugg')},
+    {key: 'introRoute',  el: () => document.getElementById('sheet')},
+  ];
+  let step = -1, pop = null, ring = null;
+
+  function ensureEls() {
+    if (pop) return;
+    pop = document.createElement('div');
+    pop.id = 'intro';
+    pop.setAttribute('popover', 'manual');
+    document.body.appendChild(pop);
+    ring = document.createElement('div');
+    ring.className = 'intro-ring';
+    ring.hidden = true;
+    document.body.appendChild(ring);
+  }
+  const supported = () => 'showPopover' in HTMLElement.prototype;
+
+  function place(target) {
+    const r = target.getBoundingClientRect();
+    // ring hugs the control; skip it for full-width targets (search bar reads fine alone)
+    if (r.width < 340) {
+      ring.style.cssText = 'left:' + (r.left - 6) + 'px;top:' + (r.top - 6) + 'px;width:' +
+        (r.width + 12) + 'px;height:' + (r.height + 12) + 'px;';
+      ring.hidden = false;
+    } else ring.hidden = true;
+    const pw = Math.min(290, innerWidth - 28);
+    const left = Math.max(14, Math.min(r.left, innerWidth - pw - 14));
+    pop.style.left = left + 'px';
+    // offsetHeight forces a synchronous layout — no rAF (throttled tabs never fire it)
+    const ph = pop.offsetHeight || 120;
+    // below the control unless that runs off-screen, then above
+    let top = r.bottom + 12;
+    if (top + ph > innerHeight - 12) top = Math.max(12, r.top - ph - 12);
+    pop.style.top = top + 'px';
+  }
+
+  function show(i) {
+    if (i <= step) return;           // only forward — doing things out of order skips ahead
+    step = i;
+    if (i >= STEPS.length) return finish();
+    const target = STEPS[i].el();
+    if (!target) return finish();
+    ensureEls();
+    const last = i === STEPS.length - 1;
+    pop.innerHTML = '<span class="n">' + (i + 1) + '</span>' + t(STEPS[i].key) +
+      '<div class="btns"><button id="in-skip">' + t(last ? 'introDone' : 'introSkip') + '</button></div>';
+    pop.querySelector('#in-skip').onclick = finish;
+    try { pop.showPopover(); } catch (e) { /* already open */ }
+    place(target);
+  }
+
+  function finish() {
+    try { localStorage.mtIntro = '1'; } catch (e) {}
+    if (pop) { try { pop.hidePopover(); } catch (e) {} pop.remove(); }
+    if (ring) ring.remove();
+    removeEventListener('resize', onResize);
+    step = STEPS.length;
+  }
+  const onResize = () => { if (step >= 0 && step < STEPS.length) { const el = STEPS[step].el(); if (el) place(el); } };
+  addEventListener('resize', onResize);
+
+  // ---- the timeline: passive hooks, no changes to app code ----
+  // 1 done: the locate control was tapped (or a fix arrived some other way)
+  document.addEventListener('click', e => {
+    if (e.target.closest && e.target.closest('.maplibregl-ctrl-geolocate')) show(1);
+  }, true);
+  GEOCTL.on('geolocate', () => { if (step === 0) show(1); });
+  // 2 done: they typed a query
+  document.getElementById('ml-search').addEventListener('input', e => {
+    if (e.target.value.trim().length >= 2) show(2);
+  });
+  // 3 done: they picked a suggestion (tap lands on a row via pointerdown)
+  document.getElementById('ml-sugg').addEventListener('pointerdown', () => setTimeout(() => show(3), 600), true);
+  document.getElementById('ml-sugg').addEventListener('mousedown', () => setTimeout(() => show(3), 600), true);
+  // 4: the route/trip sheet opened — reposition onto it, last card has "Entendido"
+  new MutationObserver(() => {
+    const sh = document.getElementById('sheet');
+    if (sh.classList.contains('show')) {
+      if (step === 3) place(sh);
+      else if (step >= 0 && step < 3) show(3);
+    }
+  }).observe(document.getElementById('sheet'), {attributes: true, attributeFilter: ['class']});
+
+  // kick off once the map is idle enough that the locate button exists
+  if (!supported()) { try { localStorage.mtIntro = '1'; } catch (e) {} return; }
+  setTimeout(() => { if (step === -1) show(0); }, 1400);
+})();
 </script>
 </body>
 </html>
