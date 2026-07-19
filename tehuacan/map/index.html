@@ -438,6 +438,8 @@ const I18N = {
     locFallback: 'No pudimos ubicarte — arrastra el pin verde a tu punto de partida.',
     locRefresh: 'actualizar mi ubicación',
     myLocation: 'Mi ubicación',
+    searching: 'Buscando lugares…',
+    noResults: 'Sin resultados para',
     tripTitle: 'Cómo llegar a',
     tripNone: 'No encontramos combis para ese destino.',
     alsoRoutes: 'también sirven: ',
@@ -521,6 +523,8 @@ const I18N = {
     locFallback: "Couldn't locate you — drag the green pin to your starting point.",
     locRefresh: 'update my location',
     myLocation: 'My location',
+    searching: 'Searching places…',
+    noResults: 'No results for',
     tripTitle: 'Getting to',
     tripNone: 'No combi options found for that destination.',
     alsoRoutes: 'also served by: ',
@@ -918,7 +922,7 @@ async function geocode(q) {
   try {
     // note: no lang param — photon 400s on lang=es (only en/de/fr supported)
     const r = await fetch('https://photon.komoot.io/api?q=' + encodeURIComponent(q) +
-                          '&lat=18.462&lon=-97.396&limit=6');
+                          '&lat=18.462&lon=-97.396&limit=6', {signal: AbortSignal.timeout(8000)});
     const d = await r.json();
     const res = d.features.map(f => ({
       name: f.properties.name || f.properties.street || q,
@@ -929,7 +933,7 @@ async function geocode(q) {
     if (res.length) return res;
   } catch (e) { /* fall through */ }
   try {
-    const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=6&viewbox=-97.78,18.13,-97.01,18.79&bounded=1&q=' + encodeURIComponent(q));
+    const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=6&viewbox=-97.78,18.13,-97.01,18.79&bounded=1&q=' + encodeURIComponent(q), {signal: AbortSignal.timeout(8000)});
     const d = await r.json();
     return d.map(x => ({name: x.display_name.split(',')[0],
                         detail: x.display_name.split(',').slice(1, 4).join(','),
@@ -2442,7 +2446,11 @@ function suggRow(html, cb) {
   const d = document.createElement('div');
   d.className = 'it';
   d.innerHTML = html;
-  d.onmousedown = e => { e.preventDefault(); cb(); };  // beat the input blur
+  // pointerdown fires at touch time on iOS (mousedown is synthesized late,
+  // after blur/keyboard-dismiss shifts — taps were missing the row entirely).
+  // Canceling pointerdown also suppresses the compat mousedown, so no double fire.
+  d.onpointerdown = e => { e.preventDefault(); cb(); };
+  d.onmousedown = e => { e.preventDefault(); cb(); };  // pre-PointerEvent fallback
   return d;
 }
 
@@ -2492,7 +2500,16 @@ async function runSugg(q) {
     () => { hideSugg(); setSearchLabel(pl.label); highlightRoutes([...pl.ids], pl.label); openDestPanel(pl.label, null); })));
   mlSugg.hidden = mlSugg.children.length === 0;
   if (places.length + routes.length < 2 && q.length >= 3) {
+    // instant feedback while the geocoder round-trips (cold networks take
+    // seconds — a silent hidden dropdown reads as "search is broken")
+    const loading = document.createElement('div');
+    loading.className = 'it';
+    loading.style.color = 'var(--ink-2)';
+    loading.textContent = t('searching');
+    mlSugg.appendChild(loading);
+    mlSugg.hidden = false;
     const res = await geocode(q + ', Tehuacán');
+    loading.remove();
     if (document.getElementById('ml-search').value.trim() !== q) return;  // stale response
     res.slice(0, 4).forEach(r => {
       const ptM = mx(r.c);
@@ -2506,7 +2523,14 @@ async function runSugg(q) {
         '<span class="tag">' + t('nearTag')(ids.length, 0) + '</span>',
         () => { hideSugg(); setSearchLabel(r.name); highlightRoutes(ids, r.name, r.c); openDestPanel(r.name, r.c); }));
     });
-    mlSugg.hidden = mlSugg.children.length === 0;
+    if (!mlSugg.children.length) {
+      const none = document.createElement('div');
+      none.className = 'it';
+      none.style.color = 'var(--ink-2)';
+      none.textContent = t('noResults') + ' \u201C' + q + '\u201D';
+      mlSugg.appendChild(none);
+    }
+    mlSugg.hidden = false;
   }
 }
 
@@ -2520,7 +2544,7 @@ document.getElementById('ml-search').addEventListener('input', e => {
   if (MV.q.length < 2) { hideSugg(); return; }
   SUG_T = setTimeout(() => runSugg(MV.q), 250);
 });
-document.getElementById('ml-search').addEventListener('blur', () => setTimeout(hideSugg, 250));
+document.getElementById('ml-search').addEventListener('blur', () => setTimeout(hideSugg, 400));
 document.querySelectorAll('#ml-pills button').forEach(b => b.onclick = () => {
   MV.kind = b.dataset.mk;
   mSyncUI();
