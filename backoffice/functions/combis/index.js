@@ -101,7 +101,7 @@ button:disabled{opacity:.5;cursor:default}
   </div>
 </div>
 </div>
-<script src="https://mitehuacan.mx/combis/routes.js"></script>
+<script src="https://mitehuacan.pages.dev/combis/routes.js"></script>
 <script>
 let TOKEN = '', LINES = [], DRAFTS = [], SEL = null;  // SEL: {slug} | {isNew:true, prefill?}
 const PUB = (typeof ROUTES !== 'undefined' ? ROUTES.features : [])
