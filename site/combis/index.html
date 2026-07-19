@@ -2609,9 +2609,10 @@ async function runDeskSugg(q) {
   res.slice(0, 4).forEach(r => {
     const ptM = mx(r.c);
     const near = flat.map(rt => ({id: rt.id, d: nearest(ptM, rt).d})).sort((a, b) => a.d - b.d);
-    let ids = near.filter(x => x.d <= 700).map(x => x.id);
+    // every route within a real walk (no cap — in centro dozens genuinely qualify,
+    // and picking the closest N drops routes people know serve the place)
+    let ids = near.filter(x => x.d <= 400).map(x => x.id);
     if (!ids.length) ids = near.slice(0, 3).map(x => x.id);
-    ids = ids.slice(0, 6);
     const d = document.createElement('div');
     d.className = 'it';
     d.innerHTML = '<span style="flex:none;color:var(--ink-2)">' + S_PIN2 + '</span><span style="flex:1">' + r.name +
