@@ -73,6 +73,26 @@ this spec:
   (D1-free, in-memory per isolate is fine as a tripwire) since they're now
   reachable cross-origin; real protection remains the tokens.
 
+**0.1.1 Final architecture (settled 2026-07-19 evening, this is what ships):**
+
+- **Own repo:** `github.com/augmentedmike/mitehuacan-admin` (private). The
+  `backoffice/` tree graduates out of the main repo and becomes the repo root.
+- **www host = Vercel:** git-connected project, no build step, serves `public/`
+  (static HTML pages: `/` hub, `/map`, `/combis`, then `/grabar`, `/stickers`,
+  `/patrocinios` as modules land). Vercel previews per branch for free.
+- **Data plane = Cloudflare:** Pages project `mitehuacan-admin` keeps ONLY
+  `functions/api/*`, bound to the env-separated D1s (`mitehuacan` prod,
+  `mitehuacan-staging` preview). Deploy: `wrangler pages deploy public
+  --project-name mitehuacan-admin` (`--branch staging` → staging tier).
+- **Wiring:** `vercel.json` rewrites `/api/*` → `https://mitehuacan-admin.pages.dev/api/*`
+  — so pages always call SAME-ORIGIN `/api/...` and CORS never enters the
+  common path (the CORS/ADMIN_ORIGINS section above remains the contingency if
+  a page is ever hosted without the proxy). A `localStorage.mtApiBase` override
+  lets any page target `https://staging.mitehuacan-admin.pages.dev` for testing
+  against the staging DB.
+- **Auth unchanged:** single `STATS_TOKEN` (§10), sent as `Authorization:
+  Bearer` by the pages; kept in `localStorage.qc_stats_token`.
+
 Two publication lanes, deliberately:
 - **Geometry lane (build-time, git-reviewed):** route shapes change rarely and
   deserve review — drafts → import script → `routes.js` → deploy. Git is the audit log.
