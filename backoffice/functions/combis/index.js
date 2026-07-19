@@ -57,7 +57,7 @@ button:disabled{opacity:.5;cursor:default}
 <div class="wrap">
 <h1>Líneas de combi</h1>
 <p class="sub">selecciona o crea la línea · adjunta rutas grabadas · define primera/última salida y el intervalo ·
-<a href="/system">sistema</a> · <a href="/system/map">editor de rutas</a></p>
+<a href="/">sistema</a> · <a href="/map">editor de rutas</a></p>
 <div id="auth"><input id="tok" type="password" placeholder="token"><button onclick="go()">Entrar</button> <span id="err"></span></div>
 
 <div id="ed" hidden class="cols">
@@ -101,7 +101,7 @@ button:disabled{opacity:.5;cursor:default}
   </div>
 </div>
 </div>
-<script src="/combis/routes.js"></script>
+<script src="https://mitehuacan.mx/combis/routes.js"></script>
 <script>
 let TOKEN = '', LINES = [], DRAFTS = [], SEL = null;  // SEL: {slug} | {isNew:true, prefill?}
 const PUB = (typeof ROUTES !== 'undefined' ? ROUTES.features : [])

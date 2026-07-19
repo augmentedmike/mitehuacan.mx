@@ -1,5 +1,5 @@
 /**
- * GET /system/map — private route editor: load recorded positions, trim to the
+ * GET /map — private route editor: load recorded positions, trim to the
  * ride, simplify (Douglas-Peucker), optionally align to streets (OSRM demo
  * match), name it, save as a draft (D1) or download GeoJSON.
  * Token model identical to /system (localStorage qc_stats_token). noindex.

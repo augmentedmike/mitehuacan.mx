@@ -1,0 +1,11 @@
+# Backoffice / ops app ("el sistema") — SEPARATE Pages project from the public
+# site, same D1. This app owns every WRITE and admin surface; the public app
+# only reads. Deploy: cd backoffice && bunx wrangler pages deploy public
+name = "mitehuacan-admin"
+compatibility_date = "2026-07-01"
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "quecombi"
+database_id = "b0a959fa-8e8c-4c10-b1bd-a02f2408a4cd"
