@@ -4,4 +4,6 @@
 /tehuacan/rutas/* /combis/?ruta=:splat 301
 /tehuacan/mapa/* /combis/ 301
 /tehuacan/ /combis/ 301
-/acerca/ /combis/acerca/ 301
+# about page removed 2026-07
+/acerca/ /combis/ 301
+/combis/acerca/ /combis/ 301

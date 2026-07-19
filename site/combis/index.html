@@ -309,10 +309,32 @@
     .mchip .dot { width: 10px; height: 10px; border-radius: 50%; }
     .mchip .x { color: var(--ink-2); margin-left: 2px; }
   }
+  /* floating credit badge — small, bottom-right, above map/list but under the sheets */
+  #credit { position: fixed; right: 10px; bottom: 10px; z-index: 28; font-size: 11px; font-weight: 600;
+            color: var(--ink-2); text-decoration: none; background: var(--glass, var(--panel));
+            border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px;
+            box-shadow: 0 4px 14px rgba(0,0,0,.18);
+            -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%); }
+  #credit:hover { color: var(--ink); }
+  /* trip sheet on wide screens: options left, selected option's details right */
+  #trip-right { display: none; }
+  @media (min-width: 701px) {
+    #trip-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; align-items: start; }
+    #trip-right { display: block; border-left: 1px solid var(--line); padding-left: 20px; }
+  }
+  #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 84px; z-index: 80;
+           background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 12px;
+           padding: 10px 16px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+           opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 90vw; text-align: center; }
+  #toast.show { opacity: 1; }
   /* topbar: text links on wide screens (incl. the credit), icon buttons on phones */
   @media (max-width: 700px) { #topbar nav { display: none; } }
+  #topbar-seg { display: none; }
   @media (min-width: 701px) {
     #mtop-btns { display: none; }
+    /* the Map/List toggle rides in the header — its home row in #mhead empties out */
+    #topbar-seg { display: flex; flex: 0 0 auto; width: 230px; }
+    #topbar-seg #mseg { flex: 1; }
     /* wide screens have room to spare: the search bar never rolls up */
     #mhead.collapsed #mcollapse { max-height: 140px; opacity: 1; }
     #mhead.collapsed #msrch-btn { display: none; }
@@ -328,10 +350,8 @@
 <body>
 <header id="topbar">
   <a class="brand" href="./">mi<span>tehuacan</span>.mx <span class="suffix" style="color:var(--ink-2);font-weight:400">· Combis</span></a>
+  <span id="topbar-seg"></span>
   <nav>
-    <a href="./" class="on" id="nav-map">Mapa</a>
-    <a href="acerca/" id="nav-about">Acerca</a>
-    <a href="https://tylt-dev.vercel.app/" id="credit" target="_blank" rel="noopener" style="color:var(--ink-2);font-weight:400"></a>
     <a href="#" id="lt-es">ES</a>
     <a href="#" id="lt-en">EN</a>
     <a href="#" id="theme-toggle" aria-label="tema / theme"><span class="ic-moon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span><span class="ic-sun"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></a>
@@ -425,6 +445,7 @@
 </div>
 <div id="sheet"></div>
 <div id="sheet2"></div>
+<a id="credit" href="https://tylt-dev.vercel.app/" target="_blank" rel="noopener"></a>
 <script>
 const THEME = (() => {
   try { const s = localStorage.mtTheme; if (s === 'light' || s === 'dark') return s; } catch (e) {}
@@ -462,6 +483,10 @@ const I18N = {
     searching: 'Buscando lugares…',
     noResults: 'Sin resultados para',
     builtBy: 'Hecho por Tylt',
+    routesServing: (n, l) => n + (n === 1 ? ' ruta pasa por ' : ' rutas pasan por ') + '“' + l + '”',
+    tripDetail: 'Detalles del viaje',
+    locFailed: 'No se pudo obtener tu ubicación — usa el pin arrastrable del mapa',
+    locDenied: 'Ubicación bloqueada — actívala en los permisos del navegador',
     tripTitle: 'Cómo llegar a',
     tripNone: 'No encontramos combis para ese destino.',
     alsoRoutes: 'también sirven: ',
@@ -548,6 +573,10 @@ const I18N = {
     searching: 'Searching places…',
     noResults: 'No results for',
     builtBy: 'Built by Tylt',
+    routesServing: (n, l) => n + (n === 1 ? ' route serves ' : ' routes serve ') + '“' + l + '”',
+    tripDetail: 'Trip details',
+    locFailed: 'Couldn’t get your location — use the draggable pin on the map',
+    locDenied: 'Location blocked — enable it in your browser permissions',
     tripTitle: 'Getting to',
     tripNone: 'No combi options found for that destination.',
     alsoRoutes: 'also served by: ',
@@ -617,8 +646,6 @@ const t = key => I18N[LANG][key];
 document.documentElement.lang = LANG;
 document.title = t('title');
 {
-  document.getElementById('nav-map').textContent = t('navMap');
-  document.getElementById('nav-about').textContent = t('navAbout');
   document.querySelector('[data-pane="browse"]').textContent = t('tabRoutes');
   document.querySelector('[data-pane="plan"]').textContent = t('tabPlan');
   document.getElementById('search').placeholder = t('searchPh');
@@ -660,7 +687,7 @@ document.title = t('title');
   });
 }
 
-// first-party feature/problem beacon (no third parties; see /acerca/ créditos)
+// first-party feature/problem beacon (no third parties)
 function track(event, label) {
   try {
     const data = JSON.stringify({event, label, path: location.pathname});
@@ -690,11 +717,12 @@ const map = new maplibregl.Map({
   zoom: 12.4,
   minZoom: 9,
   maxBounds: [[CENTER[0] - pLon, CENTER[1] - pLat], [CENTER[0] + pLon, CENTER[1] + pLat]],
-  attributionControl: false  // full data/tile credits live on /acerca/
+  attributionControl: false
 });
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
 const GEOCTL = new maplibregl.GeolocateControl({
-  positionOptions: {enableHighAccuracy: true}, trackUserLocation: true, showUserHeading: true,
+  // without a timeout, desktops without GPS wait forever — no fix, no error, no feedback
+  positionOptions: {enableHighAccuracy: true, timeout: 8000}, trackUserLocation: true, showUserHeading: true,
 });
 map.addControl(GEOCTL, 'top-right');
 /* LOCATION STATE MODEL — one source of truth, strict priority:
@@ -721,6 +749,19 @@ GEOCTL.on('geolocate', p => {
   }
 });
 GEOCTL.on('trackuserlocationend', () => { BLUEDOT = null; });
+GEOCTL.on('error', e => {
+  // desktops without GPS routinely time out — say so instead of a silently red icon
+  toast(t(e && e.code === 1 ? 'locDenied' : 'locFailed'));
+});
+let TOAST_T = null;
+function toast(msg, ms) {
+  let el = document.getElementById('toast');
+  if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(TOAST_T);
+  TOAST_T = setTimeout(() => el.classList.remove('show'), ms || 4500);
+}
 const geoStreaming = () => BLUEDOT !== null;
 
 const boundaryCircle = (() => {
@@ -1255,6 +1296,8 @@ function clearSelection() {
   if (typeof SRCH_MARKER !== 'undefined' && SRCH_MARKER) { SRCH_MARKER.remove(); SRCH_MARKER = null; }
   const inp = document.getElementById('ml-search');
   if (inp) { inp.value = ''; MV.q = ''; }
+  SEL_LABEL = null;
+  SEL_C = null;
   if (typeof poiHighlight === 'function') poiHighlight(null);
   if (!isMobile() && typeof select === 'function') select(null, false);
   closeSheet();
@@ -1266,6 +1309,8 @@ function clearSelection() {
    Reuses the desktop planner engine (findTrips) and its plan-walk/plan-pts
    sources; results (direct or with a transfer) render as selectable options. */
 let TRIP = null;                    // {opts, sel, from, dest, destLabel}
+let SEL_LABEL = null;               // active destination label — list + map narrate the same state
+let SEL_C = null;                   // its coords when known (restores the marker after a reload)
 const MT = {a: null, b: null};      // origin/destination markers
 
 function clearTrip() {
@@ -1357,7 +1402,12 @@ function refreshMyLocation() {
 
 async function mPlanTo(dest, label) {
   let from, locFallback = false;
-  try { from = await getMyLocation(); }
+  try {
+    // hard cap the wait: desktops without GPS time out for 20s+ — a click that
+    // long feels dead. 6s covers phones (blue dot / cache answer instantly).
+    from = await Promise.race([getMyLocation(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('slow-fix')), 6000))]);
+  }
   catch (e) {
     // never dead-end: drop the origin pin at map center; it's draggable
     const c = map.getCenter();
@@ -1448,11 +1498,14 @@ function renderTripSheet() {
     '<span class="sh-name"><b>' + t('tripTitle') + ' ' + String(TRIP.destLabel).replace(/</g, '&lt;') + '</b></span></div>' +
     (TRIP.locFallback ? '<div class="dt-note" style="margin-bottom:8px">' + t('locFallback') + '</div>' : '') +
     '<div class="dt-note" style="margin-bottom:8px"><a href="#" id="t-refresh" style="color:var(--accent)">' + t('locRefresh') + '</a></div>' +
-    (TRIP.opts.length ? rows : '<div class="msg">' + t('tripNone') + '</div>');
+    (TRIP.opts.length
+      ? '<div id="trip-cols"><div id="trip-left">' + rows + '</div><div id="trip-right"></div></div>'
+      : '<div class="msg">' + t('tripNone') + '</div>');
   el.style.maxHeight = '';
   el.classList.remove('min');
   el.classList.add('show');
   el.querySelectorAll('.opt').forEach(d => d.onclick = () => mSelectTripOption(+d.dataset.i));
+  fillTripDetail(TRIP.sel || 0);
   const tr = document.getElementById('t-refresh');
   if (tr) tr.onclick = async e => {
     e.preventDefault();
@@ -1470,11 +1523,37 @@ function renderTripSheet() {
   };
 }
 
+// wide screens only (#trip-right is display:none on phones): the selected
+// option's step-by-step plus fare/schedule for each combi it rides
+function fillTripDetail(i) {
+  const box = document.getElementById('trip-right');
+  if (!box) return;
+  const o = TRIP && TRIP.opts[i];
+  if (!o) { box.innerHTML = ''; return; }
+  const eta = nextCombiAt(o.legs[0], o.boardAt);
+  const legRows = o.legs.map(id => {
+    const p = routeById(id);
+    const s = SCHEDULES[id];
+    const fr = fareParts(s);
+    return '<div class="sh-row"><span class="swatch" style="background:' + p.color + '"></span><div><b>' +
+      p.name + '</b><span class="v">' + (s ? t('schedRange')(s) : t('schedNone')) + '<br>' +
+      t('fareLine')(fr.base, fr.max, fr.approx) + '</span></div></div>';
+  }).join('');
+  box.innerHTML =
+    '<div class="dt-note" style="margin-bottom:4px"><b>' + t('tripDetail') + '</b></div>' +
+    shRow(S_PIN2, t('walkTo')(fmt(o.walkA)),
+          eta && !eta.done ? t('etaShort')(Math.max(1, Math.round(eta.wait))) : '') +
+    (o.type === 'transfer' ? shRow(S_ROUTE, t('transferTxt')(fmt(o.transfer), ''), '') : '') +
+    shRow(S_PIN2, t('alightTxt')(fmt(o.walkB)), '') +
+    legRows;
+}
+
 function mSelectTripOption(i) {
   const o = TRIP && TRIP.opts[i];
   if (!o) return;
   TRIP.sel = i;
   document.querySelectorAll('#sheet .opt').forEach((el, j) => el.classList.toggle('sel', i === j));
+  fillTripDetail(i);
   M.chips = o.legs.map(id => ({id, on: true}));
   // stay in whichever view the user is in — picking an option never yanks
   // them to the map; the map state updates underneath either way
@@ -1523,6 +1602,10 @@ function hasKnownLocation() {
 }
 
 async function openDestPanel(label, coords) {
+  SEL_LABEL = label;
+  SEL_C = coords || null;
+  saveStatus();
+  if (document.body.dataset.mview === 'list') renderCards();
   // location already known (blue dot / fresh fix)? don't ask again — just plan
   if (hasKnownLocation()) {
     let c = coords;
@@ -2172,6 +2255,8 @@ function saveStatus() {
       chips: M.chips,
       sheet: SHEET,
       sel: state.sel,
+      // an active destination survives reloads — only the reset button clears it
+      dest: SEL_LABEL ? {label: SEL_LABEL, c: SEL_C || null} : null,
     });
   } catch (e) {}
 }
@@ -2204,6 +2289,16 @@ function mSetView(v) {  // 'map' | 'list' ('fav' arrives via the filter pill)
   saveStatus();
 }
 
+// the Map/List toggle rides in the header on wide screens, in #mhead on phones
+function placeSeg() {
+  const seg = document.getElementById('mseg');
+  const wide = innerWidth > 700;
+  const target = wide ? document.getElementById('topbar-seg') : document.getElementById('mseg-row');
+  if (seg.parentElement !== target) target.prepend(seg);
+}
+placeSeg();
+addEventListener('resize', placeSeg);
+
 
 function mlVisible(f) {
   const p = f.properties;
@@ -2224,7 +2319,9 @@ function renderCards() {
   const vis = on.length ? feats.filter(f => on.includes(f.properties.id)) : feats.filter(mlVisible);
   // favorites always float to the top (stable within groups)
   vis.sort((a, b) => (MV.fav.has(b.properties.id) ? 1 : 0) - (MV.fav.has(a.properties.id) ? 1 : 0));
-  document.getElementById('ml-count').textContent = t('count')(vis.length, feats.length);
+  document.getElementById('ml-count').textContent = (on.length && SEL_LABEL)
+    ? t('routesServing')(vis.length, SEL_LABEL)
+    : t('count')(vis.length, feats.length);
   el.innerHTML = '';
   vis.forEach(f => {
     const p = f.properties;
@@ -2374,8 +2471,7 @@ function openSettings() {
     '<div class="sh-row"><div style="flex:1;padding-top:9px"><b>' + t('cfgTheme') + '</b></div>' +
     '<div class="sh-actions" style="margin:0;flex:1.4">' +
     '<button id="cfg-light"' + (TH === 'light' ? on : '') + '>' + t('cfgLight') + '</button>' +
-    '<button id="cfg-dark"' + (TH === 'dark' ? on : '') + '>' + t('cfgDark') + '</button></div></div>' +
-    '<div class="sh-row"><a href="acerca/" style="color:var(--accent);font-weight:600">' + t('cfgAbout') + '</a></div>';
+    '<button id="cfg-dark"' + (TH === 'dark' ? on : '') + '>' + t('cfgDark') + '</button></div></div>';
   el.classList.remove('min');
   el.classList.add('show');
   document.getElementById('sh-close').onclick = closeSheet;
@@ -2561,6 +2657,8 @@ async function runSugg(q) {
 
 document.getElementById('ml-search').addEventListener('input', e => {
   MV.q = e.target.value.trim();
+  SEL_LABEL = null;
+  SEL_C = null;
   if (M.chips.length) M.chips = [];   // editing the query starts a new search in BOTH views
   if (SRCH_MARKER) { SRCH_MARKER.remove(); SRCH_MARKER = null; }
   if (document.body.dataset.mview === 'map') mApply(false);
@@ -2584,6 +2682,28 @@ if (isMobile()) {
   mSyncUI();
   if (BOOT && BOOT.sheet && !params.get('ruta') && feats.some(f => f.properties.id === BOOT.sheet))
     openSheet(BOOT.sheet, v === 'map' ? 'compact' : 'full');
+  if (BOOT && BOOT.dest && BOOT.dest.label) {
+    // a searched destination is sticky — only the reset button (or a new search) forgets it
+    SEL_LABEL = BOOT.dest.label;
+    SEL_C = BOOT.dest.c || null;
+    const inp = document.getElementById('ml-search');
+    if (inp && !inp.value) inp.value = SEL_LABEL;
+    if (SEL_C) {
+      SRCH_MARKER = new maplibregl.Marker({color: '#f5a623'}).setLngLat(SEL_C)
+        .setPopup(new maplibregl.Popup({closeButton: false, offset: 18}).setText(SEL_LABEL)).addTo(map);
+      if (!M.chips.length) {
+        // an active trip empties the chips before saving — recompute the serving
+        // routes from the destination so the reload shows the same picture
+        const ptM = mx(SEL_C);
+        const near = flat.map(rt => ({id: rt.id, d: nearest(ptM, rt).d})).sort((a, b) => a.d - b.d);
+        let ids = near.filter(x => x.d <= 400).map(x => x.id);
+        if (!ids.length) ids = near.slice(0, 3).map(x => x.id);
+        M.chips = ids.slice(0, 6).map(id => ({id, on: true}));
+        if (v === 'map') mApply(false);
+      }
+    }
+    if (v === 'list') renderCards();
+  }
 }
 
 /* desktop sidebar search: the list filters live on route names/colonias, and when
