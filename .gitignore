@@ -30,4 +30,5 @@ build/
 # wrangler local dev
 .dev.vars
 .wrangler/
-/backoffice/  # graduated to github.com/augmentedmike/mitehuacan-admin
+# graduated to github.com/augmentedmike/mitehuacan-admin
+/backoffice/
