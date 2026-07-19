@@ -129,7 +129,7 @@ NAV = f"""<header class="site">
 FOOTER = f"""<footer class="site"><div class="cols">
 <div><span class="es">MiTehuacán — el portal libre y gratuito de Tehuacán, Puebla.</span><span class="en">MiTehuacán — the free, open portal of Tehuacán, Puebla.</span><br>
 <span class="es">Datos abiertos (ODbL) · código abierto (AGPL) · hecho con proyectos ciudadanos y OpenStreetMap.</span><span class="en">Open data (ODbL) · open source (AGPL) · built on citizen projects and OpenStreetMap.</span><br>
-Built with ♥ in Tehuacán · <a href="https://github.com/mauriciotellezdev/mitehuacan" rel="me">GitHub</a></div>
+<span class="es">Hecho con ♥ en Tehuacán por</span><span class="en">Built with ♥ in Tehuacán by</span> <a href="https://tylt-dev.vercel.app/" rel="noopener">Tylt</a> · <a href="https://github.com/augmentedmike/mitehuacan.mx" rel="me">GitHub</a></div>
 <div><a href="/"><span class="es">Inicio</span><span class="en">Home</span></a> · <a href="/{SECTION}/">Combis</a> · <a href="/{SECTION}/acerca/"><span class="es">Acerca</span><span class="en">About</span></a></div>
 </div></footer>"""
 
