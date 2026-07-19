@@ -413,6 +413,17 @@ Got an idea for the portal? <a href="/{SECTION}/acerca/">Tell us</a>.</p>
         f"/tehuacan/ /{SECTION}/ 301\n"
         f"/acerca/ /{SECTION}/acerca/ 301\n"
         , encoding="utf-8")
+    # a real 404 page — without one, Cloudflare Pages SPA-falls-back to the
+    # homepage with a 200 for every unmatched path (including removed APIs)
+    (SITE / "404.html").write_text(f"""<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex"><title>404 — MiTehuacán</title><style>{CSS}</style></head>
+<body><div class="wrap" style="padding-top:60px;text-align:center">
+<h1>404</h1>
+<p class="es">Esta página no existe. <a href="/{SECTION}/">Ir al mapa de combis</a></p>
+<p class="en">This page does not exist. <a href="/{SECTION}/">Go to the combi map</a></p>
+</div></body></html>""", encoding="utf-8")
     (SITE / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {DOMAIN}/sitemap.xml\n", encoding="utf-8")
     urls = [f"{DOMAIN}/", f"{DOMAIN}/{SECTION}/", f"{DOMAIN}/{SECTION}/acerca/"]
     (SITE / "sitemap.xml").write_text(
