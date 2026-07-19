@@ -23,12 +23,14 @@ Vercel = frontend preview mirror. Cloudflare = staging + production + all data.
 5. **Admin app** deploys independently:
    `cd backoffice && bunx wrangler pages deploy public --project-name mitehuacan-admin --branch main`.
 
-## Migrations (D1)
-- Apply locally first: `bunx wrangler d1 migrations apply quecombi --local`.
-- Apply remotely AT PROMOTE TIME: `... --remote`.
-- KNOWN TRADEOFF: staging and production share ONE remote D1. Migrations are
-  additive-only by convention; destructive changes ship with their code in the
-  same promote. (A separate staging DB is future work.)
+## Databases — fully separated environments (2026-07-19)
+- LOCAL:      local D1 (wrangler state) — `... apply quecombi --local`
+- STAGING:    `quecombi-staging` (89f04f58…) — bound to the PREVIEW env of both
+              Pages projects. `bunx wrangler d1 migrations apply quecombi-staging --remote --env preview`
+- PRODUCTION: `quecombi` (b0a959fa…) — bound to the PRODUCTION env only.
+              At promote time: `bunx wrangler d1 migrations apply quecombi --remote --env production`
+Staging deploys can NEVER touch production data — different database, enforced
+by per-environment bindings in both wrangler.toml files.
 
 ## Rules of thumb
 - Never edit `site/` by hand — it's generated (`tehuacan/scripts/09_build_site.py`).
