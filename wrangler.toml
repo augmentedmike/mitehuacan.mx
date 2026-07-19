@@ -6,6 +6,13 @@ name = "mitehuacan"
 compatibility_date = "2026-07-01"
 pages_build_output_dir = "site"
 
+# top-level binding = what LOCAL `wrangler pages dev` uses (local sqlite only);
+# deploys always use the env-scoped bindings below
+[[d1_databases]]
+binding = "DB"
+database_name = "mitehuacan"
+database_id = "57ff6a8d-ae71-4f40-b494-c7f16dd083e4"
+
 [env.production]
 [[env.production.d1_databases]]
 binding = "DB"
