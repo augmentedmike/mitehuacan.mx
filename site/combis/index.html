@@ -110,10 +110,9 @@
   .field { position: relative; }
   .field .dot { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 9px; height: 9px;
                 border-radius: 50%; }
-  .field input { padding-left: 28px; padding-right: 64px; }
-  .field .pin { position: absolute; right: 32px; top: 50%; transform: translateY(-50%); border: none; background: none;
-                cursor: pointer; font-size: 15px; padding: 4px 6px; border-radius: 6px; color: var(--ink-2); }
-  .field .pin.loc { right: 2px; color: var(--accent); }
+  .field input { padding-left: 28px; padding-right: 34px; }
+  .field .pin { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: none; background: none;
+                cursor: pointer; font-size: 15px; padding: 4px 6px; border-radius: 6px; color: var(--accent); }
   .field .pin:hover, .field .pin.armed { background: var(--chip); color: var(--accent); }
   .sugg { position: absolute; top: 100%; left: 0; right: 0; z-index: 30; background: var(--bg);
           border: 1px solid var(--line); border-radius: 8px; margin-top: 3px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
@@ -350,15 +349,13 @@
         <div class="field">
           <span class="dot" style="background:var(--ok)"></span>
           <input type="text" id="from" placeholder="¿Dónde estás? (dirección o lugar)" autocomplete="off">
-          <button class="pin" data-which="from" title="Elegir en el mapa"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></button>
-          <button class="pin loc" data-loc="from" title="Usar mi ubicación"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/><path d="M12 1.5V4M12 20v2.5M1.5 12H4M20 12h2.5"/></svg></button>
+          <button class="pin" data-which="from" title="Usar mi ubicación"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></button>
           <div class="sugg" id="sugg-from" hidden></div>
         </div>
         <div class="field">
           <span class="dot" style="background:#d4351c"></span>
           <input type="text" id="to" placeholder="¿A dónde vas?" autocomplete="off">
-          <button class="pin" data-which="to" title="Elegir en el mapa"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></button>
-          <button class="pin loc" data-loc="to" title="Usar mi ubicación"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/><path d="M12 1.5V4M12 20v2.5M1.5 12H4M20 12h2.5"/></svg></button>
+          <button class="pin" data-which="to" title="Usar mi ubicación"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></button>
           <div class="sugg" id="sugg-to" hidden></div>
         </div>
         <button id="go" disabled>Buscar combis</button>
@@ -603,8 +600,7 @@ document.title = t('title');
   document.querySelector('[data-kind="foránea"]').textContent = t('fForanea');
   document.getElementById('from').placeholder = t('fromPh');
   document.getElementById('to').placeholder = t('toPh');
-  document.querySelectorAll('.pin:not(.loc)').forEach(b => b.title = t('pickTitle'));
-  document.querySelectorAll('.pin.loc').forEach(b => b.title = t('myLocation'));
+  document.querySelectorAll('.pin').forEach(b => b.title = t('myLocation'));
   document.getElementById('go').textContent = t('go');
   document.getElementById('plan-note').textContent = t('planNote');
   document.getElementById('msearch').placeholder = t('msearchPh');
@@ -1605,18 +1601,11 @@ function attachAutocomplete(which) {
 attachAutocomplete('from');
 attachAutocomplete('to');
 
-document.querySelectorAll('.pin:not(.loc)').forEach(b => {
-  b.onclick = () => {
-    P.pickArm = P.pickArm === b.dataset.which ? null : b.dataset.which;
-    document.querySelectorAll('.pin').forEach(x => x.classList.toggle('armed', x.dataset.which === P.pickArm));
-    map.getCanvas().style.cursor = P.pickArm ? 'crosshair' : '';
-  };
-});
-// locate buttons: fill the field from the device (origin OR destination — you
-// might be planning the trip home). Uses the blue-dot-first location chain.
-document.querySelectorAll('.pin.loc').forEach(b => {
+// the pin button fills the field from the device (origin OR destination —
+// you might be planning the trip home). Blue-dot-first location chain.
+document.querySelectorAll('.pin').forEach(b => {
   b.onclick = async () => {
-    const which = b.dataset.loc;
+    const which = b.dataset.which;
     const inp = document.getElementById(which);
     const old = inp.placeholder;
     inp.value = '';
