@@ -8,11 +8,11 @@ pages_build_output_dir = "public"
 [env.production]
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "quecombi"
-database_id = "b0a959fa-8e8c-4c10-b1bd-a02f2408a4cd"
+database_name = "mitehuacan"
+database_id = "57ff6a8d-ae71-4f40-b494-c7f16dd083e4"
 
 [env.preview]
 [[env.preview.d1_databases]]
 binding = "DB"
-database_name = "quecombi-staging"
-database_id = "89f04f58-9351-4b70-8dfb-845a4cf1d8d9"
+database_name = "mitehuacan-staging"
+database_id = "bd3c4e16-b81e-4e65-88fc-d49cbf6b7e06"

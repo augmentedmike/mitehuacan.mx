@@ -24,11 +24,11 @@ Vercel = frontend preview mirror. Cloudflare = staging + production + all data.
    `cd backoffice && bunx wrangler pages deploy public --project-name mitehuacan-admin --branch main`.
 
 ## Databases — fully separated environments (2026-07-19)
-- LOCAL:      local D1 (wrangler state) — `... apply quecombi --local`
-- STAGING:    `quecombi-staging` (89f04f58…) — bound to the PREVIEW env of both
-              Pages projects. `bunx wrangler d1 migrations apply quecombi-staging --remote --env preview`
-- PRODUCTION: `quecombi` (b0a959fa…) — bound to the PRODUCTION env only.
-              At promote time: `bunx wrangler d1 migrations apply quecombi --remote --env production`
+- LOCAL:      local D1 (wrangler state) — `... apply mitehuacan --local`
+- STAGING:    `mitehuacan-staging` (bd3c4e16…) — bound to the PREVIEW env of both
+              Pages projects. `bunx wrangler d1 migrations apply mitehuacan-staging --remote --env preview`
+- PRODUCTION: `mitehuacan` (57ff6a8d…) — bound to the PRODUCTION env only.
+              At promote time: `bunx wrangler d1 migrations apply mitehuacan --remote --env production`
 Staging deploys can NEVER touch production data — different database, enforced
 by per-environment bindings in both wrangler.toml files.
 
