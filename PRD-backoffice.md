@@ -395,3 +395,69 @@ scans 7d (stickers vs placards) · DAU (existing).
    removed/never verified? (Spec says yes — it's the whole deal.)
 5. Retired-route grace: hide immediately (spec) or show grayed for 2 weeks with
    "esta ruta dejó de operar"?
+
+---
+
+## 10. Addendum — decisions from Mike, 2026-07-19 (evening)
+
+1. **Single login for now.** One shared token (`STATS_TOKEN`, the existing
+   `qc_stats_token` localStorage UX) gates ALL modules. The `auth()` helper
+   still lands so per-role tokens (§1) can be added later without touching
+   handlers — but no `TOKEN_MAPEO`/`TOKEN_CAMPO`/`TOKEN_PATROCINIO` yet.
+2. **Citizen mapping is OUT for the time being.** No `/system/reportes`, no
+   reports-triage KPIs. The public "reporta una ruta" form and `reports` table
+   stay as-is (data keeps accumulating); triage UI is deferred.
+3. **The recorder replaces Traccar** (decided earlier today). New module,
+   highest priority — spec below.
+
+### 10.1 Module R — route recorder `/grabar` (replaces Traccar)
+
+Phone-first page in the backoffice app (`mitehuacan-admin`):
+
+- `watchPosition` (high accuracy) + Screen Wake Lock; points buffered in
+  localStorage and batch-POSTed to `/api/track` with retry (dead zones lose
+  nothing). Foreground-only recording is the accepted tradeoff.
+- Metadata typed BEFORE the ride: route name as painted, operator, variant,
+  stop policy (`libre | fijo | mixto`), notes.
+- Big **PARADA** button records a stop event at the current fix (plus undo).
+- **Storage trick:** points insert into the existing `positions` table with
+  `device = 'rec-<session id>'` — the `/system/map` editor already loads by
+  device + time window, so sessions appear there with ZERO editor changes.
+- Tables (migration 0012): `ride_sessions` (id, name, operator, variant,
+  stop_policy, notes, started/ended, n_points, status) and `stop_events`
+  (session_id, fix_ts, lat, lon, kind `parada|subida|bajada`, label).
+- End ride → session `done` → open `/map` pre-filtered to `rec-<id>`.
+- Retirement path: once trusted, Traccar + `GPS_DEVICES` allowlist die.
+
+### 10.2 Revised build order
+
+1. Module R — recorder (`/grabar`, `/api/track`, migration 0012)
+2. Stickers (§3 as written; tables already migrated in 0011)
+3. Sponsors (§4 as written)
+4. Route lifecycle only from §2.2a (status field) — reports triage deferred
+
+### 10.3 /goal commands (one per module)
+
+```
+/goal Build the route recorder module per PRD-backoffice.md §10.1: migration
+0012 (ride_sessions, stop_events) applied local+staging, POST/GET /api/track in
+backoffice/functions/api/track.js (STATS_TOKEN auth, positions rows with
+device='rec-<session>'), phone-first /grabar page (metadata form, wake lock,
+watchPosition, localStorage buffer + batch upload with retry, PARADA button,
+end-ride -> link to /map). Verify on the staging admin app from a phone.
+
+/goal Build the stickers module per PRD-backoffice.md §3 (single STATS_TOKEN
+auth per §10): /api/stickers list, /api/stickers/batch, /api/stickers/install,
+/api/stickers/status, /api/stickers/stats (auto-verify installed->verified from
+hits.qr, dead = verified with 0 scans in 30d), plus /system/stickers phone-first
+page with a printable QR batch sheet (client-side QR, 7x7cm grid, urls
+https://mitehuacan.mx/qr/<id>). Tables exist (migration 0011).
+
+/goal Build the sponsors module per PRD-backoffice.md §4 (single STATS_TOKEN
+auth per §10): migration for sponsors + sponsor_locations, /api/sponsors CRUD,
+placard QR sheets reusing the sticker print generator, public GET
+/api/sponsor-pins (cache 300s, exact sponsors.js shape, publication rule:
+active + placard placed|verified), /system/patrocinios page with pin-drop
+mini-map, migrate the OXXO seed from sponsors.js, switch the public map to
+fetch with graceful fallback to the static file.
+```
