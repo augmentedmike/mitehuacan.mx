@@ -310,10 +310,10 @@
 </head>
 <body>
 <header id="topbar">
-  <a class="brand" href="/combis/">mi<span>tehuacan</span>.mx <span class="suffix" style="color:var(--ink-2);font-weight:400">· Combis</span></a>
+  <a class="brand" href="./">mi<span>tehuacan</span>.mx <span class="suffix" style="color:var(--ink-2);font-weight:400">· Combis</span></a>
   <nav>
-    <a href="/combis/" class="on" id="nav-map">Mapa</a>
-    <a href="/combis/acerca/" id="nav-about">Acerca</a>
+    <a href="./" class="on" id="nav-map">Mapa</a>
+    <a href="acerca/" id="nav-about">Acerca</a>
     <a href="#" id="lt-es">ES</a>
     <a href="#" id="lt-en">EN</a>
     <a href="#" id="theme-toggle" aria-label="tema / theme"><span class="ic-moon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span><span class="ic-sun"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></a>
@@ -1483,7 +1483,24 @@ function mSelectTripOption(i) {
 
 const S_NAV = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 19-8-8 19-2.5-8.5L3 11Z"/></svg>';
 
-function openDestPanel(label, coords) {
+function hasKnownLocation() {
+  if (typeof BLUEDOT !== 'undefined' && BLUEDOT) return true;
+  try {
+    const c = JSON.parse(localStorage.mtLoc || 'null');
+    return !!(c && Date.now() - c.ts < 3 * 60 * 1000);
+  } catch (e) { return false; }
+}
+
+async function openDestPanel(label, coords) {
+  // location already known (blue dot / fresh fix)? don't ask again — just plan
+  if (hasKnownLocation()) {
+    let c = coords;
+    if (!c) {
+      const res = await geocode(label + ', Tehuacán');
+      if (res.length) c = res[0].c;
+    }
+    if (c) { mPlanTo(c, label); return; }
+  }
   const el = document.getElementById('sheet2');
   el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
     '<div class="sh-head"><span class="tile" style="background:var(--accent);color:#fff">' + S_PIN2 + '</span>' +
@@ -2282,7 +2299,8 @@ function openSheet(id, mode) {
 }
 
 async function shareRoute(id) {
-  const url = location.origin + '/combis/?ruta=' + encodeURIComponent(id);
+  // path-relative so the app works at / (vercel) and at /combis/ (mitehuacan.mx)
+  const url = location.origin + location.pathname.replace(/[^/]*$/, '') + '?ruta=' + encodeURIComponent(id);
   const p = routeById(id);
   try {
     if (navigator.share) {
@@ -2312,7 +2330,7 @@ function openSettings() {
     '<div class="sh-actions" style="margin:0;flex:1.4">' +
     '<button id="cfg-light"' + (TH === 'light' ? on : '') + '>' + t('cfgLight') + '</button>' +
     '<button id="cfg-dark"' + (TH === 'dark' ? on : '') + '>' + t('cfgDark') + '</button></div></div>' +
-    '<div class="sh-row"><a href="/combis/acerca/" style="color:var(--accent);font-weight:600">' + t('cfgAbout') + '</a></div>';
+    '<div class="sh-row"><a href="acerca/" style="color:var(--accent);font-weight:600">' + t('cfgAbout') + '</a></div>';
   el.classList.remove('min');
   el.classList.add('show');
   document.getElementById('sh-close').onclick = closeSheet;
