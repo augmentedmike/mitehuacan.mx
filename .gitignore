@@ -34,3 +34,5 @@ build/
 /admin/
 resources/poi/denue_puebla.csv
 .vercel
+# local agent run logs — never committed
+.agent-runs/
