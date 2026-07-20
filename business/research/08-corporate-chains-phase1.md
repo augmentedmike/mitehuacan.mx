@@ -3,7 +3,7 @@
 *2026-07-20. Question: can large corporations (Chedraui, OXXO, etc.) be Phase 1
 sponsors? Grounded in our DENUE layer (branch counts in the service area) plus
 outside research on how each org actually buys local visibility. Companion to
-MARKETING.md §4 and the adversarial review.*
+business/marketing-plan.md §4 and the adversarial review.*
 
 ## Ground truth — corporate presence in our service area (DENUE)
 
@@ -46,7 +46,7 @@ Tehuacán; the brand logo on our map buys us credibility with everyone else.
 - **Caja Popular Mexicana** — cooperative with regional decision latitude;
   branches are genuine trip destinations for members.
 
-**How to sell Tier 1:** exactly like MARKETING.md §7, plus the multi-location
+**How to sell Tier 1:** exactly like business/marketing-plan.md §7, plus the multi-location
 lever our contract system was built for: *paquete multi-sucursal* (e.g., all
 5 Similares of one franchisee, price per location with a volume step-down).
 
@@ -92,7 +92,7 @@ can show tens of thousands of route views/month.
 - **Credibility transfer:** "junto a Chedraui, sobre la Ruta 12" is sales
   language for the taquería next door.
 - **Revenue:** comes from Tier 1 (franchise/distributor operators) and the
-  local businesses that are the core of MARKETING.md — not from HQ marketing
+  local businesses that are the core of business/marketing-plan.md — not from HQ marketing
   departments in Monterrey.
 
 ## Phase 1 action list (fits inside existing corridor plan)

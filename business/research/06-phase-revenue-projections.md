@@ -10,7 +10,7 @@ continues growing. Revenue is additive — Phase B revenue sits on top of Phase 
 | 28,727 registered businesses in service area | DENUE (INEGI) |
 | 80+ mapped combi routes | master_route_index.csv |
 | ~350,000 metro population | INEGI |
-| Facebook ad targeting Tehuacán | $1,000–3,000/mo (MARKETING.md) |
+| Facebook ad targeting Tehuacán | $1,000–3,000/mo (business/marketing-plan.md) |
 | Perifoneo car (one-shot) | ~$1,000–2,000 |
 | Founding pin sponsorship | $250–400/mo per location |
 | Standard pin sponsorship | $500–800/mo per location |

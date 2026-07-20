@@ -31,7 +31,7 @@ habit. Conversion is slower. Churn is higher. Re-activation is harder.
 
 ### 3. The 10-minute close is a fantasy
 
-The MARKETING.md script ("Walk in. Phone out. Close in 10 minutes.") works in
+The business/marketing-plan.md script ("Walk in. Phone out. Close in 10 minutes.") works in
 San Francisco. In Tehuacán, the owner may not be there. If they are, you will
 spend 10 minutes on greeting, asking about their family, and accepting a Coke
 before you can even show your phone. First visit close rate is 3-5%, not 25-35%.
@@ -136,7 +136,7 @@ second visit, introduced).
 
 #### Assertion: $500/mo per location, 4 locations per sponsor = $2,000/mo average
 
-**Challenge:** The MARKETING.md pricing says founding rate is $250-400/mo per
+**Challenge:** The business/marketing-plan.md pricing says founding rate is $250-400/mo per
 location. The projection uses $500/mo — the *standard* rate — from month 1.
 If the founding rate ($250-400) is actually charged for the first 100 sponsors,
 the average is $325/mo, not $500/mo. With 4 locations, that's $1,300/mo per
@@ -367,7 +367,7 @@ fair about what is actually strong in these projections:
 2. **Add a collections cost assumption.** If 40% of payments arrive late or
    require follow-up, that costs time and money. Budget for it.
 
-3. **Foundation pricing must match MARKETING.md.** Use $325/mo average, not
+3. **Foundation pricing must match business/marketing-plan.md.** Use $325/mo average, not
    $500/mo, for the first 100 sponsors. Recalculate.
 
 4. **Add a Facebook distribution line item.** Either a Facebook integration

@@ -71,7 +71,7 @@ fair about what is actually strong in these projections:
 2. **Add a collections cost assumption.** If 40% of payments arrive late or
    require follow-up, that costs time and money. Budget for it.
 
-3. **Foundation pricing must match MARKETING.md.** Use $325/mo average, not
+3. **Foundation pricing must match business/marketing-plan.md.** Use $325/mo average, not
    $500/mo, for the first 100 sponsors. Recalculate.
 
 4. **Add a Facebook distribution line item.** Either a Facebook integration

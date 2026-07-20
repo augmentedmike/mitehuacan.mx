@@ -1,4 +1,4 @@
-# Plan: split tehuacan/map/index.html into shell + ES modules + i18n files
+# Plan: split app/index.html into shell + ES modules + i18n files
 
 Status: plan v1 · 2026-07-19 · produced by a planning agent from the real file
 (2,439 lines), the build script, data-file headers, and deploy docs.
@@ -25,7 +25,7 @@ it that way.
 
 ## Target layout
 ```
-tehuacan/map/
+app/
   index.html            # shell: head, <link styles.css>, DOM, 4-line inline theme
                         # bootstrap, classic data <script>s, one <script type=module>
   styles.css

@@ -1,6 +1,6 @@
 # Launch Execution Plan
 
-Based on: MARKETING.md (Phase 0 + Phase 1), PRD-backoffice.md, current production state.
+Based on: business/marketing-plan.md (Phase 0 + Phase 1), docs/prd-backoffice.md, current production state.
 
 ## Status check (prod)
 
@@ -33,20 +33,20 @@ Based on: MARKETING.md (Phase 0 + Phase 1), PRD-backoffice.md, current productio
 ## 1. QR Sticker Blitz (Phase 0 — Week 1)
 
 ### What was done
-- **Script**: `tehuacan/scripts/19_generate_stickers.py` — generates QR code PNGs for printable A4 sheets
+- **Script**: `scripts/19_generate_stickers.py` — generates QR code PNGs for printable A4 sheets
 - **Batch**: `2026-07-A` — 100 stickers printed across 10 A4 sheets
 - **Distribution**: evenly across the top-10 highest-prospect-density routes (15, 43, 5-A, 3, 5, 29-san-lorenzo, 4, 28-san-lorenzo, 24-dina, 20)
 - **Format**: 30×30 mm stickers, 10 per A4 sheet, 300 DPI
 
 ### To finish
-1. Print the 10 sheets (`tehuacan/stickers/2026-07-A/sheets/sheet_*.png`)
+1. Print the 10 sheets (`stickers/2026-07-A/sheets/sheet_*.png`)
 2. Cut into individual stickers
 3. Seed D1:
    ```bash
    wrangler d1 execute mitehuacan --remote \
      --command "$(python3 -c "
        import csv
-       for r in csv.DictReader(open('tehuacan/stickers/2026-07-A/stickers.csv')):
+       for r in csv.DictReader(open('stickers/2026-07-A/stickers.csv')):
          print(f\"INSERT OR IGNORE INTO stickers (id, batch, status, route_id) VALUES ('{r['id']}', '{r['batch']}', '{r['status']}', \\\"{r['route_id']}\\\");\")
      ")"
    ```
@@ -79,13 +79,13 @@ Based on: MARKETING.md (Phase 0 + Phase 1), PRD-backoffice.md, current productio
 - **Format**: Slightly larger QR (8×8 cm) with "Encuentra esta ruta en mitehuacan.mx" text
 - **Targets**: 10-15 tienditas, tortillerías, mercados along the top-10 routes
 - **Seed sponsors**: These barter pins populate the map BEFORE paid sales calls
-- **Script**: `tehuacan/scripts/19_generate_stickers.py` can be adapted — run with `--batch 2026-07-A-barter --count 20 --route <specific-route>`
+- **Script**: `scripts/19_generate_stickers.py` can be adapted — run with `--batch 2026-07-A-barter --count 20 --route <specific-route>`
 
 ---
 
 ## 2. Sponsorship: Top 5 Routes to Sell First
 
-From `tehuacan/prospects/_summary.csv` — ranked by priority-1 prospects (foot-traffic businesses within 150 m):
+From `prospects/_summary.csv` — ranked by priority-1 prospects (foot-traffic businesses within 150 m):
 
 | Rank | Route | Total prospects | Priority-1 targets | Best first targets |
 |---|---|---|---|---|
@@ -132,13 +132,13 @@ From `tehuacan/prospects/_summary.csv` — ranked by priority-1 prospects (foot-
 
 4. **Export** after each ride (note the time window):
    ```bash
-   python3 tehuacan/scripts/13_traccar_export.py \
+   python3 scripts/13_traccar_export.py \
      --device mauricio-1 \
      --from "2026-07-20T09:00" --to "2026-07-20T10:00" \
      --slug tecoxteo-zinacatepec-ida
    ```
 
-5. **Add to master index** — create rows in `tehuacan/data/master_route_index.csv`:
+5. **Add to master index** — create rows in `data/master_route_index.csv`:
    ```
    tecoxteo-zinacatepec,Tecoxteo - Tehuacán → Zinacatepec (Ida),foránea,field-ride,yes,geojson/field/tecoxteo-zinacatepec-ida.geojson,no,no,no,no,,,,
    tecoxteo-zinacatepec-vuelta,Tecoxteo - Zinacatepec → Tehuacán (Vuelta),foránea,field-ride,yes,geojson/field/tecoxteo-zinacatepec-vuelta.geojson,no,no,no,no,,,,
@@ -149,11 +149,11 @@ From `tehuacan/prospects/_summary.csv` — ranked by priority-1 prospects (foot-
 
 6. **Rebuild the map**:
    ```bash
-   python3 tehuacan/scripts/06_build_map.py
-   python3 tehuacan/scripts/12_build_sponsors.py
-   python3 tehuacan/scripts/15_build_pois.py
-   python3 tehuacan/scripts/09_build_site.py
-   python3 tehuacan/scripts/18_prospects.py
+   python3 scripts/06_build_map.py
+   python3 scripts/12_build_sponsors.py
+   python3 scripts/15_build_pois.py
+   python3 scripts/09_build_site.py
+   python3 scripts/18_prospects.py
    ```
 
 7. **Deploy**:
@@ -199,7 +199,7 @@ Coxcatlán is ~[-97.14, 18.27] — about 30 km south of Tehuacán's current boun
 
 ---
 
-## 5. Contracts & Pricing (from MARKETING.md)
+## 5. Contracts & Pricing (from business/marketing-plan.md)
 
 | | Founding (first 100) | Standard (after) |
 |---|---|---|
@@ -222,11 +222,11 @@ Coxcatlán is ~[-97.14, 18.27] — about 30 km south of Tehuacán's current boun
 
 | Path | Purpose |
 |---|---|
-| `tehuacan/scripts/19_generate_stickers.py` | QR sticker generator (batch + CSV + sheets) |
-| `tehuacan/scripts/13_traccar_export.py` | Export Traccar rides to geojson |
-| `tehuacan/scripts/14_import_drafts.py` | Import drafts from the editor |
-| `tehuacan/scripts/18_prospects.py` | Generate sales prospect lists per route |
-| `tehuacan/prospects/_summary.csv` | All routes ranked by prospect density |
-| `tehuacan/prospects/15.csv` | Ruta 15 prospect list (door-knock sheet) |
-| `tehuacan/data/master_route_index.csv` | Every route — add new ones here |
-| `tehuacan/data/field_reports.json` | Known data gaps requiring field work |
+| `scripts/19_generate_stickers.py` | QR sticker generator (batch + CSV + sheets) |
+| `scripts/13_traccar_export.py` | Export Traccar rides to geojson |
+| `scripts/14_import_drafts.py` | Import drafts from the editor |
+| `scripts/18_prospects.py` | Generate sales prospect lists per route |
+| `prospects/_summary.csv` | All routes ranked by prospect density |
+| `prospects/15.csv` | Ruta 15 prospect list (door-knock sheet) |
+| `data/master_route_index.csv` | Every route — add new ones here |
+| `data/field_reports.json` | Known data gaps requiring field work |

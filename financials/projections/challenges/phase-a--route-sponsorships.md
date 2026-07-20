@@ -27,7 +27,7 @@ second visit, introduced).
 
 #### Assertion: $500/mo per location, 4 locations per sponsor = $2,000/mo average
 
-**Challenge:** The MARKETING.md pricing says founding rate is $250-400/mo per
+**Challenge:** The business/marketing-plan.md pricing says founding rate is $250-400/mo per
 location. The projection uses $500/mo — the *standard* rate — from month 1.
 If the founding rate ($250-400) is actually charged for the first 100 sponsors,
 the average is $325/mo, not $500/mo. With 4 locations, that's $1,300/mo per

@@ -1,6 +1,6 @@
 # Data license — ODbL 1.0
 
-The **datasets** in this repository (everything under `tehuacan/data/`, and future
+The **datasets** in this repository (everything under `data/`, and future
 route/trace-derived data) are licensed under the **Open Database License (ODbL) v1.0**:
 https://opendatacommons.org/licenses/odbl/1-0/
 
