@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rutas de Tehuacán — mapa de combis</title>
+<meta name="description" content="¿En qué combi me voy? Mapa gratuito de las rutas de combi de Tehuacán: busca tu destino, ve qué rutas pasan y planea tu viaje.">
+<meta property="og:title" content="MiTehuacán — ¿En qué combi me voy?">
+<meta property="og:description" content="Mapa gratuito de las rutas de combi de Tehuacán. Busca tu destino y ve qué combis te llevan.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mitehuacan.mx/">
+<meta property="og:site_name" content="MiTehuacán">
+<meta property="og:locale" content="es_MX">
+<meta name="theme-color" content="#0a0b12">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2637,6 +2648,13 @@ document.getElementById('sheet').addEventListener('click', e => {
 /* unified search: routes -> known places (colonias/towns) -> geocoder fallback
    (streets, parks, landmarks). Picking a place highlights the routes serving it. */
 let SUG_T = null, SRCH_MARKER = null;
+// first-party page-view beacon: the Vercel-served domain's HTML never touches
+// Cloudflare, so the middleware can't see those visits — this closes the gap.
+// pages.dev is excluded (middleware already logs there): nothing double-counts.
+if (!location.hostname.endsWith('pages.dev')) {
+  fetch('/api/pv?p=' + encodeURIComponent(location.pathname + location.search)).catch(() => {});
+}
+
 // curated places from the field (admin /lugares) — refreshed on load, 60s edge cache
 let CURATED = [];
 fetch('/api/lugares').then(r => r.ok ? r.json() : {places: []})
