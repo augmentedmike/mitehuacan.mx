@@ -4,6 +4,7 @@
 # touch production data.
 name = "mitehuacan"
 compatibility_date = "2026-07-01"
+migrations_dir = "src/migrations"
 pages_build_output_dir = "site"
 
 # top-level binding = what LOCAL `wrangler pages dev` uses (local sqlite only);

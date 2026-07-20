@@ -17,7 +17,7 @@ from pathlib import Path
 
 import requests
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 TRACCAR = "http://localhost:8082"
 AUTH = (os.environ.get("TRACCAR_EMAIL", "admin@quecombi.local"),
         os.environ.get("TRACCAR_PASSWORD", "cambiame-ya"))  # change in Traccar UI + export TRACCAR_PASSWORD
@@ -70,7 +70,7 @@ def main():
     if not coords:
         raise SystemExit("no positions in that window — check times (local) and the device id")
 
-    out = ROOT / "data" / "geojson" / "field"
+    out = ROOT / "resources" / "data" / "geojson" / "field"
     out.mkdir(parents=True, exist_ok=True)
     gj = {"type": "FeatureCollection",
           "properties": {"source": "field ride (Traccar)", "device": args.device,

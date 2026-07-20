@@ -10,15 +10,15 @@ import math
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-CSV = ROOT / "data" / "master_route_index.csv"
+ROOT = Path(__file__).resolve().parents[2]
+CSV = ROOT / "resources" / "data" / "master_route_index.csv"
 MLON = 111320 * math.cos(math.radians(18.462)); MLAT = 110570
 MERGE_MAX = 60.0
 DISTINCT_MIN = 100.0
 
 
 def load_geo():
-    js = (ROOT / "app" / "routes.js").read_text().split("const ROUTES = ", 1)[1].rstrip().rstrip(";")
+    js = (ROOT / "resources" / "map-data" / "routes.js").read_text().split("const ROUTES = ", 1)[1].rstrip().rstrip(";")
     return {f["properties"]["id"]: f for f in json.loads(js)["features"]}
 
 

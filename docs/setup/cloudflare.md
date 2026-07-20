@@ -15,7 +15,7 @@ nameservers → set them at your registrar (replaces the registrar's DNS). Wait 
 Dashboard → Workers & Pages → **Create → Pages → Connect to Git** → pick the
 GitHub repo (`mauriciotellezdev/mitehuacan` — see production-stack.md §2).
 
-- Build command: `python3 scripts/06_build_map.py && python3 scripts/12_build_sponsors.py && python3 scripts/09_build_site.py`
+- Build command: `python3 src/scripts/06_build_map.py && python3 src/scripts/12_build_sponsors.py && python3 src/scripts/09_build_site.py`
 - Build output directory: `site`
 - The `functions/` directory at repo root deploys automatically (analytics
   middleware, /system, /api/*).

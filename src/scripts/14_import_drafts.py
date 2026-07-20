@@ -12,7 +12,7 @@ from pathlib import Path
 
 import requests
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 BASE = os.environ.get("QUECOMBI_BASE", "https://mitehuacan.pages.dev")
 TOKEN = os.environ.get("QUECOMBI_STATS_TOKEN")
 
@@ -31,7 +31,7 @@ def main():
     if not drafts:
         raise SystemExit("no drafts to import")
 
-    out = ROOT / "data" / "geojson" / "field"
+    out = ROOT / "resources" / "data" / "geojson" / "field"
     out.mkdir(parents=True, exist_ok=True)
     for d in drafts:
         row = requests.get(f"{BASE}/api/route-drafts", params={"slug": d["slug"]}, headers=h, timeout=30).json()

@@ -32,5 +32,5 @@ build/
 .wrangler/
 # admin app checkout — its own repo: github.com/augmentedmike/mitehuacan-admin
 /admin/
-poi/denue_puebla.csv
+resources/poi/denue_puebla.csv
 .vercel

@@ -20,7 +20,7 @@ the client's offline buffering still covers mobile-data dead zones. Export a rid
 
 ```bash
 export QUECOMBI_STATS_TOKEN=...   # the Pages STATS_TOKEN secret
-python3 scripts/13_traccar_export.py --device mauricio-1 \
+python3 src/scripts/13_traccar_export.py --device mauricio-1 \
   --from "2026-07-15T09:00" --to "2026-07-15T10:20" --slug tecoxteo-coxcatlan-ida
 ```
 
@@ -81,7 +81,7 @@ Leave the service on for ~5 min at home, watch the device go green in the web UI
 ## 4. Into the dataset
 
 ```bash
-python3 scripts/13_traccar_export.py \
+python3 src/scripts/13_traccar_export.py \
   --device mauricio-1 --from "2026-07-15T09:00" --to "2026-07-15T10:20" \
   --slug tecoxteo-coxcatlan-ida
 ```

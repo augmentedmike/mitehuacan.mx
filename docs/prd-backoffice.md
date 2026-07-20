@@ -143,7 +143,7 @@ Every write endpoint inserts one row. `/system` gets a "Bitácora" table (last 2
 - `/system/map` editor: load a device+time window, trim, Douglas-Peucker
   simplify, OSRM street-align, name it, save to `route_drafts`.
 - `/system/combis`: lines with schedule/fare, drafts attach/detach.
-- `scripts/14_import_drafts.py`: drafts → dataset.
+- `src/scripts/14_import_drafts.py`: drafts → dataset.
 - `reports` table fed by the public "reporta una ruta" form.
 
 ### 2.2 Gaps to close
@@ -258,10 +258,10 @@ Sticker IDs are pre-printed; the table is seeded when a batch is generated.
 ### 3.3 Endpoints
 ```
 GET  /api/stickers            admin/instalador: list + filters (status, batch, route)
-POST /api/stickers/batch      admin: {prefix, count, batch} → seeded rows
-POST /api/stickers/install    instalador: {id, route_id, unit_desc?, notes?}
-POST /api/stickers/status     admin/instalador: {id, status, notes?}   (retire/dead override)
-GET  /api/stickers/stats      admin: joins hits.qr — per-sticker scans 7/30d, last_scan;
+POST /api/resources/stickers/batch      admin: {prefix, count, batch} → seeded rows
+POST /api/resources/stickers/install    instalador: {id, route_id, unit_desc?, notes?}
+POST /api/resources/stickers/status     admin/instalador: {id, status, notes?}   (retire/dead override)
+GET  /api/resources/stickers/stats      admin: joins hits.qr — per-sticker scans 7/30d, last_scan;
                               refreshes last_scan/scans_30d; flips installed→verified
 ```
 Public side: nothing new — `/qr/*` already tracks. (Per-sticker deep links to a
@@ -363,7 +363,7 @@ for whichever token validates):
 /system/patrocinios sponsors + locations + placards    (new, patrocinios)
 ```
 All pages: same nocturne-admin styling as today, `noindex`, token gate,
-phone-first layouts for stickers/patrocinios (those crews are standing in a
+phone-first layouts for resources/stickers/patrocinios (those crews are standing in a
 combi/store, not at a desk).
 
 KPI strip on the hub: routes published/review/retired · drafts pending ·
@@ -467,8 +467,8 @@ watchPosition, localStorage buffer + batch upload with retry, PARADA button,
 end-ride -> link to /map). Verify on the staging admin app from a phone.
 
 /goal Build the stickers module per docs/prd-backoffice.md §3 (single STATS_TOKEN
-auth per §10): /api/stickers list, /api/stickers/batch, /api/stickers/install,
-/api/stickers/status, /api/stickers/stats (auto-verify installed->verified from
+auth per §10): /api/stickers list, /api/resources/stickers/batch, /api/resources/stickers/install,
+/api/resources/stickers/status, /api/resources/stickers/stats (auto-verify installed->verified from
 hits.qr, dead = verified with 0 scans in 30d), plus /system/stickers phone-first
 page with a printable QR batch sheet (client-side QR, 7x7cm grid, urls
 https://mitehuacan.mx/qr/<id>). Tables exist (migration 0011).

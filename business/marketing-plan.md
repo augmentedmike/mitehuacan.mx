@@ -30,7 +30,7 @@ occupancy.
   *accelerant* of a close — not a substitute for the 3–5 visits most closes
   will take.
 - **DENUE prospect lists** — 28,727 located, categorized businesses; per-route
-  door-knock sheets already generated (`prospects/*.csv`). "A
+  door-knock sheets already generated (`resources/prospects/*.csv`). "A
   legitimate operational advantage most local startups skip."
 - **Measurable from day one** — impressions, taps, scans, DAU charted daily.
 - **Phase 0 QR loop** — organic rider acquisition at zero ad spend. "The right
@@ -113,7 +113,7 @@ prospects have had a first visit and its warm leads are in follow-up:
    adjacency, harvest-season sensitivity.
 
 **The funnel, with adversarial math.** ~250 businesses per corridor shortlist
-(from `prospects/`), of which priority categories ≈ 80–120.
+(from `resources/prospects/`), of which priority categories ≈ 80–120.
 
 - Visits: 2 field afternoons/week (heat-realistic), 6–8 visits/afternoon
   → **~55/month**, months 1–3 partially consumed by territory learning.
@@ -244,8 +244,8 @@ January and September renewals; December = collect prepays for the year.**
 
 ## 10. Product asks (updated queue)
 
-1. ~~Prospect list generator~~ ✅ **shipped** (`scripts/18_prospects.py`
-   → `prospects/*.csv`, per-route door-knock sheets).
+1. ~~Prospect list generator~~ ✅ **shipped** (`src/scripts/18_prospects.py`
+   → `resources/prospects/*.csv`, per-route door-knock sheets).
 2. **WhatsApp button on sponsor pin panel** — the review's highest-leverage
    point; makes the pin ring the owner's phone. *(Small.)*
 3. **Per-sponsor stats page** — shareable "your month" link for renewals.

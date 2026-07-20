@@ -6,7 +6,7 @@ import re
 import unicodedata
 from pathlib import Path
 
-BASE = Path(__file__).resolve().parent.parent / "data"
+BASE = Path(__file__).resolve().parents[2] / "resources" / "data"
 GTFS = BASE / "gtfs"
 GTFS.mkdir(parents=True, exist_ok=True)
 FETCH_DATE = "2026-07-14"

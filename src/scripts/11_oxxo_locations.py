@@ -19,10 +19,10 @@ from pathlib import Path
 
 import requests
 
-ROOT = Path(__file__).resolve().parents[1]  # repo root
-RAW_PATH = ROOT / "data" / "raw" / "osm" / "oxxo_raw.json"
-OUT_JSON = ROOT / "data" / "sponsors" / "oxxo_locations.json"
-OUT_GEOJSON = ROOT / "data" / "sponsors" / "oxxo_locations.geojson"
+ROOT = Path(__file__).resolve().parents[2]  # repo root
+RAW_PATH = ROOT / "resources" / "data" / "raw" / "osm" / "oxxo_raw.json"
+OUT_JSON = ROOT / "resources" / "data" / "sponsors" / "oxxo_locations.json"
+OUT_GEOJSON = ROOT / "resources" / "data" / "sponsors" / "oxxo_locations.geojson"
 
 # bbox (S, W, N, E): network boundary + pan margin
 BBOX = (18.216, -97.651, 18.705, -97.139)

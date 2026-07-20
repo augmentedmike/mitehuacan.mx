@@ -5,7 +5,7 @@
 1. Go to https://vercel.com/augmentedmike-7760s-projects/combis/settings
 2. Connect GitHub repo `augmentedmike/mitehuacan.mx`
 3. Set production branch = `main`
-4. Set output directory = `site/combis`
+4. Set output directory = `build/combis`
 5. Now every push to any branch gets an auto-preview URL
 6. Promotion to production: Vercel dashboard → promote a preview deployment manually (or merge to main if Git integration is set to auto-deploy main)
 
