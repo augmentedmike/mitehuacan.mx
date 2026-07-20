@@ -272,6 +272,12 @@ Got an idea for the portal? <a href="https://github.com/augmentedmike/mitehuacan
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MiTehuacán — el portal de Tehuacán, Puebla</title>
 <meta name="description" content="El portal de Tehuacán, Puebla: mapa y rutas de combis, y pronto tianguis en línea, empleos y rentas. Libre y gratuito.">
+<meta name="theme-color" content="#0a0b12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MiTehuacán">
+<link rel="manifest" href="/{SECTION}/manifest.json">
+<link rel="apple-touch-icon" href="/{SECTION}/icon-192.png">
 <link rel="canonical" href="{DOMAIN}/">
 <style>{home_css}</style>
 <script>window.TITLES={home_titles}</script>
