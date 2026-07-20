@@ -2655,6 +2655,15 @@ if (!location.hostname.endsWith('pages.dev')) {
   fetch('/api/pv?p=' + encodeURIComponent(location.pathname + location.search)).catch(() => {});
 }
 
+// DENUE (INEGI, Términos de Libre Uso): 28k+ registered establishments in the
+// service area — the layer that makes search city-complete. 2MB, so it loads
+// lazily after the app settles; search simply gets deeper when it arrives.
+setTimeout(() => {
+  const sc = document.createElement('script');
+  sc.src = 'denue.js';
+  document.head.appendChild(sc);
+}, 2500);
+
 // curated places from the field (admin /lugares) — refreshed on load, 60s edge cache
 let CURATED = [];
 fetch('/api/lugares').then(r => r.ok ? r.json() : {places: []})
@@ -2721,10 +2730,17 @@ async function runSugg(q) {
     .filter(x => x.s > 100).sort((a, b) => b.s - a.s).slice(0, 3);
   // commercial destinations: curated field captures first (searchable by alias,
   // ranked above the OSM harvest), then the weekly-agent OSM places. Search-only, never pins.
-  const allPl = CURATED.concat(typeof PLACES !== 'undefined' ? PLACES.places : []);
+  const allPl = CURATED.concat(typeof PLACES !== 'undefined' ? PLACES.places : [])
+    .concat(typeof DENUE !== 'undefined' ? DENUE.places : []);
+  const nqSquash = nq.replace(/ /g, '');
   const placeHits = allPl
-    .map(p => ({p, s: fuzzyScore(nq, norm(p.n + (p.a ? ' ' + p.a : ''))) + (p.cur ? 30 : 0)}))
-    .filter(x => x.s > 100).sort((a, b) => b.s - a.s).slice(0, 3);
+    .map(p => {
+      const base = norm(p.n + (p.a ? ' ' + p.a : ''));
+      // squashed variant: "radioshack" must find "Radio Shack"
+      const sc = Math.max(fuzzyScore(nq, base), fuzzyScore(nqSquash, base.replace(/ /g, '')));
+      return {p, s: sc + (p.cur ? 30 : 0)};
+    })
+    .filter(x => x.s > 100).sort((a, b) => b.s - a.s).slice(0, 4);
   mlSugg.innerHTML = '';
   // matched routes rank above location results
   routes.forEach(({p}) => mlSugg.appendChild(suggRow(

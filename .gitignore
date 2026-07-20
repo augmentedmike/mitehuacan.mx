@@ -32,3 +32,4 @@ build/
 .wrangler/
 # graduated to github.com/augmentedmike/mitehuacan-admin
 /backoffice/
+tehuacan/poi/denue_puebla.csv
