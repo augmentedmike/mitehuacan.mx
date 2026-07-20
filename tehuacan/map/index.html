@@ -757,6 +757,13 @@ const GEOCTL = new maplibregl.GeolocateControl({
   positionOptions: {enableHighAccuracy: true, timeout: 8000}, trackUserLocation: true, showUserHeading: true,
 });
 map.addControl(GEOCTL, 'top-right');
+// maplibre 4.7 bug: a watch error while the control is in BACKGROUND state
+// throws "Unexpected watchState BACKGROUND_ERROR" — swallow it (our own toast
+// already reports the failure to the user)
+if (GEOCTL._onError) {
+  const _oe = GEOCTL._onError.bind(GEOCTL);
+  GEOCTL._onError = e => { try { _oe(e); } catch (err) {} };
+}
 /* LOCATION STATE MODEL — one source of truth, strict priority:
    1. BLUEDOT (in-memory): the locate control's live watch stream. While it's
       set, NOBODY else may call the geolocation API (iOS "Allow Once" re-prompts
