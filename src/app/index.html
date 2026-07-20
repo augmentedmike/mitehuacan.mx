@@ -577,6 +577,8 @@ const I18N = {
     noGeom: 'No hay geometría de rutas cargada.',
     longWalk: 'Ninguna ruta mapeada pasa cerca de ambos puntos — te mostramos las combis más cercanas de todos modos. Es posible que a la ruta real le falte un tramo en nuestros datos (mapeados en 2023).',
     walkTo: s => 'Camina ' + s + ' al abordaje',
+    boardNear: 'Súbete ahí mismo',
+    alightNear: 'te deja enfrente',
     transferTxt: (s, w) => 'transbordo (' + s + ' a pie' + w + ')',
     direct: 'directo',
     rideTxt: s => '~' + s + ' en combi',
@@ -673,6 +675,8 @@ const I18N = {
     noGeom: 'No route geometry loaded.',
     longWalk: "No mapped route passes near both points — we're showing the nearest combis anyway. The real route may be missing a stretch in our data (mapped in 2023).",
     walkTo: s => 'Walk ' + s + ' to board',
+    boardNear: 'Board right where you are',
+    alightNear: 'drops you right there',
     transferTxt: (s, w) => 'transfer (' + s + ' on foot' + w + ')',
     direct: 'direct',
     rideTxt: s => '~' + s + ' by combi',
@@ -947,6 +951,9 @@ function routePairMinDist(r1, r2) {
 
 /* ---------- trip search ---------- */
 const WALK_MAX = 700, WALK_FAR = 1300, TRANSFER_MAX = 400;
+// under ~50m a meter count reads wrong — "walk 30 m" IS "cross the street"
+const walkPhrase = m => m < 50 ? t('boardNear') : t('walkTo')(fmt(m));
+const alightPhrase = m => m < 50 ? t('alightNear') : t('alightTxt')(fmt(m));
 
 function findTrips(A, B) {
   const Am = mx(A), Bm = mx(B);
@@ -1542,9 +1549,9 @@ function renderTripSheet() {
       return '<span class="swatch" style="background:' + p.color + '"></span>' + p.name;
     }).join(' <span style="color:var(--ink-2)">→</span> ');
     const eta = nextCombiAt(o.legs[0], o.boardAt);
-    const meta = t('walkTo')(fmt(o.walkA)) + ' · ' +
+    const meta = walkPhrase(o.walkA) + ' · ' +
       (o.type === 'transfer' ? t('transferTxt')(fmt(o.transfer), '') + ' · ' : t('direct') + ' · ') +
-      t('rideTxt')(fmt(o.ride)) + ' · ' + t('alightTxt')(fmt(o.walkB)) +
+      t('rideTxt')(fmt(o.ride)) + ' · ' + alightPhrase(o.walkB) +
       (eta && !eta.done ? ' · <b style="color:var(--ok)">' + t('etaShort')(Math.max(1, Math.round(eta.wait))) + '</b>' : '') +
       (o.alts && o.alts.length ? '<br>' + t('alsoRoutes') + [...new Set(o.alts)].map(id => routeById(id).name).join(', ') : '');
     return '<div class="opt" data-i="' + i + '"><div class="legs">' + legs + '</div><div class="meta">' + meta + '</div></div>';
@@ -1598,10 +1605,10 @@ function fillTripDetail(i) {
   }).join('');
   box.innerHTML =
     '<div class="dt-note" style="margin-bottom:4px"><b>' + t('tripDetail') + '</b></div>' +
-    shRow(S_PIN2, t('walkTo')(fmt(o.walkA)),
+    shRow(S_PIN2, walkPhrase(o.walkA),
           eta && !eta.done ? t('etaShort')(Math.max(1, Math.round(eta.wait))) : '') +
     (o.type === 'transfer' ? shRow(S_ROUTE, t('transferTxt')(fmt(o.transfer), ''), '') : '') +
-    shRow(S_PIN2, t('alightTxt')(fmt(o.walkB)), '') +
+    shRow(S_PIN2, alightPhrase(o.walkB), '') +
     legRows;
 }
 
@@ -1822,9 +1829,9 @@ function runSearch() {
     const warn = m => m > WALK_MAX ? ' <span class="wmark">!</span>' : '';
     const eta = nextCombiAt(o.legs[0], o.boardAt);
     d.innerHTML = '<div class="legs">' + legs + '</div>' +
-      '<div class="meta">' + t('walkTo')(fmt(o.walkA) + warn(o.walkA)) + ' · ' +
+      '<div class="meta">' + (o.walkA < 50 ? t('boardNear') : t('walkTo')(fmt(o.walkA) + warn(o.walkA))) + ' · ' +
       (o.type === 'transfer' ? t('transferTxt')(fmt(o.transfer), o.transfer > TRANSFER_MAX ? ' <span class="wmark">!</span>' : '') + ' · ' : t('direct') + ' · ') +
-      t('rideTxt')(fmt(o.ride)) + ' · ' + t('alightTxt')(fmt(o.walkB) + warn(o.walkB)) +
+      t('rideTxt')(fmt(o.ride)) + ' · ' + (o.walkB < 50 ? t('alightNear') : t('alightTxt')(fmt(o.walkB) + warn(o.walkB))) +
       (eta && !eta.done ? ' · <b style="color:var(--ok)">' + t('etaShort')(Math.max(1, Math.round(eta.wait))) + '</b>' : '') +
       (o.alts && o.alts.length ? '<br>' + t('alsoRoutes') + [...new Set(o.alts)].map(id => routeById(id).name).join(', ') : '') +
       '</div>';
