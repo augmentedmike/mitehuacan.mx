@@ -2596,6 +2596,11 @@ document.getElementById('sheet').addEventListener('click', e => {
 /* unified search: routes -> known places (colonias/towns) -> geocoder fallback
    (streets, parks, landmarks). Picking a place highlights the routes serving it. */
 let SUG_T = null, SRCH_MARKER = null;
+// curated places from the field (admin /lugares) — refreshed on load, 60s edge cache
+let CURATED = [];
+fetch('/api/lugares').then(r => r.ok ? r.json() : {places: []})
+  .then(d => { CURATED = (d.places || []).map(p => ({...p, cur: 1})); })
+  .catch(() => {});
 const mlSugg = document.getElementById('ml-sugg');
 const hideSugg = () => { mlSugg.hidden = true; };
 
@@ -2655,9 +2660,11 @@ async function runSugg(q) {
   const poiHits = (typeof POIS !== 'undefined' ? POIS.pois : [])
     .map((p, idx) => ({p, idx, s: fuzzyScore(nq, norm(p.n))}))
     .filter(x => x.s > 100).sort((a, b) => b.s - a.s).slice(0, 3);
-  // commercial destinations (OSM via the weekly refresh agent) — search-only, never pins
-  const placeHits = (typeof PLACES !== 'undefined' ? PLACES.places : [])
-    .map(p => ({p, s: fuzzyScore(nq, norm(p.n))}))
+  // commercial destinations: curated field captures first (searchable by alias,
+  // ranked above the OSM harvest), then the weekly-agent OSM places. Search-only, never pins.
+  const allPl = CURATED.concat(typeof PLACES !== 'undefined' ? PLACES.places : []);
+  const placeHits = allPl
+    .map(p => ({p, s: fuzzyScore(nq, norm(p.n + (p.a ? ' ' + p.a : ''))) + (p.cur ? 30 : 0)}))
     .filter(x => x.s > 100).sort((a, b) => b.s - a.s).slice(0, 3);
   mlSugg.innerHTML = '';
   // matched routes rank above location results
