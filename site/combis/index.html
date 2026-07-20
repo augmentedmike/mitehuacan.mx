@@ -1955,6 +1955,40 @@ map.on('load', () => {
       map.addImage('sp-' + sid, img.data, {pixelRatio: 2});
     } catch (e) { /* logo missing: pins just won't render */ }
   });
+  // live sponsor pins: the admin's D1 (signed contract or barter = published)
+  // overrides/extends the static seed within 5 min of a change — no deploy.
+  // Route matching runs here, where the geometry lives; sponsors without a
+  // shipped logo asset get a generated letter badge.
+  fetch('/api/sponsor-pins').then(r => r.ok ? r.json() : null).then(d => {
+    if (!d || !d.sponsors || !Object.keys(d.sponsors).length) return;
+    const byRoute = {};
+    Object.entries(d.sponsors).forEach(([sid, s]) => {
+      SPONSORS.sponsors[sid] = SPONSORS.sponsors[sid] || {name: s.name};
+      s.locs.forEach(l => {
+        const ptM = mx([l[0], l[1]]);
+        flat.forEach(rt => {
+          if (rt.pts.length > 1 && nearest(ptM, rt).d <= 150) {
+            ((byRoute[rt.id] = byRoute[rt.id] || {})[sid] =
+              byRoute[rt.id][sid] || []).push(l);
+          }
+        });
+      });
+      if (!map.hasImage('sp-' + sid)) {
+        const cv = document.createElement('canvas');
+        cv.width = cv.height = 56;
+        const cx = cv.getContext('2d');
+        cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(28, 28, 27, 0, 7); cx.fill();
+        cx.fillStyle = '#4476ff'; cx.beginPath(); cx.arc(28, 28, 24, 0, 7); cx.fill();
+        cx.fillStyle = '#fff'; cx.font = '800 26px system-ui';
+        cx.textAlign = 'center'; cx.textBaseline = 'middle';
+        cx.fillText(((s.name || sid).trim()[0] || '?').toUpperCase(), 28, 30);
+        try { map.addImage('sp-' + sid, cx.getImageData(0, 0, 56, 56), {pixelRatio: 2}); } catch (e) {}
+      }
+    });
+    Object.entries(byRoute).forEach(([rid, m]) => {
+      SPONSORS.by_route[rid] = Object.assign({}, SPONSORS.by_route[rid], m);
+    });
+  }).catch(() => {});
   map.addLayer({
     id: 'routes-casing', type: 'line', source: 'routes',
     layout: {'line-cap': 'round', 'line-join': 'round'},

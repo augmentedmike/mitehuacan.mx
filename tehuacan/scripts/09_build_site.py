@@ -294,8 +294,8 @@ Got an idea for the portal? <a href="https://github.com/augmentedmike/mitehuacan
 
     # ---- redirects (QR stickers + legacy paths), robots, sitemap
     (SITE / "_redirects").write_text(
-        f"# QR stickers: never break a printed code. Sticker IDs map here forever.\n"
-        f"/qr/* /{SECTION}/?qr=:splat 302\n"
+        f"# QR stickers resolve via functions/qr/[id].js (route deep-links); no\n"
+        f"# static rule here — Pages _redirects would shadow the function.\n"
         f"# legacy: route pages removed 2026-07 -> deep-link into the map\n"
         f"/tehuacan/rutas/* /{SECTION}/?ruta=:splat 301\n"
         f"/tehuacan/mapa/* /{SECTION}/ 301\n"

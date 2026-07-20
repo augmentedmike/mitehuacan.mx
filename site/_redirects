@@ -1,5 +1,5 @@
-# QR stickers: never break a printed code. Sticker IDs map here forever.
-/qr/* /combis/?qr=:splat 302
+# QR stickers resolve via functions/qr/[id].js (route deep-links); no
+# static rule here — Pages _redirects would shadow the function.
 # legacy: route pages removed 2026-07 -> deep-link into the map
 /tehuacan/rutas/* /combis/?ruta=:splat 301
 /tehuacan/mapa/* /combis/ 301

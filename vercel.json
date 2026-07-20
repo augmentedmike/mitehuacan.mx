@@ -3,9 +3,7 @@
   "outputDirectory": "site/combis",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://mitehuacan.pages.dev/api/:path*" }
-  ],
-  "redirects": [
-    { "source": "/qr/:id", "destination": "/?qr=:id", "permanent": false }
+    { "source": "/api/:path*", "destination": "https://mitehuacan.pages.dev/api/:path*" },
+    { "source": "/qr/:id", "destination": "https://mitehuacan.pages.dev/qr/:id" }
   ]
 }
