@@ -2640,6 +2640,10 @@ async function runSugg(q) {
     .filter(x => x.s > 100).sort((a, b) => b.s - a.s).slice(0, 5);
   const places = PLACE_INDEX.map(pl => ({pl, s: fuzzyScore(nq, norm(pl.label))}))
     .filter(x => x.s > 100).sort((a, b) => b.s - a.s || b.pl.ids.size - a.pl.ids.size).slice(0, 3);
+  // our own public-service POIs (schools, health, gov) are part of the index too
+  const poiHits = (typeof POIS !== 'undefined' ? POIS.pois : [])
+    .map((p, idx) => ({p, idx, s: fuzzyScore(nq, norm(p.n))}))
+    .filter(x => x.s > 100).sort((a, b) => b.s - a.s).slice(0, 3);
   mlSugg.innerHTML = '';
   // matched routes rank above location results
   routes.forEach(({p}) => mlSugg.appendChild(suggRow(
@@ -2650,8 +2654,16 @@ async function runSugg(q) {
     '<span style="flex:none;color:var(--ink-2)">' + S_PIN2 + '</span><span style="flex:1">' + pl.label + '</span>' +
     '<span class="tag">' + t('nearTag')(pl.ids.size, pl.farKm) + '</span>',
     () => { hideSugg(); setSearchLabel(pl.label); highlightRoutes([...pl.ids], pl.label); openDestPanel(pl.label, null); })));
+  poiHits.forEach(({p, idx}) => {
+    const ids = Object.keys(POIS.by_route).filter(rid => POIS.by_route[rid].includes(idx)).slice(0, 6);
+    mlSugg.appendChild(suggRow(
+      '<span style="flex:none;width:10px;height:10px;border-radius:50%;background:' +
+        (POI_COLORS[p.k] || 'var(--accent)') + ';margin:0 3px"></span><span style="flex:1">' + p.n + '</span>' +
+      '<span class="tag">' + t('nearTag')(ids.length, 0) + '</span>',
+      () => { hideSugg(); setSearchLabel(p.n); highlightRoutes(ids, p.n, p.c); openDestPanel(p.n, p.c); }));
+  });
   mlSugg.hidden = mlSugg.children.length === 0;
-  if (places.length + routes.length < 2 && q.length >= 3) {
+  if (places.length + routes.length + poiHits.length < 2 && q.length >= 2) {
     // instant feedback while the geocoder round-trips (cold networks take
     // seconds — a silent hidden dropdown reads as "search is broken")
     const loading = document.createElement('div');
@@ -2663,7 +2675,9 @@ async function runSugg(q) {
     const res = await geocode(q + ', Tehuacán');
     loading.remove();
     if (document.getElementById('ml-search').value.trim() !== q) return;  // stale response
-    res.slice(0, 4).forEach(r => {
+    const seenGeo = new Set();
+    res.filter(r => { const k = r.name + '|' + r.detail; if (seenGeo.has(k)) return false; seenGeo.add(k); return true; })
+       .slice(0, 4).forEach(r => {
       const ptM = mx(r.c);
       const near = flat.map(rt => ({id: rt.id, d: nearest(ptM, rt).d})).sort((a, b) => a.d - b.d);
       let ids = near.filter(x => x.d <= 700).map(x => x.id);
