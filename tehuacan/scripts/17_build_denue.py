@@ -69,11 +69,17 @@ KIND = [
     ("imprenta", "imprenta"), ("rotulación", "rótulos"), ("publicidad", "publicidad"),
     ("cerrajer", "cerrajería"), ("mudanzas", "mudanzas"),
 ]
-# activities that don't help a rider find a destination
-SKIP = ("crianza", "cultivo", "explotación", "minería", "fabricación", "confección en serie",
-        "elaboración de", "servicios de apoyo a los negocios", "captación, tratamiento",
-        "generación", "transmisión", "autotransporte de carga", "edificación",
-        "instalaciones eléctricas en construcciones", "trabajos de")
+# EVERYTHING listed ships (a maquiladora is a commute destination); these map
+# the formerly-skipped activity families to honest chips instead of dropping them
+SKIP = ()
+WORK = [
+    ("fabricación", "fábrica"), ("confección", "fábrica"), ("maquil", "fábrica"),
+    ("elaboración de", "fábrica"), ("crianza", "granja"), ("cultivo", "campo"),
+    ("explotación", "granja"), ("minería", "minera"), ("edificación", "construcción"),
+    ("trabajos de", "construcción"), ("instalaciones", "construcción"),
+    ("autotransporte", "transporte"), ("captación", "servicio de agua"),
+    ("generación", "energía"), ("transmisión", "energía"),
+]
 
 
 def kind_for(act):
@@ -93,7 +99,10 @@ def kind_for(act):
         return "servicio"
     if a.startswith("consultorios") or "médic" in a or "salud" in a:
         return "salud"
-    return None
+    for needle, k in WORK:
+        if needle in a:
+            return k
+    return "negocio"
 
 
 def main():
