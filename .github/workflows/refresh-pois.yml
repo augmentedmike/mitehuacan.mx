@@ -32,6 +32,9 @@ jobs:
           cp /tmp/denue/conjunto_de_datos/denue_inegi_21_.csv resources/poi/denue_puebla.csv
           python3 src/scripts/17_build_denue.py
 
+      - name: refresh streets + intersections (OSM)
+        run: python3 src/scripts/20_build_streets.py
+
       - name: rebuild site
         run: python3 src/scripts/09_build_site.py
 

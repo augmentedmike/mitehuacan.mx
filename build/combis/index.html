@@ -342,6 +342,9 @@
            padding: 10px 16px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
            opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 90vw; text-align: center; }
   #toast.show { opacity: 1; }
+  .abin { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid var(--line); border-radius: 10px;
+          background: var(--chip); color: var(--ink); font: inherit; font-size: 16px; }
+  .ab-chk { display: flex; gap: 8px; align-items: center; font-size: 13.5px; color: var(--ink-2); margin: 8px 0; }
   /* first-run intro: popover card + pulsing ring around the current step's control */
   #intro { position: fixed; margin: 0; width: min(290px, calc(100vw - 28px)); z-index: 95;
            background: var(--panel); color: var(--ink); border: 1px solid var(--line);
@@ -519,6 +522,14 @@ const I18N = {
     builtBy: 'Hecho por Tylt',
     routesServing: (n, l) => n + (n === 1 ? ' ruta pasa por ' : ' rutas pasan por ') + '“' + l + '”',
     tripDetail: 'Detalles del viaje',
+    addBiz: '¿Es tu negocio? Agrégalo gratis',
+    addBizTitle: 'Agregar negocio al mapa',
+    addBizName: 'Nombre del negocio',
+    addBizKind: 'Tipo (tienda, comida, ropa…)',
+    addBizContact: 'WhatsApp o Instagram (para confirmarte)',
+    addBizHere: 'Usar mi ubicación actual',
+    addBizSend: 'Enviar',
+    addBizOk: '¡Gracias! Lo revisamos y aparece en el mapa en 1–2 días.',
     introLoc: 'Toca aquí para ubicarte en el mapa',
     introSearch: 'Escribe a dónde vas — por ejemplo “Walmart”',
     introPick: 'Elige un resultado de la lista',
@@ -615,6 +626,14 @@ const I18N = {
     builtBy: 'Built by Tylt',
     routesServing: (n, l) => n + (n === 1 ? ' route serves ' : ' routes serve ') + '“' + l + '”',
     tripDetail: 'Trip details',
+    addBiz: 'Is this your business? Add it free',
+    addBizTitle: 'Add a business to the map',
+    addBizName: 'Business name',
+    addBizKind: 'Type (tienda, comida, ropa…)',
+    addBizContact: 'WhatsApp or Instagram (so we can confirm)',
+    addBizHere: 'Use my current location',
+    addBizSend: 'Send',
+    addBizOk: 'Thanks! We review it and it shows on the map in 1–2 days.',
     introLoc: 'Tap here to find yourself on the map',
     introSearch: 'Type where you’re going — e.g. “Walmart”',
     introPick: 'Pick a result from the list',
@@ -947,6 +966,12 @@ function routePairMinDist(r1, r2) {
 
 /* ---------- trip search ---------- */
 const WALK_MAX = 700, WALK_FAR = 1300, TRANSFER_MAX = 400;
+// mexican street abbreviations: "reforma nte y 16 ote" -> "reforma norte y 16 oriente"
+const expandAbbr = s => s
+  .replace(/\bnte\.?\b/g, 'norte').replace(/\bote\.?\b/g, 'oriente')
+  .replace(/\bpte\.?\b/g, 'poniente').replace(/\bav\.?\b/g, 'avenida')
+  .replace(/\bblvd\.?\b/g, 'bulevar').replace(/\bcalz\.?\b/g, 'calzada')
+  .replace(/\bpriv\.?\b/g, 'privada').replace(/\bcda\.?\b/g, 'cerrada');
 
 function findTrips(A, B) {
   const Am = mx(A), Bm = mx(B);
@@ -1656,6 +1681,43 @@ function hasKnownLocation() {
     const c = JSON.parse(localStorage.mtLoc || 'null');
     return !!(c && Date.now() - c.ts < 3 * 60 * 1000);
   } catch (e) { return false; }
+}
+
+function openAddBiz(prefill) {
+  // the Instagram-only long tail registers itself: pending row -> admin approval
+  const el = document.getElementById('sheet2');
+  el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
+    '<div class="sh-head"><span class="tile" style="background:var(--accent);color:#fff">' + S_PIN2 + '</span>' +
+    '<span class="sh-name"><b>' + t('addBizTitle') + '</b></span>' +
+    '<button class="iconbtn" id="ab-close">' + S_X + '</button></div>' +
+    '<input id="ab-name" class="abin" placeholder="' + t('addBizName') + '" maxlength="80" value="' +
+      String(prefill || '').replace(/"/g, '&quot;') + '">' +
+    '<input id="ab-kind" class="abin" placeholder="' + t('addBizKind') + '" maxlength="24">' +
+    '<input id="ab-contact" class="abin" placeholder="' + t('addBizContact') + '" maxlength="120">' +
+    '<input id="ab-web" style="display:none" tabindex="-1" autocomplete="off">' +
+    '<label class="ab-chk"><input id="ab-here" type="checkbox" checked> ' + t('addBizHere') + '</label>' +
+    '<button class="sh-cta" id="ab-send">' + t('addBizSend') + '</button>' +
+    '<div class="dt-note" id="ab-msg" style="margin-top:8px"></div>';
+  el.style.maxHeight = '';
+  el.classList.remove('min');
+  el.classList.add('show');
+  document.getElementById('ab-close').onclick = () => el.classList.remove('show');
+  document.getElementById('ab-send').onclick = async () => {
+    const body = {name: document.getElementById('ab-name').value,
+                  kind: document.getElementById('ab-kind').value,
+                  contact: document.getElementById('ab-contact').value,
+                  website: document.getElementById('ab-web').value};
+    if (document.getElementById('ab-here').checked) {
+      try { const c = await getMyLocation(); body.lon = c[0]; body.lat = c[1]; } catch (e) {}
+    }
+    const r = await fetch('/api/sugerencias', {method: 'POST',
+      headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+    const d = await r.json().catch(() => ({}));
+    document.getElementById('ab-msg').innerHTML = d.error
+      ? '<span style="color:#ff7b6b">' + d.error + '</span>'
+      : '<span style="color:var(--ok, #4ade80)">' + t('addBizOk') + '</span>';
+    if (!d.error) { track('biz_suggest', body.name); setTimeout(() => el.classList.remove('show'), 2600); }
+  };
 }
 
 async function openDestPanel(label, coords) {
@@ -2662,9 +2724,11 @@ if (!location.hostname.endsWith('pages.dev')) {
 // service area — the layer that makes search city-complete. 2MB, so it loads
 // lazily after the app settles; search simply gets deeper when it arrives.
 setTimeout(() => {
-  const sc = document.createElement('script');
-  sc.src = 'denue.js';
-  document.head.appendChild(sc);
+  for (const f of ['denue.js', 'calles.js']) {
+    const sc = document.createElement('script');
+    sc.src = f;
+    document.head.appendChild(sc);
+  }
 }, 2500);
 
 // curated places from the field (admin /lugares) — refreshed on load, 60s edge cache
@@ -2762,6 +2826,35 @@ async function runSugg(q) {
       '<span class="tag">' + t('nearTag')(ids.length, 0) + '</span>',
       () => { hideSugg(); setSearchLabel(p.n); highlightRoutes(ids, p.n, p.c, POI_COLORS[p.k]); openDestPanel(p.n, p.c); }));
   });
+  // streets + esquinas: every query token must appear ("reforma norte 16 oriente"
+  // matches "16 Oriente y Reforma Norte" regardless of order or the missing "y")
+  let calleHits = [];
+  if (typeof CALLES !== 'undefined') {
+    const toks = expandAbbr(nq).split(/\s+/).filter(w => w && w !== 'y' && w !== 'con' && w !== 'esquina' && w !== 'esq');
+    if (toks.length) {
+      const pool = CALLES.cruces.concat(CALLES.streets);
+      calleHits = pool
+        .map(p => { const h = norm(p.n); return {p, ok: toks.every(w => /^\d+$/.test(w) ? new RegExp('\\b' + w + '\\b').test(h) : h.includes(w)), cruce: p.n.includes(' y ')}; })
+        .filter(x => x.ok)
+        .sort((a, b) => (b.cruce ? 1 : 0) - (a.cruce ? 1 : 0) || a.p.n.length - b.p.n.length)
+        .slice(0, toks.length >= 2 ? 3 : 2);
+    }
+  }
+  calleHits.forEach(({p}) => {
+    mlSugg.appendChild(suggRow(
+      '<span style="flex:none;color:var(--ink-2)">' + S_ROUTE + '</span><span style="flex:1">' + p.n + '</span>' +
+      '<span class="tag">' + (p.n.includes(' y ') ? 'esquina' : 'calle') + '</span>',
+      () => {
+        hideSugg();
+        setSearchLabel(p.n);
+        const ptM = mx(p.c);
+        const near = flat.map(rt => ({id: rt.id, d: nearest(ptM, rt).d})).sort((a, b) => a.d - b.d);
+        let ids = near.filter(x => x.d <= 400).map(x => x.id).slice(0, 6);
+        if (!ids.length) ids = near.slice(0, 3).map(x => x.id);
+        highlightRoutes(ids, p.n, p.c);
+        openDestPanel(p.n, p.c);
+      }));
+  });
   placeHits.forEach(({p}) => {
     mlSugg.appendChild(suggRow(
       '<span style="flex:none;color:var(--ink-2)">' + S_PIN2 + '</span><span style="flex:1">' + p.n + '</span>' +
@@ -2778,7 +2871,7 @@ async function runSugg(q) {
       }));
   });
   mlSugg.hidden = mlSugg.children.length === 0;
-  if (places.length + routes.length + poiHits.length + placeHits.length < 2 && q.length >= 2) {
+  if (places.length + routes.length + poiHits.length + placeHits.length + calleHits.length < 2 && q.length >= 2) {
     // instant feedback while the geocoder round-trips (cold networks take
     // seconds — a silent hidden dropdown reads as "search is broken")
     const loading = document.createElement('div');
@@ -2787,7 +2880,7 @@ async function runSugg(q) {
     loading.textContent = t('searching');
     mlSugg.appendChild(loading);
     mlSugg.hidden = false;
-    const res = await geocode(q + ', Tehuacán');
+    const res = await geocode(expandAbbr(q) + ', Tehuacán');
     loading.remove();
     if (document.getElementById('ml-search').value.trim() !== q) return;  // stale response
     const seenGeo = new Set();
@@ -2810,6 +2903,14 @@ async function runSugg(q) {
       none.style.color = 'var(--ink-2)';
       none.textContent = t('noResults') + ' \u201C' + q + '\u201D';
       mlSugg.appendChild(none);
+      const add = document.createElement('div');
+      add.className = 'it';
+      add.style.color = 'var(--accent)';
+      add.style.fontWeight = '700';
+      add.textContent = t('addBiz');
+      add.onpointerdown = e => { e.preventDefault(); hideSugg(); openAddBiz(q); };
+      add.onmousedown = e => { e.preventDefault(); hideSugg(); openAddBiz(q); };
+      mlSugg.appendChild(add);
     }
     mlSugg.hidden = false;
   }
@@ -2891,7 +2992,7 @@ async function runDeskSugg(q) {
   loading.textContent = t('searching');
   dSugg.appendChild(loading);
   dSugg.hidden = false;
-  const res = await geocode(q + ', Tehuacán');
+  const res = await geocode(expandAbbr(q) + ', Tehuacán');
   loading.remove();
   if (document.getElementById('search').value.trim() !== q) return;  // stale response
   res.slice(0, 4).forEach(r => {
