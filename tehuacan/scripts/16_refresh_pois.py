@@ -34,15 +34,52 @@ ENDPOINTS = [
 ]
 UA = "mitehuacan.mx data refresh (github.com/augmentedmike/mitehuacan.mx; augmentedmike@gmail.com)"
 
-# commercial categories worth searching for a combi trip destination
-SHOPS = "supermarket|convenience|department_store|mall|wholesale|variety_store|doityourself|hardware"
-AMENITIES = "bank|pharmacy|marketplace|fuel|cinema|bus_station"
-PLACE_KIND = {  # tag value -> short label shown in the suggestion chip
+# places = EVERY named destination OSM knows in the service area, minus what's
+# already in the public-services layer (pois.js) and minus street furniture.
+PUBLIC_AMENITIES = ("school|kindergarten|college|university|townhall|courthouse|police|"
+                    "post_office|hospital|clinic|library")
+NOISE_AMENITIES = ("bench|waste_basket|waste_disposal|shelter|parking|parking_space|"
+                   "parking_entrance|toilets|drinking_water|fountain|recycling|"
+                   "vending_machine|telephone|atm|charging_station|bicycle_parking|"
+                   "motorcycle_parking|loading_dock|hunting_stand|clock|post_box")
+PLACE_KIND = {  # known tag values -> short Spanish chip; anything else shows its raw tag
     "supermarket": "súper", "convenience": "tienda", "department_store": "tienda",
     "mall": "plaza", "wholesale": "súper", "variety_store": "tienda",
     "doityourself": "ferretería", "hardware": "ferretería",
     "bank": "banco", "pharmacy": "farmacia", "marketplace": "mercado",
     "fuel": "gasolinera", "cinema": "cine", "bus_station": "terminal",
+    "place_of_worship": "iglesia", "restaurant": "restaurante", "fast_food": "comida",
+    "cafe": "café", "bar": "bar", "hotel": "hotel", "guest_house": "hotel",
+    "attraction": "atracción", "museum": "museo", "park": "parque",
+    "sports_centre": "deportivo", "stadium": "estadio", "pitch": "cancha",
+    "swimming_pool": "alberca", "bakery": "panadería", "butcher": "carnicería",
+    "clothes": "ropa", "shoes": "zapatería", "furniture": "muebles",
+    "electronics": "electrónica", "mobile_phone": "celulares", "car_repair": "taller",
+    "veterinary": "veterinaria", "dentist": "dentista", "doctors": "consultorio",
+    # ropa / belleza
+    "boutique": "ropa", "fabric": "telas", "tailor": "sastrería", "jewelry": "joyería",
+    "bag": "bolsas", "cosmetics": "belleza", "beauty": "belleza", "hairdresser": "estética",
+    "perfumery": "perfumería", "massage": "spa", "optician": "óptica",
+    # comida / abarrotes
+    "greengrocer": "frutería", "seafood": "mariscos", "deli": "abarrotes",
+    "dairy": "lechería", "confectionery": "dulcería", "ice_cream": "nieves",
+    "alcohol": "vinos y licores", "beverages": "bebidas", "water": "purificadora",
+    "kiosk": "tienda", "general": "abarrotes", "food_court": "comida", "pub": "bar",
+    # salud
+    "chemist": "farmacia", "medical_supply": "equipo médico", "laboratory": "laboratorio",
+    "physiotherapist": "fisioterapia", "alternative": "medicina alt.",
+    "optometrist": "óptica", "midwife": "partera", "psychotherapist": "psicología",
+    "childcare": "guardería", "social_facility": "asistencia social",
+    # servicios / otros
+    "stationery": "papelería", "books": "librería", "toys": "juguetería",
+    "pet": "mascotas", "sports": "deportes", "gift": "regalos", "florist": "florería",
+    "photo": "fotografía", "copyshop": "copias", "internet_cafe": "ciber",
+    "laundry": "lavandería", "dry_cleaning": "tintorería", "travel_agency": "viajes",
+    "funeral_directors": "funeraria", "car_parts": "refacciones", "tyres": "llantera",
+    "motorcycle": "motos", "bicycle": "bicicletas", "paint": "pinturas",
+    "driving_school": "autoescuela", "music_school": "música", "dance": "danza",
+    "events_venue": "salón de eventos", "nightclub": "antro",
+    "community_centre": "centro comunitario", "marketplace": "mercado",
 }
 
 
@@ -87,12 +124,17 @@ out center 6000;"""
 
 def fetch_places(bbox):
     s, w, n, e = bbox
-    q = f"""[out:json][timeout:90];
+    q = f"""[out:json][timeout:120];
 (
-  nwr["shop"~"^({SHOPS})$"]["name"]({s},{w},{n},{e});
-  nwr["amenity"~"^({AMENITIES})$"]["name"]({s},{w},{n},{e});
+  nwr["name"]["shop"]({s},{w},{n},{e});
+  nwr["name"]["amenity"]["amenity"!~"^({PUBLIC_AMENITIES}|{NOISE_AMENITIES})$"]({s},{w},{n},{e});
+  nwr["name"]["tourism"]({s},{w},{n},{e});
+  nwr["name"]["leisure"]({s},{w},{n},{e});
+  nwr["name"]["office"]["office"!="government"]({s},{w},{n},{e});
+  nwr["name"]["craft"]({s},{w},{n},{e});
+  nwr["name"]["healthcare"]["healthcare"!~"^(hospital|clinic|centre)$"]({s},{w},{n},{e});
 );
-out center 6000;"""
+out center 12000;"""
     return overpass(q)
 
 
@@ -103,10 +145,13 @@ def build_places(raw):
         name = (tags.get("name") or "").strip()
         if not name:
             continue
-        kind = tags.get("shop") or tags.get("amenity")
-        k = PLACE_KIND.get(kind)
-        if not k:
+        kind = (tags.get("shop") or tags.get("amenity") or tags.get("healthcare") or
+                tags.get("tourism") or tags.get("leisure") or tags.get("office") or
+                tags.get("craft") or "")
+        if not kind:
             continue
+        # unknown categories keep their raw tag as the chip — everything named stays findable
+        k = PLACE_KIND.get(kind, kind.replace("_", " ")[:18])
         lon = el.get("lon") or (el.get("center") or {}).get("lon")
         lat = el.get("lat") or (el.get("center") or {}).get("lat")
         if lon is None:

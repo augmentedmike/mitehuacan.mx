@@ -1026,7 +1026,7 @@ async function geocode(q) {
       detail: [f.properties.street, f.properties.district, f.properties.city, f.properties.state]
               .filter(Boolean).join(', '),
       c: f.geometry.coordinates
-    })).filter(x => Math.abs(x.c[0] + 97.4) < 0.5 && Math.abs(x.c[1] - 18.46) < 0.5);
+    })).filter(x => Math.abs(x.c[0] + 97.4) < 0.28 && Math.abs(x.c[1] - 18.46) < 0.28);  // service area only — 0.5 let Orizaba through
     if (res.length) return res;
   } catch (e) { /* fall through */ }
   try {
@@ -1286,6 +1286,8 @@ function openSpotPanel(type, f) {
   const el = document.getElementById('sheet');
   const prev = TRIP ? {kind: 'trip'} : (SHEET ? {kind: 'route', id: SHEET, mode: SHEET_MODE} : null);
   const pr = f.properties;
+  // impressions are sponsor_view (route sheet render); this is the harder signal — a tap
+  track(type === 'sponsor' ? 'sponsor_tap' : 'poi_select', pr.n || pr.label || pr.sponsor || '');
   let head;
   if (type === 'sponsor') {
     const s = (typeof SPONSORS !== 'undefined' && (SPONSORS.sponsors || {})[pr.sponsor]) || {name: pr.sponsor || ''};
