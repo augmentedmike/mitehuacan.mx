@@ -1,7 +1,9 @@
-# The periodic POI agent: re-pulls OSM for the whole service area (derived
-# from the route network) every week and ships the diff. Pushing to main
-# redeploys mitehuacan.mx automatically (Vercel is git-connected); the
-# Cloudflare mirror catches up on the next manual deploy.
+# The periodic data agent: re-pulls OSM + DENUE for the whole service area
+# (derived from the route network) every week and ships the diff.
+# main is a protected branch (PRs only), so the agent commits to dev and
+# opens/reuses a promote PR — data reaches the domain on Mike's one-click
+# approval. To restore full autonomy: add github-actions to the protection
+# rule's bypass list and this same workflow will merge its own PR.
 name: refresh-pois
 on:
   schedule:
@@ -13,10 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: dev
           fetch-depth: 0
 
       - name: refresh POI + places data from OSM
@@ -32,7 +35,9 @@ jobs:
       - name: rebuild site
         run: python3 tehuacan/scripts/09_build_site.py
 
-      - name: commit and push if the data changed
+      - name: commit to dev and open promote PR if data changed
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "mitehuacan data agent"
           git config user.email "augmentedmike@gmail.com"
@@ -41,9 +46,13 @@ jobs:
             echo "no data changes this week"
             exit 0
           fi
-          git commit -m "pois: weekly osm refresh (automated agent)"
-          git push origin main
-          # keep dev in sync so the next feature branch starts from fresh data
-          git checkout dev
-          git merge main --no-edit
+          git commit -m "pois: weekly osm + denue refresh (automated agent)"
           git push origin dev
+          # main is protected: surface the change as a promote PR (reuse if open)
+          if ! gh pr list --base main --head dev --state open --json number --jq '.[0].number' | grep -q .; then
+            gh pr create --base main --head dev \
+              --title "promote: weekly data refresh (automated agent)" \
+              --body "Weekly OSM + DENUE refresh from the data agent. Approve to ship the fresh data to the domain."
+          else
+            echo "open dev->main PR already exists; refresh is included in it"
+          fi
