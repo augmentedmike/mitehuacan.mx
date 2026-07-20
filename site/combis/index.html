@@ -1122,8 +1122,10 @@ function setSponsorPins(routeIds) {
 // selection-driven like sponsor pins, but these are free placements
 const POI_COLORS = {edu: '#2ecc71', salud: '#e05252', gob: '#9b79d4'};
 function setPoiPins(routeIds) {
-  // POIs exist on the map ONLY while a route is selected — the selected route's
-  // services, full strength, nothing else
+  // POLICY (2026-07-19): pins appear ONLY when (a) the user searched for the
+  // place — rendered as a dot marker by dropSearchDot — or (b) it's a paid
+  // sponsorship (logo pins). Route selection never auto-populates POI dots.
+  routeIds = [];
   const src = map.getSource('poi-pins');
   if (!src || typeof POIS === 'undefined' || !map.getLayer('poi-pins')) return;
   const seen = new Set();
@@ -2619,18 +2621,24 @@ function setSearchLabel(label) {
   if (document.body.dataset.mview === 'list') renderCards();
 }
 
-function highlightRoutes(ids, label, lnglat) {
+function dropSearchDot(c, label, color) {
+  // searched places render as a small dot (sponsors get logos; nothing else gets pins)
+  if (SRCH_MARKER) { SRCH_MARKER.remove(); SRCH_MARKER = null; }
+  const el = document.createElement('div');
+  el.style.cssText = 'width:15px;height:15px;border-radius:50%;background:' + (color || 'var(--accent)') +
+    ';border:2.5px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.45)';
+  SRCH_MARKER = new maplibregl.Marker({element: el}).setLngLat(c)
+    .setPopup(new maplibregl.Popup({closeButton: false, offset: 14}).setText(label)).addTo(map);
+  SRCH_MARKER.togglePopup();
+}
+
+function highlightRoutes(ids, label, lnglat, dotColor) {
   if (typeof clearTrip === 'function') clearTrip();
   M.chips = ids.map(id => ({id, on: true}));
   mSetView('map');
   mApply(true);
   if (SRCH_MARKER) { SRCH_MARKER.remove(); SRCH_MARKER = null; }
-  if (lnglat) {
-    SRCH_MARKER = new maplibregl.Marker({color: '#f5a623'}).setLngLat(lnglat)
-      .setPopup(new maplibregl.Popup({closeButton: false, offset: 18}).setText(label))
-      .addTo(map);
-    SRCH_MARKER.togglePopup();
-  }
+  if (lnglat) dropSearchDot(lnglat, label, dotColor);
   track('town_select', label);
 }
 
@@ -2667,7 +2675,7 @@ async function runSugg(q) {
       '<span style="flex:none;width:10px;height:10px;border-radius:50%;background:' +
         (POI_COLORS[p.k] || 'var(--accent)') + ';margin:0 3px"></span><span style="flex:1">' + p.n + '</span>' +
       '<span class="tag">' + t('nearTag')(ids.length, 0) + '</span>',
-      () => { hideSugg(); setSearchLabel(p.n); highlightRoutes(ids, p.n, p.c); openDestPanel(p.n, p.c); }));
+      () => { hideSugg(); setSearchLabel(p.n); highlightRoutes(ids, p.n, p.c, POI_COLORS[p.k]); openDestPanel(p.n, p.c); }));
   });
   placeHits.forEach(({p}) => {
     mlSugg.appendChild(suggRow(
@@ -2756,8 +2764,7 @@ if (isMobile()) {
     const inp = document.getElementById('ml-search');
     if (inp && !inp.value) inp.value = SEL_LABEL;
     if (SEL_C) {
-      SRCH_MARKER = new maplibregl.Marker({color: '#f5a623'}).setLngLat(SEL_C)
-        .setPopup(new maplibregl.Popup({closeButton: false, offset: 18}).setText(SEL_LABEL)).addTo(map);
+      dropSearchDot(SEL_C, SEL_LABEL);
       if (!M.chips.length) {
         // an active trip empties the chips before saving — recompute the serving
         // routes from the destination so the reload shows the same picture
