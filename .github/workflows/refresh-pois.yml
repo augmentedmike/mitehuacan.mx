@@ -1,0 +1,42 @@
+# The periodic POI agent: re-pulls OSM for the whole service area (derived
+# from the route network) every week and ships the diff. Pushing to main
+# redeploys mitehuacan.mx automatically (Vercel is git-connected); the
+# Cloudflare mirror catches up on the next manual deploy.
+name: refresh-pois
+on:
+  schedule:
+    - cron: "17 9 * * 1"   # mondays 09:17 UTC (03:17 in Tehuacán)
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: refresh POI + places data from OSM
+        run: python3 tehuacan/scripts/16_refresh_pois.py
+
+      - name: rebuild site
+        run: python3 tehuacan/scripts/09_build_site.py
+
+      - name: commit and push if the data changed
+        run: |
+          git config user.name "mitehuacan data agent"
+          git config user.email "augmentedmike@gmail.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "no data changes this week"
+            exit 0
+          fi
+          git commit -m "pois: weekly osm refresh (automated agent)"
+          git push origin main
+          # keep dev in sync so the next feature branch starts from fresh data
+          git checkout dev
+          git merge main --no-edit
+          git push origin dev

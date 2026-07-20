@@ -11,6 +11,7 @@
 <script src="routes.js"></script>
 <script src="sponsors.js"></script>
 <script src="pois.js"></script>
+<script src="places.js"></script>
 <style>
   /* light: apple-glass · dark: "nocturne" (claude-designer redesign) */
   :root {
@@ -2644,6 +2645,10 @@ async function runSugg(q) {
   const poiHits = (typeof POIS !== 'undefined' ? POIS.pois : [])
     .map((p, idx) => ({p, idx, s: fuzzyScore(nq, norm(p.n))}))
     .filter(x => x.s > 100).sort((a, b) => b.s - a.s).slice(0, 3);
+  // commercial destinations (OSM via the weekly refresh agent) — search-only, never pins
+  const placeHits = (typeof PLACES !== 'undefined' ? PLACES.places : [])
+    .map(p => ({p, s: fuzzyScore(nq, norm(p.n))}))
+    .filter(x => x.s > 100).sort((a, b) => b.s - a.s).slice(0, 3);
   mlSugg.innerHTML = '';
   // matched routes rank above location results
   routes.forEach(({p}) => mlSugg.appendChild(suggRow(
@@ -2662,8 +2667,23 @@ async function runSugg(q) {
       '<span class="tag">' + t('nearTag')(ids.length, 0) + '</span>',
       () => { hideSugg(); setSearchLabel(p.n); highlightRoutes(ids, p.n, p.c); openDestPanel(p.n, p.c); }));
   });
+  placeHits.forEach(({p}) => {
+    mlSugg.appendChild(suggRow(
+      '<span style="flex:none;color:var(--ink-2)">' + S_PIN2 + '</span><span style="flex:1">' + p.n + '</span>' +
+      '<span class="tag">' + p.k + '</span>',
+      () => {
+        hideSugg();
+        setSearchLabel(p.n);
+        const ptM = mx(p.c);
+        const near = flat.map(rt => ({id: rt.id, d: nearest(ptM, rt).d})).sort((a, b) => a.d - b.d);
+        let ids = near.filter(x => x.d <= 400).map(x => x.id).slice(0, 6);
+        if (!ids.length) ids = near.slice(0, 3).map(x => x.id);
+        highlightRoutes(ids, p.n, p.c);
+        openDestPanel(p.n, p.c);
+      }));
+  });
   mlSugg.hidden = mlSugg.children.length === 0;
-  if (places.length + routes.length + poiHits.length < 2 && q.length >= 2) {
+  if (places.length + routes.length + poiHits.length + placeHits.length < 2 && q.length >= 2) {
     // instant feedback while the geocoder round-trips (cold networks take
     // seconds — a silent hidden dropdown reads as "search is broken")
     const loading = document.createElement('div');
