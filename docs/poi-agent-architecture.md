@@ -186,7 +186,7 @@ tehuacan/
     gmaps_add.json             — pending additions (output)
     gmaps_remove.json          — pending removals (output)
     gmaps_seen.json            — dedup tracking (Google Place IDs checked + dates)
-  scripts/
+  src/scripts/
     20_poi_gmaps_crawl.py      — the crawl agent itself
     21_poi_gmaps_prune.py      — the pruning agent
     22_poi_gmaps_merge.py      — merge GMaps data into the build pipeline

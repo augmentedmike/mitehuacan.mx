@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-BASE = Path(__file__).resolve().parent.parent / "data"
+BASE = Path(__file__).resolve().parents[2] / "resources" / "data"
 
 # brandings confirmed from external sources beyond the route's own display name
 # (moovit line descriptors, primeralinea.com.mx article, 2026-07-14)

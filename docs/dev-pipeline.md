@@ -16,10 +16,10 @@ Vercel = frontend preview mirror. Cloudflare = staging + production + all data.
    plane, so schedules/fares/sponsor pins render real values. HTTPS → location
    services testable on the phone. Frontend-only: no local D1, no admin.
 3. **Cloudflare staging** (backend-real): rebuild then
-   `bunx wrangler pages deploy site --branch staging` → staging.mitehuacan.pages.dev.
+   `bunx wrangler pages deploy build --branch staging` → staging.mitehuacan.pages.dev.
    Use for anything touching functions/, migrations, redirects.
 4. **Promote to production**: merge dev → main, push, then
-   `bunx wrangler pages deploy site --branch main`. The domain serves this.
+   `bunx wrangler pages deploy build --branch main`. The domain serves this.
 5. **Admin app** deploys independently:
    `cd backoffice && bunx wrangler pages deploy public --project-name mitehuacan-admin --branch main`.
 
@@ -33,7 +33,7 @@ Staging deploys can NEVER touch production data — different database, enforced
 by per-environment bindings in both wrangler.toml files.
 
 ## Rules of thumb
-- Never edit `site/` by hand — it's generated (`scripts/09_build_site.py`).
+- Never edit `site/` by hand — it's generated (`src/scripts/09_build_site.py`).
 - Data files (routes/sponsors/pois) regenerate via scripts 06/12/15 before 09.
 - Vercel "production" (main) is NOT the product's production — Cloudflare is.
   Vercel main deploys are just the stable preview of main.

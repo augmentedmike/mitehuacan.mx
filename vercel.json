@@ -1,6 +1,6 @@
 {
   "buildCommand": "",
-  "outputDirectory": "site/combis",
+  "outputDirectory": "build/combis",
   "cleanUrls": true,
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://mitehuacan.pages.dev/api/:path*" },

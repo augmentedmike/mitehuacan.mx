@@ -16,9 +16,9 @@ import json
 import shutil
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent          # repo root
+ROOT = Path(__file__).resolve().parents[2]          # repo root
 REPO = ROOT
-SITE = REPO / "site"
+SITE = REPO / "build"
 DOMAIN = "https://mitehuacan.mx"
 SECTION = "combis"
 CITY_NAME = "Tehuacán"
@@ -176,7 +176,14 @@ def main():
     if SITE.exists():
         shutil.rmtree(SITE)
     SITE.mkdir(parents=True)
-    shutil.copytree(ROOT / "app", SITE / SECTION)
+    shutil.copytree(ROOT / "src" / "app", SITE / SECTION)
+    # generated data artifacts live apart from source; merge them into the build
+    for item in (ROOT / "resources" / "map-data").iterdir():
+        dest = SITE / SECTION / item.name
+        if item.is_dir():
+            shutil.copytree(item, dest)
+        else:
+            shutil.copy2(item, dest)
 
     # ---- homepage: the town portal — brand page with one card per section.
     # Combis is live; the rest launch later. Add a card here when a section ships.

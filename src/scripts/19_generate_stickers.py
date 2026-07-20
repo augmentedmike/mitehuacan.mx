@@ -22,13 +22,13 @@ import os
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 QR_BASE = os.environ.get("QR_BASE_URL", "https://mitehuacan.mx/qr/")
 
 
 def get_top_routes(n=10):
     """Return highest-prospect-density routes from prospects/_summary.csv."""
-    summary = ROOT / "prospects" / "_summary.csv"
+    summary = ROOT / "resources" / "prospects" / "_summary.csv"
     if not summary.exists():
         print("warning: prospects/_summary.csv not found — no route assignment", file=sys.stderr)
         return []
@@ -39,7 +39,7 @@ def get_top_routes(n=10):
 
 def get_route_display(route_key):
     """Look up display_name from master_route_index.csv."""
-    idx = ROOT / "data" / "master_route_index.csv"
+    idx = ROOT / "resources" / "data" / "master_route_index.csv"
     for r in csv.DictReader(idx.open()):
         if r["route_key"] == route_key:
             return r["display_name"]
@@ -114,7 +114,7 @@ def main():
     ap = argparse.ArgumentParser(description="Generate QR sticker batch")
     ap.add_argument("--batch", required=True, help='batch id, e.g. "2026-07-A"')
     ap.add_argument("--count", type=int, default=50, help="number of stickers in this batch")
-    ap.add_argument("--outdir", default=str(ROOT / "stickers"), help="output directory")
+    ap.add_argument("--outdir", default=str(ROOT / "resources" / "stickers"), help="output directory")
     ap.add_argument("--route", help="assign all stickers to this route id")
     ap.add_argument("--top-10", action="store_true", help="distribute across top 10 routes by prospect density")
     args = ap.parse_args()

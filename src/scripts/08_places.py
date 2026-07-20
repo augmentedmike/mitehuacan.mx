@@ -7,7 +7,7 @@ from pathlib import Path
 
 import requests
 
-BASE = Path(__file__).resolve().parent.parent / "data"
+BASE = Path(__file__).resolve().parents[2] / "resources" / "data"
 UA = {"User-Agent": "combi-tracker research (contact: augmentedmike@gmail.com)"}
 
 # proximity thresholds by place type (meters): big places have big footprints
@@ -20,7 +20,7 @@ def strip_accents(s):
 
 
 def main():
-    routes = json.loads((BASE.parent / "app" / "routes.js").read_text().split("const ROUTES = ", 1)[1].rstrip().rstrip(";"))
+    routes = json.loads((BASE.parent / "resources" / "map-data" / "routes.js").read_text().split("const ROUTES = ", 1)[1].rstrip().rstrip(";"))
     feats = routes["features"]
 
     # bbox of all geometry + ~4 km pad

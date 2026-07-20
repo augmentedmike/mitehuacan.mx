@@ -6,7 +6,7 @@ from pathlib import Path
 
 import requests
 
-BASE = Path(__file__).resolve().parent.parent / "data"
+BASE = Path(__file__).resolve().parents[2] / "resources" / "data"
 RAW = BASE / "raw" / "osm"
 GEO = BASE / "geojson" / "osm"
 GEO.mkdir(parents=True, exist_ok=True)

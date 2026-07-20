@@ -8,7 +8,7 @@ from pathlib import Path
 
 import requests
 
-BASE = Path(__file__).resolve().parent.parent / "data"
+BASE = Path(__file__).resolve().parents[2] / "resources" / "data"
 RAW = BASE / "raw" / "queruta"
 (RAW / "pages").mkdir(parents=True, exist_ok=True)
 

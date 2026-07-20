@@ -1,4 +1,4 @@
-# Plan: split app/index.html into shell + ES modules + i18n files
+# Plan: split src/app/index.html into shell + ES modules + i18n files
 
 Status: plan v1 · 2026-07-19 · produced by a planning agent from the real file
 (2,439 lines), the build script, data-file headers, and deploy docs.

@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 build_pois = importlib.import_module("15_build_pois")
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 WALK_M = 150  # sponsor pin rule: the storefront must be right on the route
 
 # category -> sales priority (1 = knock first). Phase-1 foot-traffic targets.
@@ -41,10 +41,10 @@ def load(js_path, const_name):
 def main():
     routes = build_pois.load_routes()
     to_m = build_pois.meter_space(18.462)
-    places = load("app/denue.js", "DENUE")["places"] + load("app/places.js", "PLACES")["places"]
+    places = load("resources/map-data/denue.js", "DENUE")["places"] + load("resources/map-data/places.js", "PLACES")["places"]
 
     want = set(sys.argv[1:])
-    outdir = ROOT / "prospects"
+    outdir = ROOT / "resources" / "prospects"
     outdir.mkdir(exist_ok=True)
     summary = []
 

@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 
-BASE = Path(__file__).resolve().parent.parent / "data"
+BASE = Path(__file__).resolve().parents[2] / "resources" / "data"
 RAW = BASE / "raw" / "rutastehuacan"
 GEO = BASE / "geojson" / "rutastehuacan"
 GEO.mkdir(parents=True, exist_ok=True)

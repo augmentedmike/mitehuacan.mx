@@ -4,7 +4,7 @@ import json
 import re
 from pathlib import Path
 
-BASE = Path(__file__).resolve().parent.parent / "data"
+BASE = Path(__file__).resolve().parents[2] / "resources" / "data"
 PAGES = BASE / "raw" / "queruta" / "pages"
 GEO = BASE / "geojson" / "queruta"
 GEO.mkdir(parents=True, exist_ok=True)
