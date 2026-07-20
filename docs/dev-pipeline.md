@@ -33,7 +33,7 @@ Staging deploys can NEVER touch production data — different database, enforced
 by per-environment bindings in both wrangler.toml files.
 
 ## Rules of thumb
-- Never edit `site/` by hand — it's generated (`tehuacan/scripts/09_build_site.py`).
+- Never edit `site/` by hand — it's generated (`scripts/09_build_site.py`).
 - Data files (routes/sponsors/pois) regenerate via scripts 06/12/15 before 09.
 - Vercel "production" (main) is NOT the product's production — Cloudflare is.
   Vercel main deploys are just the stable preview of main.

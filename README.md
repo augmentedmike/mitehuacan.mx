@@ -12,8 +12,8 @@ per city: `/tehuacan`; QR stickers resolve via `/qr/<sticker-id>` and never brea
 | Path | What |
 |---|---|
 | `tehuacan/` | Complete Tehuacán route dataset (82 routes, 80 with geometry), scrape/normalize pipeline, provenance docs |
-| `tehuacan/map/` | The web map: route explorer + A→B combi trip planner (MapLibre + OpenFreeMap, no keys, no Google) |
-| `site/` | Generated mitehuacan.mx static site (landing, city hub, 82 per-route SEO pages, map, `_redirects` for QR) — rebuild with `tehuacan/scripts/09_build_site.py` |
+| `app/` | The web map: route explorer + A→B combi trip planner (MapLibre + OpenFreeMap, no keys, no Google) |
+| `site/` | Generated mitehuacan.mx static site (landing, city hub, 82 per-route SEO pages, map, `_redirects` for QR) — rebuild with `scripts/09_build_site.py` |
 | `docs/system-design.md` | Interview-style system design: DAU math, Tier 0 ($0/mo) and Tier 1 (~$30/mo) architectures, diagrams |
 | `PRD.md` | Coordinator web app (Traccar-based ride collection pipeline) |
 | `PRD-mobile.md` | Mobile app spec: planner + passive telemetry + crowding tags |
@@ -34,4 +34,4 @@ cd tehuacan/map && python3 -m http.server 8123
 # open http://localhost:8123 — needs internet for basemap tiles + geocoding
 ```
 
-Dataset rebuild: `tehuacan/scripts/01…08` in order (see `tehuacan/README.md`).
+Dataset rebuild: `scripts/01…08` in order (see `tehuacan/README.md`).

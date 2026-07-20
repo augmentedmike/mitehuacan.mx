@@ -157,8 +157,8 @@ Run at a lower frequency than the add crawl (e.g., once per category per day). S
 The agent writes a **delta file** that the existing build pipeline can consume:
 
 ```
-tehuacan/poi/gmaps_add.json  — {n, c, k, google_place_id, google_types, source_url}
-tehuacan/poi/gmaps_remove.json  — {google_place_id, reason: closed|renamed|bogus}
+poi/gmaps_add.json  — {n, c, k, google_place_id, google_types, source_url}
+poi/gmaps_remove.json  — {google_place_id, reason: closed|renamed|bogus}
 ```
 
 The existing `15_build_pois.py` and `16_refresh_pois.py` get a new step: merge in GMaps additions before the route-proximity pass, and filter out removals.

@@ -30,7 +30,7 @@ build/
 # wrangler local dev
 .dev.vars
 .wrangler/
-# graduated to github.com/augmentedmike/mitehuacan-admin
-/backoffice/
-tehuacan/poi/denue_puebla.csv
+# admin app checkout — its own repo: github.com/augmentedmike/mitehuacan-admin
+/admin/
+poi/denue_puebla.csv
 .vercel

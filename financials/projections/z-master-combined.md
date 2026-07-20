@@ -14,7 +14,7 @@ All figures in MXN. Phases launch consecutively, 3 months apart. Revenue is addi
 | 28,727 registered businesses in service area | DENUE (INEGI) |
 | 80+ mapped combi routes | master_route_index.csv |
 | ~350,000 metro population | INEGI |
-| Facebook ad targeting Tehuacán | $1,000–3,000/mo (MARKETING.md) |
+| Facebook ad targeting Tehuacán | $1,000–3,000/mo (business/marketing-plan.md) |
 | Founding pin sponsorship | $250–400/mo per location |
 | Standard pin sponsorship | $500–800/mo per location |
 
