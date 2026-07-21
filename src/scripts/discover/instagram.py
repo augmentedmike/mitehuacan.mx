@@ -7,7 +7,7 @@ ALGORITHM: the web topsearch API with the signed-in session's cookies; keep
 users/places whose name references Tehuacán. VERIFY re-checks the profile URL
 for a live handle. DATA: resources/discovery/instagram.db
 """
-from lib import DiscoveryAgent, norm, SUBCATS   # shared taxonomy.json
+from lib import DiscoveryAgent, norm, SUBCATS, SEEDS   # shared taxonomy.json + seeds.txt
 
 # words that mark a personal account, not a business ("tehuacanero/a" = a person
 # from Tehuacán). A hit here drops the account.
@@ -22,10 +22,12 @@ class InstagramAgent(DiscoveryAgent):
     NEEDS_CONTEXT = True
 
     def build_plan(self):
-        # search "tehuacan <keyword>" so results are businesses in that category,
-        # not random people who happen to mention the city.
-        return [{"q": f"tehuacan {sub}", "cat": cat, "sub": sub, "label": f"{cat}/{sub}"}
+        # seed names first (search each known business by name), then the
+        # category sweep "tehuacan <keyword>".
+        seeds = [{"q": s, "cat": "seed", "sub": s, "seed": s, "label": f"seed/{s}"} for s in SEEDS]
+        cats = [{"q": f"tehuacan {sub}", "cat": cat, "sub": sub, "label": f"{cat}/{sub}"}
                 for cat, sub in SUBCATS]
+        return seeds + cats
 
     @staticmethod
     def _is_business(usr, full, handle):
@@ -47,18 +49,25 @@ class InstagramAgent(DiscoveryAgent):
             data = r.json()
         except Exception:  # noqa: BLE001
             self.attention(page, "instagram API returned non-JSON (login wall)")
+        seed = it.get("seed")
         out = []
         for u in data.get("users", []):
             usr = u.get("user", {})
             handle, full = usr.get("username", ""), usr.get("full_name", "")
             if not handle:
                 continue
-            # the query is already geo-scoped ("tehuacan <keyword>"), so keep any
-            # BUSINESS account it returns — don't require "tehuacan" in the name,
-            # or we drop local shops like Yoms! that don't brand with the city.
-            # national chains that slip in dedupe out against the map layers.
             if not self._is_business(usr, full, handle):
                 continue
+            # seed query: keep only accounts whose name/handle actually matches
+            # the seed brand (so "yoms" doesn't sweep in "yom sando").
+            if seed:
+                sn = norm(seed)
+                if not (norm(handle).startswith(sn) or norm(full).startswith(sn) or norm(full) == sn):
+                    continue
+            # category query is already geo-scoped ("tehuacan <keyword>"), so keep
+            # any business account — don't require "tehuacan" in the name, or we
+            # drop local shops like Yoms! that don't brand with the city. national
+            # chains that slip in dedupe out against the map layers.
             out.append({"key": "ig:" + handle, "name": (full or handle)[:80], "source": "instagram",
                         "category": it["cat"], "subcat": it["sub"], "handle": handle,
                         "url": f"https://instagram.com/{handle}", "lat": None, "lon": None})

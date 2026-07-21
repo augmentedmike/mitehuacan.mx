@@ -59,6 +59,12 @@ TAXONOMY = {k: v for k, v in json.loads(
     if not k.startswith("_")}
 SUBCATS = [(c, s) for c, subs in TAXONOMY.items() for s in subs]
 
+# Seed business names — searched directly by name (brand-named shops that don't
+# rank for category keywords, e.g. Yoms!). One per line in seeds.txt; # = comment.
+_seeds_f = Path(__file__).resolve().parent / "seeds.txt"
+SEEDS = [ln.strip() for ln in _seeds_f.read_text(encoding="utf-8").splitlines()
+         if ln.strip() and not ln.strip().startswith("#")] if _seeds_f.exists() else []
+
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
