@@ -36,6 +36,7 @@ class GoogleAgent(DiscoveryAgent):
     NAME = "google"
     START_URL = "https://www.google.com/maps"
     LOGIN_URL = "https://accounts.google.com/"
+    SESSION_COOKIE = "SID"
 
     def build_plan(self):
         return [{"where": lbl, "pt": pt, "cat": cat, "sub": sub,
