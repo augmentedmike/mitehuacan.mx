@@ -52,6 +52,10 @@ AGENTS = {
                    "desc": "Facebook events — fiestas & events per town (needs YOUR facebook session)"},
     "fb_events-verify": {"cmd": [PY, "src/scripts/discover/run.py", "fb_events", "--verify"],
                          "desc": "drop removed/cancelled events (prune)"},
+    "resolve":    {"cmd": [PY, "src/scripts/discover/resolve.py"],
+                   "desc": "backfill coords for no-coord businesses via Google Maps"},
+    "publish":    {"cmd": [PY, "src/scripts/23_publish_discovery.py"],
+                   "desc": "publish coord-bearing discovery places to the search layer"},
     "unify":      {"cmd": [PY, "src/scripts/discover/unify.py"],
                    "desc": "merge sources into one canonical place each (cross-source resolution)"},
     "denue-dl":   {"cmd": ["bash", "-c",
@@ -64,8 +68,9 @@ AGENTS = {
 # daily chain: refresh authoritative layers, sweep discovery, then prune
 CHAINS = {"full": ["osm", "denue-dl", "denue", "calles",
                    "google", "instagram", "facebook", "fb_events",
+                   "resolve",
                    "google-verify", "instagram-verify", "facebook-verify", "fb_events-verify",
-                   "unify"]}
+                   "unify", "publish"]}
 
 # data layers snapshotted before/after every run so the log records EXACTLY
 # what each agent added / removed / changed — the log is the archive
