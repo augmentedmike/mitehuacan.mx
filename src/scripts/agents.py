@@ -48,6 +48,10 @@ AGENTS = {
                          "desc": "re-check instagram handles, mark gone ones dead (prune)"},
     "facebook-verify":  {"cmd": [PY, "src/scripts/discover/run.py", "facebook", "--verify"],
                          "desc": "re-check facebook pages, mark gone ones dead (prune)"},
+    "fb_events":  {"cmd": [PY, "src/scripts/discover/run.py", "fb_events"],
+                   "desc": "Facebook events — fiestas & events per town (needs YOUR facebook session)"},
+    "fb_events-verify": {"cmd": [PY, "src/scripts/discover/run.py", "fb_events", "--verify"],
+                         "desc": "drop removed/cancelled events (prune)"},
     "unify":      {"cmd": [PY, "src/scripts/discover/unify.py"],
                    "desc": "merge sources into one canonical place each (cross-source resolution)"},
     "denue-dl":   {"cmd": ["bash", "-c",
@@ -59,8 +63,8 @@ AGENTS = {
 }
 # daily chain: refresh authoritative layers, sweep discovery, then prune
 CHAINS = {"full": ["osm", "denue-dl", "denue", "calles",
-                   "google", "instagram", "facebook",
-                   "google-verify", "instagram-verify", "facebook-verify",
+                   "google", "instagram", "facebook", "fb_events",
+                   "google-verify", "instagram-verify", "facebook-verify", "fb_events-verify",
                    "unify"]}
 
 # data layers snapshotted before/after every run so the log records EXACTLY
