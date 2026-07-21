@@ -8,8 +8,7 @@ DATA: resources/discovery/facebook.db
 """
 import re
 
-from lib import DiscoveryAgent, norm
-from gmaps import SUBCATS
+from lib import DiscoveryAgent, norm, SUBCATS   # shared taxonomy.json
 
 _JUNK = re.compile(r"^(me gusta|like|follow|seguir|compartir|share|ver|see|facebook|iniciar|log in)\b", re.I)
 

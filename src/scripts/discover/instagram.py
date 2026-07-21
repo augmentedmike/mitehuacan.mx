@@ -7,10 +7,11 @@ ALGORITHM: the web topsearch API with the signed-in session's cookies; keep
 users/places whose name references Tehuacán. VERIFY re-checks the profile URL
 for a live handle. DATA: resources/discovery/instagram.db
 """
-from lib import DiscoveryAgent, norm
-from gmaps import SUBCATS
+from lib import DiscoveryAgent, norm, SUBCATS   # shared taxonomy.json
 
-IG_BASE = ["tehuacan", "tehuacán", "tehuacanpuebla"]
+# words that mark a personal account, not a business ("tehuacanero/a" = a person
+# from Tehuacán). A hit here drops the account.
+PERSONAL = ("tehuacanero", "tehuacanera", "oficial fan", "fan page de", "mi vida", "team ")
 
 
 class InstagramAgent(DiscoveryAgent):
@@ -20,9 +21,19 @@ class InstagramAgent(DiscoveryAgent):
     NEEDS_CONTEXT = True
 
     def build_plan(self):
-        base = [{"q": t, "cat": "base", "sub": t, "label": f"base/{t}"} for t in IG_BASE]
-        return base + [{"q": f"{sub} tehuacan", "cat": cat, "sub": sub, "label": f"{cat}/{sub}"}
-                       for cat, sub in SUBCATS]
+        # search "tehuacan <keyword>" so results are businesses in that category,
+        # not random people who happen to mention the city.
+        return [{"q": f"tehuacan {sub}", "cat": cat, "sub": sub, "label": f"{cat}/{sub}"}
+                for cat, sub in SUBCATS]
+
+    @staticmethod
+    def _is_business(usr, full, handle):
+        if usr.get("is_private"):                 # businesses are public; skip private/personal
+            return False
+        low = (full + " " + handle).lower()
+        if any(p in low for p in PERSONAL):
+            return False
+        return True
 
     def scrape_item(self, page, context, it):
         r = context.request.get(
@@ -39,10 +50,16 @@ class InstagramAgent(DiscoveryAgent):
         for u in data.get("users", []):
             usr = u.get("user", {})
             handle, full = usr.get("username", ""), usr.get("full_name", "")
-            if handle and "tehuacan" in norm(handle) + norm(full):
-                out.append({"key": "ig:" + handle, "name": (full or handle)[:80], "source": "instagram",
-                            "category": it["cat"], "subcat": it["sub"], "handle": handle,
-                            "url": f"https://instagram.com/{handle}", "lat": None, "lon": None})
+            if not handle:
+                continue
+            # keep only Tehuacán-relevant BUSINESS accounts
+            if "tehuacan" not in norm(handle) + norm(full):
+                continue
+            if not self._is_business(usr, full, handle):
+                continue
+            out.append({"key": "ig:" + handle, "name": (full or handle)[:80], "source": "instagram",
+                        "category": it["cat"], "subcat": it["sub"], "handle": handle,
+                        "url": f"https://instagram.com/{handle}", "lat": None, "lon": None})
         for pl in data.get("places", []):
             loc = pl.get("place", {}).get("location", {})
             nm = loc.get("name", "")

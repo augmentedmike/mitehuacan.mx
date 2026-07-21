@@ -49,6 +49,13 @@ CHROME_BINS = [
     "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
 ]
 
+# Shared category taxonomy — one plain-text file every agent reads. Edit
+# taxonomy.json to change what all agents look for; no code changes.
+TAXONOMY = {k: v for k, v in json.loads(
+    (Path(__file__).resolve().parent / "taxonomy.json").read_text(encoding="utf-8")).items()
+    if not k.startswith("_")}
+SUBCATS = [(c, s) for c, subs in TAXONOMY.items() for s in subs]
+
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
