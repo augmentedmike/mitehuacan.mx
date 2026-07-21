@@ -16,9 +16,10 @@ import argparse
 import csv
 from pathlib import Path
 
+import numpy as np
 import qrcode
 from qrcode.constants import ERROR_CORRECT_H
-from PIL import Image
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[2]
 ART = Path("/Users/michaeloneal/Downloads/mapa-de-rutas.png")
@@ -30,9 +31,12 @@ SHEET_W_IN, SHEET_H_IN = 13, 19
 MARGIN_CM = 1.0
 GUTTER_CM = 0.5
 # the rounded border's INNER white area (measured from the artwork). The QR is
-# placed centered inside this with a clear margin so it never touches the border.
+# placed centered inside this. Its white is made transparent before compositing
+# and the placeholder is erased with a ROUNDED fill, so nothing paints over the
+# border's rounded corners.
 QR_INNER = (514, 510, 892, 890)        # x0,y0,x1,y1 in source-image px, center (703,700)
-QR_FILL = 0.70                         # QR side as a fraction of the inner box (rest = white margin)
+QR_FILL = 0.84                         # QR side as a fraction of the inner box
+QR_SHIFT_X = 2                         # nudge right
 
 
 def cm(v):
@@ -40,25 +44,30 @@ def cm(v):
 
 
 def make_qr(url):
+    """QR with its white made TRANSPARENT — only the black modules composite, so
+    the square background never covers the artwork/border."""
     q = qrcode.QRCode(error_correction=ERROR_CORRECT_H, box_size=10, border=2)
     q.add_data(url)
     q.make(fit=True)
-    return q.make_image(fill_color="black", back_color="white").convert("RGB")
+    img = np.array(q.make_image(fill_color="black", back_color="white").convert("RGBA"))
+    white = (img[:, :, 0] > 200) & (img[:, :, 1] > 200) & (img[:, :, 2] > 200)
+    img[white, 3] = 0
+    return Image.fromarray(img, "RGBA")
 
 
 def build_sticker(art, sticker_id):
     """Composite a unique QR into a copy of the artwork."""
     im = art.copy()
     x0, y0, x1, y1 = QR_INNER
-    # erase the placeholder QR inside the border (keeps the rounded border intact)
-    Image.Image.paste(im, (255, 255, 255), (x0, y0, x1, y1))
+    # erase the placeholder with a ROUNDED white fill so it never paints over the
+    # border's rounded corners (a square fill did — that was the corner clipping)
+    ImageDraw.Draw(im).rounded_rectangle((x0, y0, x1, y1), radius=44, fill=(255, 255, 255))
     box_w, box_h = x1 - x0, y1 - y0
     side = int(min(box_w, box_h) * QR_FILL)
     qr = make_qr(BASE_URL + sticker_id).resize((side, side), Image.NEAREST)
-    # centered in the inner box → equal white margin on all four sides
-    px = x0 + (box_w - side) // 2
+    px = x0 + (box_w - side) // 2 + QR_SHIFT_X
     py = y0 + (box_h - side) // 2
-    im.paste(qr, (px, py))
+    im.paste(qr, (px, py), qr)          # alpha mask: only black modules land
     return im
 
 
