@@ -1,8 +1,8 @@
 [
   {
     "name": "Ajalpan",
-    "lat": 18.43501,
-    "lon": -97.02475
+    "lat": 18.3783,
+    "lon": -97.25894
   },
   {
     "name": "Azumbilla",
@@ -17,8 +17,8 @@
   },
   {
     "name": "Coxcatlán",
-    "lat": 18.24972,
-    "lon": -97.13985
+    "lat": 18.26444,
+    "lon": -97.14639
   },
   {
     "name": "San Andrés Cacaloapan",
@@ -27,18 +27,18 @@
   },
   {
     "name": "San Antonio Cañada",
-    "lat": 18.49498,
-    "lon": -97.27447
+    "lat": 18.49763,
+    "lon": -97.29007
   },
   {
     "name": "San Gabriel Chilac",
-    "lat": 18.31189,
-    "lon": -97.37212
+    "lat": 18.3261,
+    "lon": -97.34757
   },
   {
     "name": "San José Miahuatlán",
-    "lat": 18.22586,
-    "lon": -97.2808
+    "lat": 18.29145,
+    "lon": -97.28822
   },
   {
     "name": "San Sebastián Zinacatepec",
@@ -62,23 +62,23 @@
   },
   {
     "name": "Santiago Miahuatlán",
-    "lat": 18.5504,
-    "lon": -97.44773
+    "lat": 18.55444,
+    "lon": -97.44194
   },
   {
     "name": "Tehuacán",
-    "lat": 18.4658,
-    "lon": -97.39783
+    "lat": 18.45999,
+    "lon": -97.39036
   },
   {
     "name": "Tepanco de López",
-    "lat": 18.55337,
-    "lon": -97.57386
+    "lat": 18.5551,
+    "lon": -97.56035
   },
   {
     "name": "Tlacotepec de Benito Juárez",
-    "lat": 18.63438,
-    "lon": -97.63737
+    "lat": 18.68269,
+    "lon": -97.65413
   },
   {
     "name": "Zapotitlán Salinas",

@@ -18,10 +18,10 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<link href="maplibre-gl.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="maplibre-gl.js"></script>
 <script src="routes.js"></script>
 <script src="sponsors.js"></script>
 <script src="pois.js"></script>
@@ -1561,13 +1561,15 @@ function replanPins(fromDrag) {
 
 function renderTripSheet() {
   const el = document.getElementById('sheet');
+  const isLong = o => o.walkA > WALK_MAX || o.walkB > WALK_MAX || (o.transfer || 0) > TRANSFER_MAX;
+  const allLong = TRIP.opts.length && TRIP.opts.every(isLong);
   const rows = TRIP.opts.map((o, i) => {
     const legs = o.legs.map(id => {
       const p = routeById(id);
       return '<span class="swatch" style="background:' + p.color + '"></span>' + p.name;
     }).join(' <span style="color:var(--ink-2)">→</span> ');
     const eta = nextCombiAt(o.legs[0], o.boardAt);
-    const meta = t('walkTo')(fmt(o.walkA)) + ' · ' +
+    const meta = (isLong(o) ? '⚠️ ' : '') + t('walkTo')(fmt(o.walkA)) + ' · ' +
       (o.type === 'transfer' ? t('transferTxt')(fmt(o.transfer), '') + ' · ' : t('direct') + ' · ') +
       t('rideTxt')(fmt(o.ride)) + ' · ' + t('alightTxt')(fmt(o.walkB)) +
       (eta && !eta.done ? ' · <b style="color:var(--ok)">' + t('etaShort')(Math.max(1, Math.round(eta.wait))) + '</b>' : '') +
@@ -1579,6 +1581,7 @@ function renderTripSheet() {
     '<div class="sh-head"><span class="tile" style="background:var(--accent);color:#fff">' + S_PIN2 + '</span>' +
     '<span class="sh-name"><b>' + t('tripTitle') + ' ' + String(TRIP.destLabel).replace(/</g, '&lt;') + '</b></span></div>' +
     (TRIP.locFallback ? '<div class="dt-note" style="margin-bottom:8px">' + t('locFallback') + '</div>' : '') +
+    (allLong ? '<div class="msg" style="margin-bottom:8px">⚠️ ' + t('longWalk') + '</div>' : '') +
     '<div class="dt-note" style="margin-bottom:8px"><a href="#" id="t-refresh" style="color:var(--accent)">' + t('locRefresh') + '</a></div>' +
     (TRIP.opts.length
       ? '<div id="trip-cols"><div id="trip-left">' + rows + '</div><div id="trip-right"></div></div>'
@@ -3048,6 +3051,7 @@ document.querySelectorAll('.filters button').forEach(b => {
    next is never required. Shows once (localStorage.mtIntro). ---------- */
 (() => {
   try { if (localStorage.mtIntro) return; } catch (e) { return; }
+  if (params.get('ruta')) return;   // arrived from a QR scan: the route sheet already answers the question
   const STEPS = [
     {key: 'introLoc',    el: () => document.querySelector('.maplibregl-ctrl-geolocate')},
     {key: 'introSearch', el: () => document.getElementById('ml-search')},

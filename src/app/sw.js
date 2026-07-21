@@ -1,10 +1,12 @@
-const CACHE = "mitehuacan-v1";
+const CACHE = "mitehuacan-v2";
 const SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
+  "./maplibre-gl.js",     // self-hosted so a CDN outage can't blank the app
+  "./maplibre-gl.css",
   "./routes.js",
   "./sponsors.js",
   "./pois.js",
@@ -31,10 +33,17 @@ self.addEventListener("fetch", (e) => {
   // API calls — network only, no cache
   if (url.pathname.startsWith("/api/")) return;
 
-  // Map tiles (OpenFreeMap / other CDN) — network first, fallback to cache
+  // Cross-origin (OpenFreeMap tiles/style, fonts) — network first, but CACHE the
+  // response so repeat visits survive a CDN outage. Falls back to cache offline.
   if (url.hostname !== self.location.hostname) {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
+      fetch(e.request).then((res) => {
+        if (res.ok && (e.request.method === "GET")) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+        }
+        return res;
+      }).catch(() => caches.match(e.request))
     );
     return;
   }
