@@ -24,6 +24,7 @@ class FacebookAgent(DiscoveryAgent):
     NAME = "facebook"
     START_URL = "https://www.facebook.com/"
     LOGIN_URL = "https://www.facebook.com/login/"
+    SESSION_COOKIE = "c_user"
 
     def build_plan(self):
         # /search/pages/ returns business Pages specifically (cleaner than places)

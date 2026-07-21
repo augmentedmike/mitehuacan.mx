@@ -18,6 +18,7 @@ class InstagramAgent(DiscoveryAgent):
     NAME = "instagram"
     START_URL = "https://www.instagram.com/"
     LOGIN_URL = "https://www.instagram.com/accounts/login/"
+    SESSION_COOKIE = "sessionid"
     NEEDS_CONTEXT = True
 
     def build_plan(self):

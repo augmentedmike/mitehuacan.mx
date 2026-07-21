@@ -28,10 +28,13 @@ The only progress state is the plan cursor (meta table); running with --all (or
 re-running a fixed slice) is fully data-idempotent.
 """
 import json
+import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
+import tempfile
 import time
 import unicodedata
 from datetime import datetime, timezone
@@ -172,6 +175,7 @@ class DiscoveryAgent:
     NAME = "base"
     START_URL = ""
     LOGIN_URL = ""
+    SESSION_COOKIE = ""          # cookie whose presence means "signed in"
     DEFAULT_BATCH = 24
     NEEDS_CONTEXT = False        # instagram needs the browser context for API calls
 
@@ -266,6 +270,27 @@ class DiscoveryAgent:
         ctx.add_init_script("Object.defineProperty(navigator,'webdriver',{get:()=>undefined})")
         return ctx
 
+    def _has_session_cookie(self):
+        """Is the signed-in cookie present in the profile? (name is plaintext;
+        copy the DB since Chrome holds a lock while running.)"""
+        ck = self.profile_dir() / "Default" / "Cookies"
+        if not self.SESSION_COOKIE or not ck.exists():
+            return False
+        tmp = tempfile.mktemp(suffix=".db")
+        try:
+            shutil.copy(ck, tmp)
+            db = sqlite3.connect(tmp)
+            hit = db.execute("SELECT 1 FROM cookies WHERE name=? LIMIT 1", (self.SESSION_COOKIE,)).fetchone()
+            db.close()
+            return hit is not None
+        except Exception:  # noqa: BLE001
+            return False
+        finally:
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+
     # ---- login: real un-automated Chrome so Google accepts sign-in ----
     def login(self):
         chrome = next((b for b in CHROME_BINS if Path(b).exists()), None)
@@ -274,10 +299,33 @@ class DiscoveryAgent:
             sys.exit(4)
         self.log(f"launching real browser for login (NO automation): {chrome}")
         print(f"\nA normal Chrome window is opening for {self.NAME} (profile: {self.profile}).")
-        print("Sign in there, then CLOSE the window — the session saves automatically.")
-        subprocess.Popen([chrome, f"--user-data-dir={self.profile_dir()}",
-                          "--no-first-run", "--no-default-browser-check", self.LOGIN_URL or self.START_URL]).wait()
-        self.log("browser closed — session saved.")
+        print("Sign in — the window closes itself once you're signed in (or close it yourself).")
+        proc = subprocess.Popen([chrome, f"--user-data-dir={self.profile_dir()}",
+                                 "--no-first-run", "--no-default-browser-check",
+                                 self.LOGIN_URL or self.START_URL])
+        # auto-close once we're signed in for a stable window, so the profile is
+        # released without the human having to remember to close it. switching
+        # accounts logs out first (cookie drops), which resets the timer.
+        signed_since = None
+        announced = False
+        while proc.poll() is None:                 # None = still open
+            time.sleep(3)
+            if self._has_session_cookie():
+                if signed_since is None:
+                    signed_since = time.time()
+                if not announced:
+                    self.log("signed in — this window will close automatically in ~15s (or close it yourself)")
+                    announced = True
+                if time.time() - signed_since > 15:
+                    proc.terminate()
+                    break
+            else:
+                signed_since = None                # logged out / mid-switch — wait
+        try:
+            proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+        self.log("login window closed — session saved.")
 
     # ---- discover: sweep a bounded batch of the plan into the store ----
     def discover(self, all_=False):
