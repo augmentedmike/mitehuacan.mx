@@ -71,7 +71,9 @@ class GoogleAgent(DiscoveryAgent):
 
     def scrape_item(self, page, context, it):
         lat, lng = it["pt"]
-        url = f"https://www.google.com/maps/search/{it['sub'].replace(' ', '+')}/@{lat},{lng},14z"
+        # z16 (~1.5km view) so each ring point returns its OWN neighborhood — at
+        # z14 every point saw the whole city and results overlapped completely.
+        url = f"https://www.google.com/maps/search/{it['sub'].replace(' ', '+')}/@{lat},{lng},16z"
         page.goto(url, timeout=60000)
         page.wait_for_timeout(3200)
         if (w := self.walled(page)):
