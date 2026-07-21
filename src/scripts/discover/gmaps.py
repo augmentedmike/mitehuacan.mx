@@ -12,28 +12,9 @@ DATA: resources/discovery/google.db
 import math
 import re
 
-from lib import DiscoveryAgent, norm
+from lib import DiscoveryAgent, norm, SUBCATS   # SUBCATS from the shared taxonomy.json
 
 CENTER = (18.4620, -97.3960)
-TAXONOMY = {
-    "restaurantes": ["restaurante", "taquería", "antojitos", "cocina económica", "mariscos",
-                     "pizzería", "comida china", "barbacoa", "carnitas", "pozolería", "cemitas", "torterías"],
-    "café y postres": ["cafetería", "panadería", "pastelería", "heladería", "dulcería", "juguería"],
-    "bares y vida nocturna": ["bar", "cantina", "antro", "cervecería", "pulquería", "billar"],
-    "tiendas": ["boutique de ropa", "zapatería", "joyería", "tienda de regalos", "papelería",
-                "juguetería", "mueblería", "ferretería", "abarrotes", "mercado", "florería",
-                "tienda de electrónica", "celulares", "vinos y licores"],
-    "belleza y salud": ["estética", "peluquería", "barbería", "spa", "salón de uñas", "farmacia",
-                        "consultorio médico", "dentista", "clínica", "óptica", "laboratorio clínico",
-                        "nutriólogo", "psicólogo"],
-    "servicios": ["taller mecánico", "lavandería", "cerrajería", "imprenta", "gimnasio", "veterinaria",
-                  "refaccionaria", "banco", "gasolinera", "hotel", "inmobiliaria", "agencia de viajes"],
-    "educación": ["escuela primaria", "secundaria", "preparatoria", "universidad", "kínder", "academia"],
-    "gobierno y municipal": ["oficina de gobierno", "palacio municipal", "registro civil", "biblioteca pública"],
-    "puntos de interés": ["iglesia", "parque", "plaza", "museo", "cine", "teatro", "centro deportivo"],
-    "arte y cultura": ["galería de arte", "estudio de arte", "centro cultural"],
-}
-SUBCATS = [(c, s) for c, subs in TAXONOMY.items() for s in subs]
 
 
 def _points():
