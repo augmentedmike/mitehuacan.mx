@@ -1,0 +1,88 @@
+[
+  {
+    "name": "Ajalpan",
+    "lat": 18.43501,
+    "lon": -97.02475
+  },
+  {
+    "name": "Azumbilla",
+    "lat": 18.64444,
+    "lon": -97.39833
+  },
+  {
+    "name": "Caipan",
+    "lat": 18.283,
+    "lon": -97.158,
+    "approx": true
+  },
+  {
+    "name": "Coxcatlán",
+    "lat": 18.24972,
+    "lon": -97.13985
+  },
+  {
+    "name": "San Andrés Cacaloapan",
+    "lat": 18.5825,
+    "lon": -97.58472
+  },
+  {
+    "name": "San Antonio Cañada",
+    "lat": 18.49498,
+    "lon": -97.27447
+  },
+  {
+    "name": "San Gabriel Chilac",
+    "lat": 18.31189,
+    "lon": -97.37212
+  },
+  {
+    "name": "San José Miahuatlán",
+    "lat": 18.22586,
+    "lon": -97.2808
+  },
+  {
+    "name": "San Sebastián Zinacatepec",
+    "lat": 18.33472,
+    "lon": -97.245
+  },
+  {
+    "name": "Santa Ana Teloxtoc",
+    "lat": 18.37944,
+    "lon": -97.57889
+  },
+  {
+    "name": "Santa María del Monte",
+    "lat": 18.53889,
+    "lon": -97.20333
+  },
+  {
+    "name": "Santa María la Alta",
+    "lat": 18.59954,
+    "lon": -97.65735
+  },
+  {
+    "name": "Santiago Miahuatlán",
+    "lat": 18.5504,
+    "lon": -97.44773
+  },
+  {
+    "name": "Tehuacán",
+    "lat": 18.4658,
+    "lon": -97.39783
+  },
+  {
+    "name": "Tepanco de López",
+    "lat": 18.55337,
+    "lon": -97.57386
+  },
+  {
+    "name": "Tlacotepec de Benito Juárez",
+    "lat": 18.63438,
+    "lon": -97.63737
+  },
+  {
+    "name": "Zapotitlán Salinas",
+    "lat": 18.32922,
+    "lon": -97.4736
+  }
+]
