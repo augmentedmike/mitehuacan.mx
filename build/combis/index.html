@@ -386,6 +386,17 @@
   /* ---- Desktop phone-frame: 99%+ of traffic is mobile, so on anything larger
      than a phone we render the SAME mobile app inside a phone outline on a dark
      zinc backdrop (rider app only; admin is unaffected). --------------------- */
+  /* swap between routes and business info in the trip sheet */
+  .seg2 { display: flex; gap: 4px; background: var(--chip); border: 1px solid var(--line);
+    border-radius: 12px; padding: 3px; margin: 0 0 12px; }
+  .seg2 button { flex: 1; border: none; background: none; color: var(--ink-2); font: inherit;
+    font-weight: 600; padding: 8px; border-radius: 9px; cursor: pointer; }
+  .seg2 button.on { background: var(--bg); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .bizinfo { display: flex; flex-direction: column; gap: 2px; }
+  .biz-row { display: flex; gap: 11px; align-items: flex-start; padding: 11px 4px;
+    border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); font-size: 14.5px; }
+  .biz-row:last-child { border-bottom: none; }
+  .biz-ic { flex: none; width: 20px; text-align: center; }
   #viewtoggle { display: none; position: fixed; top: 50%; right: 0; transform: translateY(-50%);
     width: 34px; height: 56px; z-index: 200; align-items: center; justify-content: center;
     background: #26262c; color: #e5e5ea; border: 1px solid #3f3f46; border-right: none;
@@ -561,6 +572,7 @@ const I18N = {
     addBizSend: 'Agregar',
     addBizOk: '¡Gracias! Lo revisamos y aparece en el mapa en 1–2 días.',
     addBizHint: 'Ponte en el lugar y usa tu ubicación, o quítala para que lo ubiquemos nosotros.',
+    tabRutas: 'Rutas', tabInfo: 'Info', infoProfile: 'Ver perfil',
     introLoc: 'Toca aquí para ubicarte en el mapa',
     introSearch: 'Escribe a dónde vas — por ejemplo “Walmart”',
     introPick: 'Elige un resultado de la lista',
@@ -666,6 +678,7 @@ const I18N = {
     addBizSend: 'Add',
     addBizOk: 'Thanks! We review it and it shows on the map in 1–2 days.',
     addBizHint: 'Stand at the spot and use your location, or turn it off and we\'ll place it.',
+    tabRutas: 'Routes', tabInfo: 'Info', infoProfile: 'View profile',
     introLoc: 'Tap here to find yourself on the map',
     introSearch: 'Type where you’re going — e.g. “Walmart”',
     introPick: 'Pick a result from the list',
@@ -1439,7 +1452,7 @@ function clearSelection() {
 let TRIP = null;                    // {opts, sel, from, dest, destLabel}
 let SEL_LABEL = null;               // active destination label — list + map narrate the same state
 let SEL_C = null;                   // its coords when known (restores the marker after a reload)
-let SEL_ADDR = null;                // its street address when known (business search results carry one)
+let SEL_INFO = null;                // business info {a,tel,h,lnk} when the destination is a business
 const MT = {a: null, b: null};      // origin/destination markers
 
 function clearTrip() {
@@ -1624,20 +1637,40 @@ function renderTripSheet() {
     return '<div class="opt" data-i="' + i + '"><div class="legs">' + legs + '</div><div class="meta">' + meta + '</div></div>';
   }).join('');
   SHEET = null;  // trip content, not a route sheet
-  el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
-    '<div class="sh-head"><span class="tile" style="background:var(--accent);color:#fff">' + S_PIN2 + '</span>' +
-    '<span class="sh-name"><b>' + t('tripTitle') + ' ' + String(TRIP.destLabel).replace(/</g, '&lt;') + '</b>' +
-    (SEL_ADDR ? '<div class="dt-note" style="margin-top:2px">📍 ' + String(SEL_ADDR).replace(/</g, '&lt;') + '</div>' : '') +
-    '</span></div>' +
+  const esc = s => String(s == null ? '' : s).replace(/</g, '&lt;');
+  const info = SEL_INFO;
+  const hasInfo = !!(info && (info.a || info.tel || info.h || info.lnk));
+  const tab = hasInfo ? (TRIP.tab || 'routes') : 'routes';
+  const swap = hasInfo
+    ? '<div class="seg2">' +
+      '<button data-tab="routes"' + (tab === 'routes' ? ' class="on"' : '') + '>' + t('tabRutas') + '</button>' +
+      '<button data-tab="info"' + (tab === 'info' ? ' class="on"' : '') + '>' + t('tabInfo') + '</button></div>'
+    : '';
+  const infoRow = (icon, html) => '<div class="biz-row"><span class="biz-ic">' + icon + '</span><div>' + html + '</div></div>';
+  const infoBody = hasInfo ? '<div class="bizinfo">' +
+    (info.a ? infoRow('📍', esc(info.a)) : '') +
+    (info.h ? infoRow('🕖', esc(info.h)) : '') +
+    (info.tel ? '<a class="biz-row" href="tel:' + esc(info.tel).replace(/\s/g, '') + '"><span class="biz-ic">📞</span><div style="color:var(--accent)">' + esc(info.tel) + '</div></a>' : '') +
+    (info.lnk ? '<a class="biz-row" href="' + esc(info.lnk) + '" target="_blank" rel="noopener"><span class="biz-ic">' + (/instagram/.test(info.lnk) ? '📸' : '🔗') + '</span><div style="color:var(--accent)">' + t('infoProfile') + '</div></a>' : '') +
+    '</div>' : '';
+  const routesBody =
     (TRIP.locFallback ? '<div class="dt-note" style="margin-bottom:8px">' + t('locFallback') + '</div>' : '') +
     (allLong ? '<div class="msg" style="margin-bottom:8px">⚠️ ' + t('longWalk') + '</div>' : '') +
     '<div class="dt-note" style="margin-bottom:8px"><a href="#" id="t-refresh" style="color:var(--accent)">' + t('locRefresh') + '</a></div>' +
     (TRIP.opts.length
       ? '<div id="trip-cols"><div id="trip-left">' + rows + '</div><div id="trip-right"></div></div>'
       : '<div class="msg">' + t('tripNone') + '</div>');
+  el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
+    '<div class="sh-head"><span class="tile" style="background:var(--accent);color:#fff">' + S_PIN2 + '</span>' +
+    '<span class="sh-name"><b>' + t('tripTitle') + ' ' + esc(TRIP.destLabel) + '</b>' +
+    (info && info.a ? '<div class="dt-note" style="margin-top:2px">📍 ' + esc(info.a) + '</div>' : '') +
+    '</span></div>' + swap +
+    (tab === 'info' ? infoBody : routesBody);
   el.style.maxHeight = '';
   el.classList.remove('min');
   el.classList.add('show');
+  el.querySelectorAll('.seg2 button').forEach(b => b.onclick = () => { TRIP.tab = b.dataset.tab; renderTripSheet(); });
+  if (tab === 'info') return;
   el.querySelectorAll('.opt').forEach(d => d.onclick = () => mSelectTripOption(+d.dataset.i));
   fillTripDetail(TRIP.sel || 0);
   const tr = document.getElementById('t-refresh');
@@ -1773,10 +1806,10 @@ function openAddBiz(prefill) {
   };
 }
 
-async function openDestPanel(label, coords, addr) {
+async function openDestPanel(label, coords, info) {
   SEL_LABEL = label;
   SEL_C = coords || null;
-  SEL_ADDR = addr || null;   // business results carry a street address; others clear it
+  SEL_INFO = (info && (info.a || info.tel || info.h || info.lnk)) ? info : null;   // business details, else cleared
   saveStatus();
   if (document.body.dataset.mview === 'list') renderCards();
   // location already known (blue dot / fresh fix)? don't ask again — just plan
@@ -2918,7 +2951,7 @@ async function runSugg(q) {
         let ids = near.filter(x => x.d <= 400).map(x => x.id).slice(0, 6);
         if (!ids.length) ids = near.slice(0, 3).map(x => x.id);
         highlightRoutes(ids, p.n, p.c);
-        openDestPanel(p.n, p.c, p.a);
+        openDestPanel(p.n, p.c, {a: p.a, tel: p.tel, h: p.h, lnk: p.lnk});
       }));
   });
   mlSugg.hidden = mlSugg.children.length === 0;
