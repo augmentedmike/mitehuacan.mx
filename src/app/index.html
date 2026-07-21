@@ -386,27 +386,34 @@
   /* ---- Desktop phone-frame: 99%+ of traffic is mobile, so on anything larger
      than a phone we render the SAME mobile app inside a phone outline on a dark
      zinc backdrop (rider app only; admin is unaffected). --------------------- */
+  #viewtoggle { display: none; position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+    width: 34px; height: 56px; z-index: 200; align-items: center; justify-content: center;
+    background: #26262c; color: #e5e5ea; border: 1px solid #3f3f46; border-right: none;
+    border-radius: 12px 0 0 12px; cursor: pointer; font-size: 18px; box-shadow: 0 4px 16px rgba(0,0,0,.45); }
   @media (min-width: 701px) {
-    html { background: #18181b; display: flex; align-items: center; justify-content: center; min-height: 100dvh; }
-    body {
+    /* frame view is default; #viewtoggle flips html[data-view] to 'full' */
+    html:not([data-view="full"]) { background: #18181b; display: flex; align-items: center; justify-content: center; min-height: 100dvh; }
+    html:not([data-view="full"]) body {
       width: 412px; max-width: 412px; height: min(884px, 96dvh); margin: 0;
       border: 11px solid #0a0a0b; border-radius: 46px;
       box-shadow: 0 0 0 2px #3f3f46, 0 40px 90px rgba(0,0,0,.6);
       overflow: hidden; position: relative;
-      transform: translateZ(0);   /* becomes the containing block for position:fixed children */
+      transform: translateZ(0);   /* containing block for position:fixed children */
     }
     /* keep the MOBILE layout inside the frame — undo the wide-screen adaptations */
-    #trip-cols { display: block; }
-    #trip-right { display: none; }
-    #topbar-seg { display: none !important; }
-    #mtop-btns { display: flex; }
-    #mhead.collapsed #mcollapse { max-height: 0; opacity: 0; }
-    #mhead.collapsed #msrch-btn { display: flex; }
-    #toast { max-width: 340px; }
+    html:not([data-view="full"]) #trip-cols { display: block; }
+    html:not([data-view="full"]) #trip-right { display: none; }
+    html:not([data-view="full"]) #topbar-seg { display: none !important; }
+    html:not([data-view="full"]) #mtop-btns { display: flex; }
+    html:not([data-view="full"]) #mhead.collapsed #mcollapse { max-height: 0; opacity: 0; }
+    html:not([data-view="full"]) #mhead.collapsed #msrch-btn { display: flex; }
+    html:not([data-view="full"]) #toast { max-width: 340px; }
+    #viewtoggle { display: flex; }
   }
 </style>
 </head>
 <body>
+<button id="viewtoggle" title="Cambiar vista">⤢</button>
 <header id="topbar">
   <a class="brand" href="./">mi<span>tehuacan</span>.mx <span class="suffix" style="color:var(--ink-2);font-weight:400">· Combis</span></a>
   <span id="topbar-seg"></span>
@@ -3242,5 +3249,24 @@ if (isIOS) {
   cursor: pointer; padding: 4px 6px; line-height: 1;
 }
 </style>
+<script>
+/* desktop full/phone view toggle (rider app only; the frame CSS is min-width:701px) */
+(function () {
+  const b = document.getElementById('viewtoggle');
+  if (!b) return;
+  const apply = () => {
+    const full = (() => { try { return localStorage.getItem('mtView') === 'full'; } catch (e) { return false; } })();
+    document.documentElement.dataset.view = full ? 'full' : 'frame';
+    b.textContent = full ? '▢' : '⤢';
+    b.title = full ? 'Vista teléfono' : 'Pantalla completa';
+    if (typeof map !== 'undefined' && map && map.resize) setTimeout(() => map.resize(), 80);
+  };
+  b.onclick = () => {
+    try { localStorage.setItem('mtView', localStorage.getItem('mtView') === 'full' ? 'frame' : 'full'); } catch (e) {}
+    apply();
+  };
+  apply();
+})();
+</script>
 </body>
 </html>
