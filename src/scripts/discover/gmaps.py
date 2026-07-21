@@ -39,9 +39,14 @@ class GoogleAgent(DiscoveryAgent):
     SESSION_COOKIE = "SID"
 
     def build_plan(self):
+        # CATEGORY-major (points inner): each run sweeps a category across the
+        # WHOLE city (all rings), not all categories at one point. At a fixed
+        # map center Google returns the same nearby places for any category, so
+        # point-major overlaps heavily; spreading geography per run maximizes
+        # new records.
         return [{"where": lbl, "pt": pt, "cat": cat, "sub": sub,
-                 "label": f"{lbl} · {cat}/{sub}"}
-                for lbl, pt in POINTS for cat, sub in SUBCATS]
+                 "label": f"{cat}/{sub} · {lbl}"}
+                for cat, sub in SUBCATS for lbl, pt in POINTS]
 
     def _paginate(self, page):
         feed = page.query_selector('div[role="feed"]')
