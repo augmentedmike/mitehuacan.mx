@@ -1,4 +1,4 @@
-const CACHE = "mitehuacan-v3";
+const CACHE = "mitehuacan-v4";
 const SHELL = [
   "./",
   "./index.html",
@@ -49,13 +49,28 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // App shell — cache first, network fallback
-  e.respondWith(
-    caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => {
-      return caches.open(CACHE).then((c) => {
-        c.put(e.request, res.clone());
+  // Big stable assets (the library, icons) — cache first for speed.
+  if (/maplibre-gl\.(js|css)$|\.png$/.test(url.pathname)) {
+    e.respondWith(
+      caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
         return res;
-      });
-    }))
+      }))
+    );
+    return;
+  }
+
+  // HTML + data layers (index, routes/denue/discovery/…) — NETWORK FIRST so
+  // deploys and fresh discovery data reach returning visitors; cache is the
+  // offline fallback and gets refreshed on every successful fetch.
+  e.respondWith(
+    fetch(e.request).then((res) => {
+      if (res.ok && e.request.method === "GET") {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+      }
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
