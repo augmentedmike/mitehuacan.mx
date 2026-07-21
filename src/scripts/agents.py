@@ -79,17 +79,24 @@ def snapshot_layer(path):
     return out
 
 
+DISCOVERY_PLATFORMS = ("google", "instagram", "facebook")
+
+
 def snapshot_all():
     snaps = {name: snapshot_layer(p) for name, p in LAYERS.items() if p.exists()}
-    for f in (REPO / "resources" / "discovery").glob("*.jsonl"):
+    # seed every discovery layer as empty so a FIRST write still diffs as adds
+    disc = REPO / "resources" / "discovery"
+    for plat in DISCOVERY_PLATFORMS:
         entries = {}
-        for line in f.read_text().splitlines():
-            try:
-                c = json.loads(line)
-                entries[("candidate", c["name"], 0, 0)] = c.get("source", "")
-            except (ValueError, KeyError):
-                pass
-        snaps["discovery-" + f.stem] = entries
+        f = disc / f"{plat}.jsonl"
+        if f.exists():
+            for line in f.read_text().splitlines():
+                try:
+                    c = json.loads(line)
+                    entries[("candidate", c["name"], 0, 0)] = c.get("source", "")
+                except (ValueError, KeyError):
+                    pass
+        snaps["discovery-" + plat] = entries
     return snaps
 
 
@@ -202,7 +209,9 @@ td .d{color:var(--ink2);font-size:11.5px}
 .st.none{background:transparent;color:var(--ink2);font-weight:400}
 button{border:none;border-radius:8px;padding:6px 12px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
 button:disabled{opacity:.5}
-.bar{display:flex;gap:10px;align-items:center;margin:12px 0}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.loginpanel{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-top:8px;color:var(--ink2);font-size:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bar{display:flex;gap:10px;align-items:center;margin:12px 0;flex-wrap:wrap}
 a.back{color:var(--accent);text-decoration:none;font-weight:700}
 .logrow td{padding:0;border-bottom:1px solid var(--line);cursor:default}
 .logrow pre{margin:0;background:var(--bg);padding:11px 13px;font-size:11px;max-height:420px;overflow:auto;white-space:pre-wrap}
@@ -252,7 +261,9 @@ function renderMain(latest){
     '<div class="bar">'+(Object.keys(D.running).length
       ?'<span class="st run">chain running…</span>'
       :'<button onclick="launch(\\'full\\')">▶▶ run all</button>')+
-    '<span class="d" style="color:var(--ink2);font-size:11.5px">osm → denue-dl → denue → calles → google → instagram → facebook · also runs on its own daily at 07:00</span></div>';
+    '<button class="ghost" onclick="loginMenu()">🔑 log into accounts</button>'+
+    '<span class="d" style="color:var(--ink2);font-size:11.5px">osm → denue-dl → denue → calles → google → instagram → facebook · also runs on its own daily at 07:00</span></div>'+
+    '<div id="loginbar"></div>';
 }
 function renderDetail(){
   const n=VIEW,a=D.agents[n],run=D.running[n];
@@ -283,6 +294,17 @@ async function loadLog(f){
   if(el&&el.textContent==='loading…')el.textContent=await (await fetch('/api/log?f='+encodeURIComponent(f))).text();
 }
 async function launch(n){await fetch('/api/run?name='+n,{method:'POST'});setTimeout(refresh,400);}
+function loginMenu(){
+  const el=$('loginbar');
+  if(el.innerHTML){el.innerHTML='';return;}
+  el.innerHTML='<div class="loginpanel">open a real Chrome window to sign in — the agent reuses the session, never your password:'+
+    ['google','instagram','facebook'].map(p=>'<button class="ghost" onclick="doLogin(\\''+p+'\\',this)">open '+p+'</button>').join('')+'</div>';
+}
+async function doLogin(p,btn){
+  btn.textContent='opening '+p+'…';btn.disabled=true;
+  await fetch('/api/login?platform='+p,{method:'POST'});
+  setTimeout(()=>{btn.textContent='opened '+p+' — sign in, then close the window';},1200);
+}
 refresh();setInterval(refresh,3000);
 </script></body></html>"""
 
@@ -333,6 +355,13 @@ class H(http.server.BaseHTTPRequestHandler):
                         break
             threading.Thread(target=go, daemon=True).start()
             return self._send('{"ok":true}')
+        if u.path == "/api/login":
+            plat = (urllib.parse.parse_qs(u.query).get("platform") or [""])[0]
+            if plat not in DISCOVERY_PLATFORMS:
+                return self.send_error(400)
+            disc = str(REPO / "src" / "scripts" / "21_discovery.py")
+            subprocess.Popen([PY, disc, plat, "--login", "--gui"], cwd=REPO)
+            return self._send('{"ok":true}')
         self.send_error(404)
 
 
@@ -342,9 +371,25 @@ def main():
         names = CHAINS.get(args[1], [args[1]])
         for n in names:
             if n not in AGENTS:
-                sys.exit(f"agente desconocido: {n} (hay: {', '.join(AGENTS)}, full)")
+                sys.exit(f"unknown agent: {n} (have: {', '.join(AGENTS)}, full)")
             if run_agent(n) != 0:
                 sys.exit(1)
+        return
+    if args[:1] == ["login"]:
+        # opens a real Chrome window per platform so you can sign in to each
+        # account the agents will reuse. sessions persist in .agent-auth/.
+        plats = args[1:] or list(DISCOVERY_PLATFORMS)
+        prof = "default"
+        if "--profile" in plats:
+            j = plats.index("--profile")
+            prof = plats[j + 1] if j + 1 < len(plats) else "default"
+            plats = [p for p in plats if p not in ("--profile", prof)]
+            plats = plats or list(DISCOVERY_PLATFORMS)
+        disc = str(REPO / "src" / "scripts" / "21_discovery.py")
+        for p in plats:
+            print(f"\n=== log into {p} (profile: {prof}) — a Chrome window will open ===")
+            subprocess.run([PY, disc, p, "--login", "--profile", prof], cwd=REPO)
+        print("\nall requested logins done. sessions saved in .agent-auth/")
         return
     if args[:1] == ["install-cron"]:
         plist = Path.home() / "Library" / "LaunchAgents" / "mx.mitehuacan.agents.plist"
@@ -380,8 +425,8 @@ def main():
             latest[r["name"]] = r
         bad = [n for n, r in latest.items() if r["exit"] != 0]
         if bad:
-            notify("Agentes con fallas", ", ".join(bad) + " — revisa el dashboard")
-        print("dashboard: http://localhost:8790  (ctrl-c para salir)")
+            notify("Agents failing", ", ".join(bad) + " — check the dashboard")
+        print("dashboard: http://localhost:8790  (ctrl-c to quit)")
         http.server.ThreadingHTTPServer(("127.0.0.1", 8790), H).serve_forever()
         return
     print(__doc__)
