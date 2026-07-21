@@ -952,6 +952,17 @@ function nearestRouteId(ids, lngLat) {
 }
 
 const W_BASE = ['interpolate', ['linear'], ['zoom'], 11, 1.8, 15, 3.5];
+let LBL = null;   // first basemap label layer; routes sit below it
+
+// routes below labels while browsing (street names on top); above labels when a
+// route is selected so the highlighted line reads clearly.
+function routesAboveLabels(above) {
+  if (!LBL || !map.getLayer('routes')) return;
+  try {
+    map.moveLayer('routes-casing', above ? undefined : LBL);
+    map.moveLayer('routes', above ? undefined : LBL);
+  } catch (e) {}
+}
 
 function paintHover(id) {
   map.setPaintProperty('routes', 'line-width', ['case', ['==', ['get', 'id'], id], 4.5, 1.6]);
@@ -964,6 +975,7 @@ function paintCurrent() {  // restore paint to whatever the selection state says
   if (typeof TRIP !== 'undefined' && TRIP) {
     map.setPaintProperty('routes', 'line-width', W_BASE);
     map.setPaintProperty('routes', 'line-opacity', 0.15);
+    routesAboveLabels(true);   // trip: the ridden legs need to read over labels
     return;
   }
   const on = isMobile() ? M.chips.filter(c => c.on).map(c => c.id)
@@ -975,9 +987,11 @@ function paintCurrent() {  // restore paint to whatever the selection state says
     map.setPaintProperty('routes', 'line-width', ['interpolate', ['linear'], ['zoom'],
       11, ['case', inSel, 4.5, 1.8], 15, ['case', inSel, 4.5, 3.5]]);
     map.setPaintProperty('routes', 'line-opacity', ['case', inSel, 1, 0.15]);
+    routesAboveLabels(true);    // a route is selected → lift it above the labels
   } else {
     map.setPaintProperty('routes', 'line-width', W_BASE);
     map.setPaintProperty('routes', 'line-opacity', 0.85);
+    routesAboveLabels(false);   // browsing → street names on top of the routes
   }
 }
 
@@ -1425,6 +1439,7 @@ function clearSelection() {
 let TRIP = null;                    // {opts, sel, from, dest, destLabel}
 let SEL_LABEL = null;               // active destination label — list + map narrate the same state
 let SEL_C = null;                   // its coords when known (restores the marker after a reload)
+let SEL_ADDR = null;                // its street address when known (business search results carry one)
 const MT = {a: null, b: null};      // origin/destination markers
 
 function clearTrip() {
@@ -1611,7 +1626,9 @@ function renderTripSheet() {
   SHEET = null;  // trip content, not a route sheet
   el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
     '<div class="sh-head"><span class="tile" style="background:var(--accent);color:#fff">' + S_PIN2 + '</span>' +
-    '<span class="sh-name"><b>' + t('tripTitle') + ' ' + String(TRIP.destLabel).replace(/</g, '&lt;') + '</b></span></div>' +
+    '<span class="sh-name"><b>' + t('tripTitle') + ' ' + String(TRIP.destLabel).replace(/</g, '&lt;') + '</b>' +
+    (SEL_ADDR ? '<div class="dt-note" style="margin-top:2px">📍 ' + String(SEL_ADDR).replace(/</g, '&lt;') + '</div>' : '') +
+    '</span></div>' +
     (TRIP.locFallback ? '<div class="dt-note" style="margin-bottom:8px">' + t('locFallback') + '</div>' : '') +
     (allLong ? '<div class="msg" style="margin-bottom:8px">⚠️ ' + t('longWalk') + '</div>' : '') +
     '<div class="dt-note" style="margin-bottom:8px"><a href="#" id="t-refresh" style="color:var(--accent)">' + t('locRefresh') + '</a></div>' +
@@ -1756,9 +1773,10 @@ function openAddBiz(prefill) {
   };
 }
 
-async function openDestPanel(label, coords) {
+async function openDestPanel(label, coords, addr) {
   SEL_LABEL = label;
   SEL_C = coords || null;
+  SEL_ADDR = addr || null;   // business results carry a street address; others clear it
   saveStatus();
   if (document.body.dataset.mview === 'list') renderCards();
   // location already known (blue dot / fresh fix)? don't ask again — just plan
@@ -2101,20 +2119,24 @@ map.on('load', () => {
       SPONSORS.by_route[rid] = Object.assign({}, SPONSORS.by_route[rid], m);
     });
   }).catch(() => {});
+  // put the route lines BELOW the basemap's first label layer so street names
+  // render on top of the routes (and appear as you zoom in). paintCurrent lifts
+  // the routes above labels while a route is selected.
+  LBL = (map.getStyle().layers.find(l => l.type === 'symbol') || {}).id;
   map.addLayer({
     id: 'routes-casing', type: 'line', source: 'routes',
     layout: {'line-cap': 'round', 'line-join': 'round'},
     paint: {'line-color': dark ? '#141419' : '#f2f2f5',
             'line-width': ['interpolate', ['linear'], ['zoom'], 11, 3.2, 15, 6],
             'line-opacity': 0.55}
-  });
+  }, LBL);
   map.addLayer({
     id: 'routes', type: 'line', source: 'routes',
     layout: {'line-cap': 'round', 'line-join': 'round'},
     paint: {'line-color': ['get', 'color'],
             'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.8, 15, 3.5],
             'line-opacity': 0.85}
-  });
+  }, LBL);
   // the RIDDEN stretches only — the answer to "which segment do I actually ride"
   map.addLayer({
     id: 'trip-legs', type: 'line', source: 'trip-legs',
@@ -2896,7 +2918,7 @@ async function runSugg(q) {
         let ids = near.filter(x => x.d <= 400).map(x => x.id).slice(0, 6);
         if (!ids.length) ids = near.slice(0, 3).map(x => x.id);
         highlightRoutes(ids, p.n, p.c);
-        openDestPanel(p.n, p.c);
+        openDestPanel(p.n, p.c, p.a);
       }));
   });
   mlSugg.hidden = mlSugg.children.length === 0;
