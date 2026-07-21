@@ -31,20 +31,25 @@ INDEX = RUNS / "runs.jsonl"
 PY = sys.executable
 
 AGENTS = {
-    # SOLO agentes que recolectan datos para los mapas (OSM, DENUE, calles,
-    # y a futuro scrapers de descubrimiento: instagram/facebook/google).
-    # build/stickers/prospectos son herramientas de pipeline/negocio, NO agentes.
+    # ONLY agents that gather data for the maps (OSM, DENUE, calles, and the
+    # discovery scrapers). build/stickers/prospectos are pipeline tools, NOT agents.
     "osm":        {"cmd": [PY, "src/scripts/16_refresh_pois.py"],   "desc": "OSM POIs + places (Overpass)"},
     "denue":      {"cmd": [PY, "src/scripts/17_build_denue.py"],    "desc": "DENUE establishments (needs resources/poi/denue_puebla.csv)"},
     "calles":     {"cmd": [PY, "src/scripts/20_build_streets.py"],  "desc": "streets + esquinas (Overpass)"},
+    "google":     {"cmd": [PY, "src/scripts/21_discovery.py", "google"],
+                   "desc": "Google Maps discovery — businesses not in our data"},
+    "instagram":  {"cmd": [PY, "src/scripts/21_discovery.py", "instagram"],
+                   "desc": "Instagram discovery — needs YOUR session (21_discovery.py instagram --login)"},
+    "facebook":   {"cmd": [PY, "src/scripts/21_discovery.py", "facebook"],
+                   "desc": "Facebook discovery — needs YOUR session (21_discovery.py facebook --login)"},
     "denue-dl":   {"cmd": ["bash", "-c",
                            "curl -s -o /tmp/denue_mx.zip https://www.inegi.org.mx/contenidos/masiva/denue/denue_21_csv.zip"
                            " && unzip -o -q /tmp/denue_mx.zip -d /tmp/denue_mx"
                            " && cp /tmp/denue_mx/conjunto_de_datos/denue_inegi_21_.csv resources/poi/denue_puebla.csv"
                            " && echo denue csv actualizado: $(wc -l < resources/poi/denue_puebla.csv) filas"],
-                   "desc": "descarga el CSV DENUE de INEGI (37MB)"},
+                   "desc": "downloads the INEGI DENUE CSV (37MB)"},
 }
-CHAINS = {"full": ["osm", "denue-dl", "denue", "calles"]}
+CHAINS = {"full": ["osm", "denue-dl", "denue", "calles", "google", "instagram", "facebook"]}
 
 # data layers snapshotted before/after every run so the log records EXACTLY
 # what each agent added / removed / changed — the log is the archive
@@ -75,7 +80,17 @@ def snapshot_layer(path):
 
 
 def snapshot_all():
-    return {name: snapshot_layer(p) for name, p in LAYERS.items() if p.exists()}
+    snaps = {name: snapshot_layer(p) for name, p in LAYERS.items() if p.exists()}
+    for f in (REPO / "resources" / "discovery").glob("*.jsonl"):
+        entries = {}
+        for line in f.read_text().splitlines():
+            try:
+                c = json.loads(line)
+                entries[("candidate", c["name"], 0, 0)] = c.get("source", "")
+            except (ValueError, KeyError):
+                pass
+        snaps["discovery-" + f.stem] = entries
+    return snaps
 
 
 def diff_snapshots(before, after):
@@ -123,18 +138,18 @@ def run_agent(name):
     dur = round(time.time() - t0, 1)
     report, totals = diff_snapshots(before, snapshot_all())
     with open(log, "a") as fh:
-        fh.write("\n\n== CAMBIOS EN DATOS (completos \u2014 nada se resume) ==\n")
+        fh.write("\n\n== DATA CHANGES (complete \u2014 nothing summarized) ==\n")
         if not report:
-            fh.write("sin cambios en las capas de datos\n")
+            fh.write("no changes in data layers\n")
         for layer, d in report.items():
-            fh.write(f"\n[{layer}] +{len(d['added'])} agregados, "
-                     f"-{len(d['removed'])} eliminados, ~{len(d['changed'])} modificados\n")
-            for label, items in (("AGREGADO", d["added"]), ("ELIMINADO", d["removed"]),
-                                 ("MODIFICADO", d["changed"])):
+            fh.write(f"\n[{layer}] +{len(d['added'])} added, "
+                     f"-{len(d['removed'])} removed, ~{len(d['changed'])} changed\n")
+            for label, items in (("ADDED", d["added"]), ("REMOVED", d["removed"]),
+                                 ("CHANGED", d["changed"])):
                 for n in items:
                     fh.write(f"  {label}: {n}\n")
     full = log.read_text(errors="replace")
-    tail_src = full.split("== CAMBIOS")[0]
+    tail_src = full.split("== DATA CHANGES")[0]
     tail = "".join(tail_src.splitlines(keepends=True)[-4:]).strip()
     warns = len(re.findall(r"(?im)^.*\b(error|traceback|failed|exception)\b", tail_src))
     rec = {"name": name, "start": ts.isoformat(), "dur_s": dur, "exit": p.returncode,
@@ -162,9 +177,9 @@ def load_runs():
     return out[::-1]
 
 
-HTML = """<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
+HTML = """<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>agentes locales · mitehuacán</title><style>
+<title>data agents · mitehuacán</title><style>
 :root{--bg:#17171b;--panel:#1f1f24;--ink:#ececf0;--ink2:#a5a5b0;--line:#33333a;--accent:#6ea6ff;--ok:#4ade80;--err:#ff7b6b;--warn:#f5a623}
 @media(prefers-color-scheme:light){:root{--bg:#fff;--panel:#f7f7f8;--ink:#1a1a1e;--ink2:#55555e;--line:#e2e2e6;--accent:#0f62fe;--ok:#1a7f37;--err:#d4351c;--warn:#b7791f}}
 *{box-sizing:border-box}body{margin:0;font:13.5px/1.5 system-ui,sans-serif;color:var(--ink);background:var(--bg);padding:16px}
@@ -193,18 +208,18 @@ a.back{color:var(--accent);text-decoration:none;font-weight:700}
 .logrow pre{margin:0;background:var(--bg);padding:11px 13px;font-size:11px;max-height:420px;overflow:auto;white-space:pre-wrap}
 .when{color:var(--ink2);font-size:11.5px;white-space:nowrap}
 </style></head><body><div class="wrap">
-<h1 id="title">Agentes de datos</h1>
-<p class="sub" id="subtitle">recolectan datos para los mapas · corren en ESTA máquina · logs en .agent-runs/</p>
+<h1 id="title">Data agents</h1>
+<p class="sub" id="subtitle">gather data for the maps · run on THIS machine · logs in .agent-runs/</p>
 <div id="alert"></div>
 <div id="main"></div>
 </div><script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/</g,'&lt;');
 const ago=iso=>{const s=(Date.now()-new Date(iso))/1e3;
-  return s<90?Math.round(s)+' s':s<5400?Math.round(s/60)+' min':s<172800?(s/3600).toFixed(1)+' h':Math.round(s/86400)+' días';};
+  return s<90?Math.round(s)+' s':s<5400?Math.round(s/60)+' min':s<172800?(s/3600).toFixed(1)+' h':Math.round(s/86400)+' days';};
 const stChip=r=>r.exit===0?'<span class="st ok">ok</span>':'<span class="st fail">exit '+r.exit+'</span>';
 const dChip=r=>r.delta&&(r.delta['+']||r.delta['-']||r.delta['~'])
-  ?'<span class="st delta">+'+r.delta['+']+' \u2212'+r.delta['-']+' ~'+r.delta['~']+'</span>':'<span class="st none">sin cambios</span>';
+  ?'<span class="st delta">+'+r.delta['+']+' \u2212'+r.delta['-']+' ~'+r.delta['~']+'</span>':'<span class="st none">no changes</span>';
 const wChip=r=>r.exit===0&&r.warns?'<span class="st warn2">'+r.warns+'</span>':'<span class="st none">0</span>';
 let VIEW=null,OPEN={},D=null;
 async function refresh(){
@@ -212,52 +227,52 @@ async function refresh(){
   const latest={};D.runs.forEach(r=>{if(!(r.name in latest))latest[r.name]=r;});
   const bad=Object.values(latest).filter(r=>r.exit!==0);
   $('alert').style.display=bad.length?'block':'none';
-  $('alert').textContent=bad.length?('⚠️ última corrida FALLÓ: '+bad.map(r=>r.name).join(', ')+' — haz clic en el agente para ver el log'):'';
+  $('alert').textContent=bad.length?('⚠️ last run FAILED: '+bad.map(r=>r.name).join(', ')+' — click the agent to see the log'):'';
   VIEW?renderDetail():renderMain(latest);
   const live=document.querySelector('.logrow pre[data-live]');
   if(live)live.textContent=await (await fetch('/api/log?f='+encodeURIComponent(live.dataset.live)+'&tail=1')).text();
 }
 function renderMain(latest){
-  $('title').textContent='Agentes de datos';
-  $('subtitle').innerHTML='recolectan datos para los mapas · corren en ESTA máquina · logs en .agent-runs/';
+  $('title').textContent='Data agents';
+  $('subtitle').innerHTML='gather data for the maps · run on THIS machine · logs in .agent-runs/';
   const rows=Object.entries(D.agents).map(([n,a])=>{
     const r=latest[n],run=D.running[n];
-    const estado=run?'<span class="st run">corriendo '+ago(run.start)+'</span>':r?stChip(r):'<span class="st none">nunca</span>';
+    const estado=run?'<span class="st run">running '+ago(run.start)+'</span>':r?stChip(r):'<span class="st none">never</span>';
     return '<tr onclick="show(\\''+n+'\\')"><td><b>'+n+'</b><div class="d">'+esc(a.desc)+'</div></td>'+
       '<td>'+estado+'</td>'+
-      '<td class="when">'+(r?new Date(r.start).toLocaleString('es-MX')+'<br>hace '+ago(r.start):'—')+'</td>'+
+      '<td class="when">'+(r?new Date(r.start).toLocaleString('en-US')+'<br>'+ago(r.start)+' ago':'—')+'</td>'+
       '<td>'+(r?r.dur_s+' s':'—')+'</td>'+
       '<td>'+(r?dChip(r):'—')+'</td>'+
       '<td>'+(r?wChip(r):'—')+'</td>'+
       '<td>'+(run?'':'<button onclick="event.stopPropagation();launch(\\''+n+'\\')">▶</button>')+'</td></tr>';
   }).join('');
   $('main').innerHTML='<div class="tblwrap"><table><thead><tr>'+
-    '<th>agente</th><th>estado</th><th>última corrida</th><th>duración</th><th>cambios</th><th>avisos</th><th></th>'+
+    '<th>agent</th><th>status</th><th>last run</th><th>duration</th><th>changes</th><th>warnings</th><th></th>'+
     '</tr></thead><tbody>'+rows+'</tbody></table></div>'+
     '<div class="bar">'+(Object.keys(D.running).length
-      ?'<span class="st run">cadena en curso…</span>'
-      :'<button onclick="launch(\\'full\\')">▶▶ correr todos</button>')+
-    '<span class="d" style="color:var(--ink2);font-size:11.5px">osm → denue-dl → denue → calles · también corre solo cada día a las 07:00</span></div>';
+      ?'<span class="st run">chain running…</span>'
+      :'<button onclick="launch(\\'full\\')">▶▶ run all</button>')+
+    '<span class="d" style="color:var(--ink2);font-size:11.5px">osm → denue-dl → denue → calles → google → instagram → facebook · also runs on its own daily at 07:00</span></div>';
 }
 function renderDetail(){
   const n=VIEW,a=D.agents[n],run=D.running[n];
   $('title').textContent=n;
-  $('subtitle').innerHTML='<a class="back" href="#" onclick="VIEW=null;OPEN={};refresh();return false">← todos los agentes</a> · '+esc(a?a.desc:'');
+  $('subtitle').innerHTML='<a class="back" href="#" onclick="VIEW=null;OPEN={};refresh();return false">← all agents</a> · '+esc(a?a.desc:'');
   const runs=D.runs.filter(r=>r.name===n);
   const rows=runs.slice(0,80).map(r=>{
     const open=OPEN[r.log];
     return '<tr onclick="toggleLog(\\''+r.log+'\\')">'+
-      '<td class="when">'+new Date(r.start).toLocaleString('es-MX')+'<br>hace '+ago(r.start)+'</td>'+
+      '<td class="when">'+new Date(r.start).toLocaleString('en-US')+'<br>'+ago(r.start)+'</td>'+
       '<td>'+stChip(r)+'</td><td>'+r.dur_s+' s</td><td>'+dChip(r)+'</td><td>'+wChip(r)+'</td>'+
       '<td class="d" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.tail.split('\\n').pop())+'</td></tr>'+
-      (open?'<tr class="logrow"><td colspan="6"><pre id="log-'+r.log+'">cargando…</pre></td></tr>':'');
+      (open?'<tr class="logrow"><td colspan="6"><pre id="log-'+r.log+'">loading…</pre></td></tr>':'');
   }).join('');
   $('main').innerHTML='<div class="bar">'+(run
-      ?'<span class="st run">corriendo '+ago(run.start)+'</span>'
-      :'<button onclick="launch(\\''+n+'\\')">▶ correr ahora</button>')+'</div>'+
+      ?'<span class="st run">running '+ago(run.start)+'</span>'
+      :'<button onclick="launch(\\''+n+'\\')">▶ run now</button>')+'</div>'+
     '<div class="tblwrap"><table><thead><tr>'+
-    '<th>cuándo</th><th>estado</th><th>duración</th><th>cambios</th><th>avisos</th><th>última línea</th>'+
-    '</tr></thead><tbody>'+(rows||'<tr><td colspan="6" class="d">sin corridas aún</td></tr>')+'</tbody></table></div>'+
+    '<th>when</th><th>status</th><th>duration</th><th>changes</th><th>warnings</th><th>last line</th>'+
+    '</tr></thead><tbody>'+(rows||'<tr><td colspan="6" class="d">no runs yet</td></tr>')+'</tbody></table></div>'+
     (run?'<div class="tblwrap" style="margin-top:10px"><table><tbody><tr class="logrow"><td><pre data-live="'+run.log.split('/').pop()+'">…</pre></td></tr></tbody></table></div>':'');
   for(const f of Object.keys(OPEN))loadLog(f);
 }
@@ -265,7 +280,7 @@ function show(n){VIEW=n;OPEN={};refresh();}
 function toggleLog(f){OPEN[f]?delete OPEN[f]:OPEN[f]=1;renderDetail();}
 async function loadLog(f){
   const el=$('log-'+f);
-  if(el&&el.textContent==='cargando…')el.textContent=await (await fetch('/api/log?f='+encodeURIComponent(f))).text();
+  if(el&&el.textContent==='loading…')el.textContent=await (await fetch('/api/log?f='+encodeURIComponent(f))).text();
 }
 async function launch(n){await fetch('/api/run?name='+n,{method:'POST'});setTimeout(refresh,400);}
 refresh();setInterval(refresh,3000);
@@ -349,13 +364,13 @@ def main():
 </dict></plist>""")
         subprocess.run(["launchctl", "unload", str(plist)], capture_output=True)
         subprocess.run(["launchctl", "load", str(plist)], check=True)
-        print(f"cron diario instalado: corre 'full' a las {hour:02d}:00 -> logs en el dashboard")
+        print(f"daily cron installed: runs 'full' at {hour:02d}:00 -> logs land in the dashboard")
         return
     if args[:1] == ["uninstall-cron"]:
         plist = Path.home() / "Library" / "LaunchAgents" / "mx.mitehuacan.agents.plist"
         subprocess.run(["launchctl", "unload", str(plist)], capture_output=True)
         plist.unlink(missing_ok=True)
-        print("cron diario eliminado")
+        print("daily cron removed")
         return
     if args[:1] == ["dash"]:
         RUNS.mkdir(exist_ok=True)
