@@ -273,7 +273,7 @@ function renderMain(latest){
     '<span class="d" style="color:var(--ink2);font-size:11.5px">refresh layers → discover (google/ig/fb) → verify &amp; prune · also runs on its own daily at 07:00</span></div>'+
     '<div class="loginpanel">🔑 <b>log into accounts</b> — opens a real Chrome window to sign in; the agent reuses the session, never your password:'+
       ['google','instagram','facebook'].map(p=>'<button class="ghost" id="lg-'+p+'" onclick="doLogin(\\''+p+'\\')">'+
-        (LAUNCHED[p]?'✓ '+p+' opened — sign in, then close it':'open '+p)+'</button>').join('')+'</div>';
+        (LAUNCHED[p]?'✓ '+p+' opened — just sign in, it closes itself':'open '+p)+'</button>').join('')+'</div>';
 }
 function renderDetail(){
   const n=VIEW,a=D.agents[n],run=D.running[n];
