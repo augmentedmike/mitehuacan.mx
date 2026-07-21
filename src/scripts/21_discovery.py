@@ -261,50 +261,72 @@ def scrape_facebook(page):
     return out
 
 
+CHROME_BINS = [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+]
+
+
+def do_login(profile, start_url):
+    """Manual sign-in in a REAL, un-automated Chrome.
+
+    Google blocks sign-in in any browser Playwright drives (it detects the
+    remote-debugging port). So for login we launch the actual Chrome binary
+    against the same profile dir with NO automation port — an ordinary browser
+    Google accepts. Playwright later reuses the cookies for headless scraping.
+    """
+    chrome = next((b for b in CHROME_BINS if Path(b).exists()), None)
+    if not chrome:
+        log("no real Chrome/Chromium/Brave found in /Applications — cannot do a clean login")
+        print("Install Google Chrome, then retry the login.")
+        sys.exit(4)
+    log(f"launching real browser for login (NO automation): {chrome}")
+    print(f"\nA normal Chrome window is opening for {PLATFORM} (profile: {PROFILE}).")
+    print("Sign in there, then CLOSE the window — the session saves automatically.")
+    # NOT a Playwright browser: no --remote-debugging-port, so Google sees a
+    # normal browser. Blocking wait() = the process ends when you close it.
+    proc = subprocess.Popen([chrome, f"--user-data-dir={profile}",
+                             "--no-first-run", "--no-default-browser-check", start_url])
+    proc.wait()
+    log("browser closed — session saved.")
+
+
 def main():
     from playwright.sync_api import sync_playwright
 
     login = "--login" in sys.argv
     profile = AUTH / PLATFORM / PROFILE
     profile.mkdir(parents=True, exist_ok=True)
-    start_url = {"google": "https://www.google.com/maps",
-                 "instagram": "https://www.instagram.com/",
-                 "facebook": "https://www.facebook.com/"}[PLATFORM]
+    start_url = {"google": "https://accounts.google.com/",
+                 "instagram": "https://www.instagram.com/accounts/login/",
+                 "facebook": "https://www.facebook.com/login/"}[PLATFORM]
 
     log(f"start: platform={PLATFORM} profile={PROFILE} mode={'LOGIN' if login else 'scrape'} "
         f"utc={datetime.now(timezone.utc).isoformat()}")
     log(f"profile dir: {profile}")
 
-    with sync_playwright() as pw:
-        context = pw.chromium.launch_persistent_context(
-            str(profile), headless=not login, viewport={"width": 1280, "height": 900},
-            locale="es-MX", timezone_id="America/Mexico_City")
-        page = context.pages[0] if context.pages else context.new_page()
+    if login:
+        do_login(profile, start_url)
+        return
 
-        if login:
-            page.goto(start_url)
-            gui = "--gui" in sys.argv          # dashboard-launched: no terminal to read
-            print(f"\nBrowser open on {PLATFORM} (profile: {PROFILE}). Log in / solve any captcha YOURSELF.")
-            if gui:
-                print("Close the browser window when you're done — the session saves automatically.")
-                closed = {"v": False}
-                context.on("close", lambda: closed.__setitem__("v", True))
-                while not closed["v"]:
-                    try:
-                        if not context.pages:      # all tabs closed
-                            break
-                        page.wait_for_timeout(1000)
-                    except Exception:  # noqa: BLE001  (window closed mid-wait)
-                        break
-            else:
-                print("The session persists in .agent-auth/ — press Enter here when done.")
-                input()
-            try:
-                context.close()
-            except Exception:  # noqa: BLE001
-                pass
-            log("session saved.")
-            return
+    # scrape flow — reuse the profile's saved cookies, headless
+    launch = dict(
+        headless=True, viewport={"width": 1280, "height": 900},
+        locale="es-MX", timezone_id="America/Mexico_City",
+        ignore_default_args=["--enable-automation"],
+        args=["--disable-blink-features=AutomationControlled",
+              "--no-default-browser-check", "--no-first-run"])
+
+    with sync_playwright() as pw:
+        try:
+            context = pw.chromium.launch_persistent_context(str(profile), channel="chrome", **launch)
+            log("launched real Chrome (channel=chrome) for scrape")
+        except Exception as e:  # noqa: BLE001
+            log(f"channel=chrome unavailable ({e!r}); using bundled chromium")
+            context = pw.chromium.launch_persistent_context(str(profile), **launch)
+        context.add_init_script("Object.defineProperty(navigator,'webdriver',{get:()=>undefined})")
+        page = context.pages[0] if context.pages else context.new_page()
 
         try:
             candidates = {"google": lambda: scrape_google(page),
