@@ -2759,7 +2759,7 @@ if (!location.hostname.endsWith('pages.dev')) {
 // service area — the layer that makes search city-complete. 2MB, so it loads
 // lazily after the app settles; search simply gets deeper when it arrives.
 setTimeout(() => {
-  for (const f of ['denue.js', 'calles.js']) {
+  for (const f of ['denue.js', 'calles.js', 'discovery.js']) {
     const sc = document.createElement('script');
     sc.src = f;
     document.head.appendChild(sc);
@@ -2847,7 +2847,8 @@ async function runSugg(q) {
   // commercial destinations: curated field captures first (searchable by alias,
   // ranked above the OSM harvest), then the weekly-agent OSM places. Search-only, never pins.
   const allPl = CURATED.concat(typeof PLACES !== 'undefined' ? PLACES.places : [])
-    .concat(typeof DENUE !== 'undefined' ? DENUE.places : []);
+    .concat(typeof DENUE !== 'undefined' ? DENUE.places : [])
+    .concat(typeof DISCOVERY !== 'undefined' ? DISCOVERY.places : []);   // agent/crowdsourced businesses
   const nqSquash = nq.replace(/ /g, '');
   const placeHits = allPl
     .map(p => {
