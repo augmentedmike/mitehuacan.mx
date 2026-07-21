@@ -29,10 +29,10 @@ DPI = 300
 SHEET_W_IN, SHEET_H_IN = 13, 19
 MARGIN_CM = 1.0
 GUTTER_CM = 0.5
-# QR placeholder box inside the artwork (measured), inside its rounded border
-QR_BOX = (500, 507, 885, 895)          # x0,y0,x1,y1 in source-image px
-QR_SCALE = 0.82                        # smaller than the box so it clears the rounded corners
-QR_SHIFT_X = 22                        # nudge right off the left edge
+# the rounded border's INNER white area (measured from the artwork). The QR is
+# placed centered inside this with a clear margin so it never touches the border.
+QR_INNER = (514, 510, 892, 890)        # x0,y0,x1,y1 in source-image px, center (703,700)
+QR_FILL = 0.70                         # QR side as a fraction of the inner box (rest = white margin)
 
 
 def cm(v):
@@ -49,13 +49,14 @@ def make_qr(url):
 def build_sticker(art, sticker_id):
     """Composite a unique QR into a copy of the artwork."""
     im = art.copy()
-    x0, y0, x1, y1 = QR_BOX
-    # erase the placeholder QR (stay inside the rounded border), keep the border
+    x0, y0, x1, y1 = QR_INNER
+    # erase the placeholder QR inside the border (keeps the rounded border intact)
     Image.Image.paste(im, (255, 255, 255), (x0, y0, x1, y1))
     box_w, box_h = x1 - x0, y1 - y0
-    side = int(min(box_w, box_h) * QR_SCALE)
+    side = int(min(box_w, box_h) * QR_FILL)
     qr = make_qr(BASE_URL + sticker_id).resize((side, side), Image.NEAREST)
-    px = x0 + (box_w - side) // 2 + QR_SHIFT_X
+    # centered in the inner box → equal white margin on all four sides
+    px = x0 + (box_w - side) // 2
     py = y0 + (box_h - side) // 2
     im.paste(qr, (px, py))
     return im
