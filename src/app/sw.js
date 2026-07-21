@@ -1,4 +1,4 @@
-const CACHE = "mitehuacan-v2";
+const CACHE = "mitehuacan-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -12,6 +12,7 @@ const SHELL = [
   "./pois.js",
   "./places.js",
   "./denue.js",
+  "./discovery.js",
 ];
 
 self.addEventListener("install", (e) => {
