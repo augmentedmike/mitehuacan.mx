@@ -230,7 +230,7 @@ const stChip=r=>r.exit===0?'<span class="st ok">ok</span>':'<span class="st fail
 const dChip=r=>r.delta&&(r.delta['+']||r.delta['-']||r.delta['~'])
   ?'<span class="st delta">+'+r.delta['+']+' \u2212'+r.delta['-']+' ~'+r.delta['~']+'</span>':'<span class="st none">no changes</span>';
 const wChip=r=>r.exit===0&&r.warns?'<span class="st warn2">'+r.warns+'</span>':'<span class="st none">0</span>';
-let VIEW=null,OPEN={},D=null;
+let VIEW=null,OPEN={},D=null,LAUNCHED={};
 async function refresh(){
   D=await (await fetch('/api/state')).json();
   const latest={};D.runs.forEach(r=>{if(!(r.name in latest))latest[r.name]=r;});
@@ -261,9 +261,10 @@ function renderMain(latest){
     '<div class="bar">'+(Object.keys(D.running).length
       ?'<span class="st run">chain running…</span>'
       :'<button onclick="launch(\\'full\\')">▶▶ run all</button>')+
-    '<button class="ghost" onclick="loginMenu()">🔑 log into accounts</button>'+
     '<span class="d" style="color:var(--ink2);font-size:11.5px">osm → denue-dl → denue → calles → google → instagram → facebook · also runs on its own daily at 07:00</span></div>'+
-    '<div id="loginbar"></div>';
+    '<div class="loginpanel">🔑 <b>log into accounts</b> — opens a real Chrome window to sign in; the agent reuses the session, never your password:'+
+      ['google','instagram','facebook'].map(p=>'<button class="ghost" id="lg-'+p+'" onclick="doLogin(\\''+p+'\\')">'+
+        (LAUNCHED[p]?'✓ '+p+' opened — sign in, then close it':'open '+p)+'</button>').join('')+'</div>';
 }
 function renderDetail(){
   const n=VIEW,a=D.agents[n],run=D.running[n];
@@ -294,16 +295,10 @@ async function loadLog(f){
   if(el&&el.textContent==='loading…')el.textContent=await (await fetch('/api/log?f='+encodeURIComponent(f))).text();
 }
 async function launch(n){await fetch('/api/run?name='+n,{method:'POST'});setTimeout(refresh,400);}
-function loginMenu(){
-  const el=$('loginbar');
-  if(el.innerHTML){el.innerHTML='';return;}
-  el.innerHTML='<div class="loginpanel">open a real Chrome window to sign in — the agent reuses the session, never your password:'+
-    ['google','instagram','facebook'].map(p=>'<button class="ghost" onclick="doLogin(\\''+p+'\\',this)">open '+p+'</button>').join('')+'</div>';
-}
-async function doLogin(p,btn){
-  btn.textContent='opening '+p+'…';btn.disabled=true;
+async function doLogin(p){
+  const btn=$('lg-'+p);if(btn){btn.textContent='opening '+p+'…';btn.disabled=true;}
+  LAUNCHED[p]=true;
   await fetch('/api/login?platform='+p,{method:'POST'});
-  setTimeout(()=>{btn.textContent='opened '+p+' — sign in, then close the window';},1200);
 }
 refresh();setInterval(refresh,3000);
 </script></body></html>"""
