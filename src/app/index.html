@@ -2939,8 +2939,9 @@ document.querySelectorAll('#ml-pills button').forEach(b => b.onclick = () => {
 });
 if (isMobile()) {
   if (BOOT && ['all', 'local', 'foránea', 'fav'].includes(BOOT.kind)) MV.kind = BOOT.kind;
-  // map is the home view; a saved session still restores wherever you left off
-  const v = BOOT && ['list', 'map'].includes(BOOT.view) ? BOOT.view : 'map';
+  // map is ALWAYS the entry view (the map is the product); users can still
+  // toggle to the list within a session. saved route/filter/destination restore.
+  const v = 'map';
   MV.lastRV = v;
   document.body.dataset.mview = v;
   mSyncUI();
