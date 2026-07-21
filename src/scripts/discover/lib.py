@@ -235,9 +235,12 @@ class DiscoveryAgent:
                 self.log(f"[requestfailed] {r.method} {r.url[:100]} — {r.failure}"))
 
     def _launch(self, pw):
+        # --use-mock-keychain (a Playwright default) MUST be dropped: the login
+        # window wrote cookies encrypted with the real macOS Keychain (v10), and
+        # a mock keychain can't decrypt them — the session would look empty (401).
         opts = dict(headless=True, viewport={"width": 1280, "height": 900},
                     locale="es-MX", timezone_id="America/Mexico_City",
-                    ignore_default_args=["--enable-automation"],
+                    ignore_default_args=["--enable-automation", "--use-mock-keychain"],
                     args=["--disable-blink-features=AutomationControlled", "--no-default-browser-check", "--no-first-run"])
         try:
             ctx = pw.chromium.launch_persistent_context(str(self.profile_dir()), channel="chrome", **opts)
