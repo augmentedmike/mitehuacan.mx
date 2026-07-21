@@ -204,10 +204,17 @@ def walled(page):
     return None
 
 
+# Google's own telemetry / tiles / thumbnails abort constantly and mean nothing
+# to us — filter them so the log stays about OUR requests.
+_NOISE = re.compile(r"gen_204|/log204|/maps/vt|streetviewpixels|/textsearch|clients4|"
+                    r"play\.google|doubleclick|/gen204|adservice|/maps/preview/log")
+
+
 def wire_console(page):
     page.on("console", lambda m: m.type in ("error", "warning") and log(f"[console.{m.type}] {m.text[:180]}"))
     page.on("pageerror", lambda e: log(f"[pageerror] {str(e)[:180]}"))
-    page.on("requestfailed", lambda r: log(f"[requestfailed] {r.method} {r.url[:110]} — {r.failure}"))
+    page.on("requestfailed", lambda r: (not _NOISE.search(r.url)) and
+            log(f"[requestfailed] {r.method} {r.url[:110]} — {r.failure}"))
 
 
 def save(candidates):
@@ -266,9 +273,18 @@ def scrape_google(page):
             continue
         if (w := walled(page)):
             attention(page, w)
-        for _ in range(4):
-            page.mouse.wheel(0, 3000)
-            page.wait_for_timeout(1000)
+        # the results feed is its own scroll container — page-level scroll won't
+        # paginate it. scroll INSIDE the feed until no new results load.
+        feed = page.query_selector('div[role="feed"]')
+        if feed:
+            prev = 0
+            for _ in range(12):
+                page.evaluate("el => el.scrollTo(0, el.scrollHeight)", feed)
+                page.wait_for_timeout(1100)
+                n = len(page.query_selector_all('div[role="feed"] a[href*="/maps/place/"]'))
+                if n == prev:                 # nothing new loaded → end of list
+                    break
+                prev = n
         anchors = page.query_selector_all('div[role="feed"] a[aria-label][href*="/maps/place/"]')
         before = len(out)
         for a in anchors:
