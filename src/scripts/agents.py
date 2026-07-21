@@ -36,12 +36,18 @@ AGENTS = {
     "osm":        {"cmd": [PY, "src/scripts/16_refresh_pois.py"],   "desc": "OSM POIs + places (Overpass)"},
     "denue":      {"cmd": [PY, "src/scripts/17_build_denue.py"],    "desc": "DENUE establishments (needs resources/poi/denue_puebla.csv)"},
     "calles":     {"cmd": [PY, "src/scripts/20_build_streets.py"],  "desc": "streets + esquinas (Overpass)"},
-    "google":     {"cmd": [PY, "src/scripts/21_discovery.py", "google"],
-                   "desc": "Google Maps discovery — businesses not in our data"},
-    "instagram":  {"cmd": [PY, "src/scripts/21_discovery.py", "instagram"],
-                   "desc": "Instagram discovery — needs YOUR session (21_discovery.py instagram --login)"},
-    "facebook":   {"cmd": [PY, "src/scripts/21_discovery.py", "facebook"],
-                   "desc": "Facebook discovery — needs YOUR session (21_discovery.py facebook --login)"},
+    "google":     {"cmd": [PY, "src/scripts/discover/run.py", "google"],
+                   "desc": "Google Maps discovery — sweeps space×category into google.db"},
+    "instagram":  {"cmd": [PY, "src/scripts/discover/run.py", "instagram"],
+                   "desc": "Instagram discovery — needs YOUR session (sign in below)"},
+    "facebook":   {"cmd": [PY, "src/scripts/discover/run.py", "facebook"],
+                   "desc": "Facebook discovery — needs YOUR session (sign in below)"},
+    "google-verify":    {"cmd": [PY, "src/scripts/discover/run.py", "google", "--verify"],
+                         "desc": "re-check google records, mark permanently-closed ones dead (prune)"},
+    "instagram-verify": {"cmd": [PY, "src/scripts/discover/run.py", "instagram", "--verify"],
+                         "desc": "re-check instagram handles, mark gone ones dead (prune)"},
+    "facebook-verify":  {"cmd": [PY, "src/scripts/discover/run.py", "facebook", "--verify"],
+                         "desc": "re-check facebook pages, mark gone ones dead (prune)"},
     "denue-dl":   {"cmd": ["bash", "-c",
                            "curl -s -o /tmp/denue_mx.zip https://www.inegi.org.mx/contenidos/masiva/denue/denue_21_csv.zip"
                            " && unzip -o -q /tmp/denue_mx.zip -d /tmp/denue_mx"
@@ -49,7 +55,10 @@ AGENTS = {
                            " && echo denue csv actualizado: $(wc -l < resources/poi/denue_puebla.csv) filas"],
                    "desc": "downloads the INEGI DENUE CSV (37MB)"},
 }
-CHAINS = {"full": ["osm", "denue-dl", "denue", "calles", "google", "instagram", "facebook"]}
+# daily chain: refresh authoritative layers, sweep discovery, then prune
+CHAINS = {"full": ["osm", "denue-dl", "denue", "calles",
+                   "google", "instagram", "facebook",
+                   "google-verify", "instagram-verify", "facebook-verify"]}
 
 # data layers snapshotted before/after every run so the log records EXACTLY
 # what each agent added / removed / changed — the log is the archive
@@ -354,8 +363,8 @@ class H(http.server.BaseHTTPRequestHandler):
             plat = (urllib.parse.parse_qs(u.query).get("platform") or [""])[0]
             if plat not in DISCOVERY_PLATFORMS:
                 return self.send_error(400)
-            disc = str(REPO / "src" / "scripts" / "21_discovery.py")
-            subprocess.Popen([PY, disc, plat, "--login", "--gui"], cwd=REPO)
+            disc = str(REPO / "src" / "scripts" / "discover" / "run.py")
+            subprocess.Popen([PY, disc, plat, "--login"], cwd=REPO)
             return self._send('{"ok":true}')
         self.send_error(404)
 
@@ -380,7 +389,7 @@ def main():
             prof = plats[j + 1] if j + 1 < len(plats) else "default"
             plats = [p for p in plats if p not in ("--profile", prof)]
             plats = plats or list(DISCOVERY_PLATFORMS)
-        disc = str(REPO / "src" / "scripts" / "21_discovery.py")
+        disc = str(REPO / "src" / "scripts" / "discover" / "run.py")
         for p in plats:
             print(f"\n=== log into {p} (profile: {prof}) — a Chrome window will open ===")
             subprocess.run([PY, disc, p, "--login", "--profile", prof], cwd=REPO)
