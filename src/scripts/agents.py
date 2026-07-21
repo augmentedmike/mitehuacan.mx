@@ -188,6 +188,26 @@ def run_agent(name):
     return p.returncode
 
 
+def harvest():
+    """Live counts from the discovery lifecycle stores — the collected data."""
+    import sqlite3
+    disc = REPO / "resources" / "discovery"
+    out = {}
+    for db in sorted(disc.glob("*.db")):
+        try:
+            c = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+            tbl = "places" if db.stem == "unified" else "records"
+            live = c.execute(f"SELECT COUNT(*) FROM {tbl}"
+                             + ("" if db.stem == "unified" else " WHERE status IN ('candidate','approved')")).fetchone()[0]
+            dead = 0 if db.stem == "unified" else c.execute(
+                "SELECT COUNT(*) FROM records WHERE status='dead'").fetchone()[0]
+            out[db.stem] = {"live": live, "dead": dead}
+            c.close()
+        except Exception:  # noqa: BLE001
+            pass
+    return out
+
+
 def load_runs():
     if not INDEX.exists():
         return []
@@ -222,6 +242,9 @@ td .d{color:var(--ink2);font-size:11.5px}
 .st.run{background:rgba(245,166,35,.2);color:var(--warn)}
 .st.warn2{background:rgba(245,166,35,.15);color:var(--warn)}
 .st.delta{background:rgba(110,166,255,.15);color:var(--accent)}
+.harvest{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;font-size:12px}
+.hv{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px 9px;color:var(--ink2)}
+.hv b{color:var(--accent)}.hv .dead{color:var(--err)}
 .st.none{background:transparent;color:var(--ink2);font-weight:400}
 button{border:none;border-radius:8px;padding:6px 12px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
 button:disabled{opacity:.5}
@@ -259,7 +282,12 @@ async function refresh(){
 }
 function renderMain(latest){
   $('title').textContent='Data agents';
-  $('subtitle').innerHTML='gather data for the maps · run on THIS machine · logs in .agent-runs/';
+  const h=D.harvest||{};
+  const chip=(k,lbl)=>h[k]?'<span class="hv"><b>'+h[k].live.toLocaleString()+'</b> '+lbl+(h[k].dead?' <span class="dead">−'+h[k].dead+'</span>':'')+'</span>':'';
+  $('subtitle').innerHTML='gather data for the zone · run on THIS machine · logs in .agent-runs/'+
+    '<div class="harvest">harvest: '+
+    chip('unified','unified places')+chip('google','google')+chip('facebook','facebook')+
+    chip('instagram','instagram')+chip('fb_events','events')+'</div>';
   const rows=Object.entries(D.agents).map(([n,a])=>{
     const r=latest[n],run=D.running[n];
     const estado=run?'<span class="st run">running '+ago(run.start)+'</span>':r?stChip(r):'<span class="st none">never</span>';
@@ -339,7 +367,7 @@ class H(http.server.BaseHTTPRequestHandler):
         if u.path == "/api/state":
             return self._send(json.dumps({
                 "agents": {k: {"desc": v["desc"]} for k, v in AGENTS.items()},
-                "running": RUNNING, "runs": load_runs()}, ensure_ascii=False))
+                "running": RUNNING, "runs": load_runs(), "harvest": harvest()}, ensure_ascii=False))
         if u.path == "/api/log":
             q = urllib.parse.parse_qs(u.query)
             f = (q.get("f") or [""])[0]
