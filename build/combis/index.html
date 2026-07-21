@@ -404,6 +404,7 @@
     html:not([data-view="full"]) #trip-cols { display: block; }
     html:not([data-view="full"]) #trip-right { display: none; }
     html:not([data-view="full"]) #topbar-seg { display: none !important; }
+    html:not([data-view="full"]) #topbar nav { display: none; }   /* frame uses #mtop-btns, not the desktop nav — no duplicate controls */
     html:not([data-view="full"]) #mtop-btns { display: flex; }
     html:not([data-view="full"]) #mhead.collapsed #mcollapse { max-height: 0; opacity: 0; }
     html:not([data-view="full"]) #mhead.collapsed #msrch-btn { display: flex; }
@@ -423,8 +424,8 @@
     <a href="#" id="theme-toggle" aria-label="tema / theme"><span class="ic-moon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span><span class="ic-sun"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></a>
   </nav>
   <div id="mtop-btns">
+    <button id="mlang" aria-label="idioma / language" style="font-size:14px;font-weight:700">EN</button>
     <button id="mtheme" aria-label="tema / theme"><span class="ic-moon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span><span class="ic-sun"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></button>
-    <button id="mcfg-btn" aria-label="ajustes / settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h.1a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1Z"/></svg></button>
   </div>
 </header>
 <div id="app">
@@ -2644,39 +2645,17 @@ async function shareRoute(id) {
   } catch (e) { /* user cancelled the share sheet */ }
 }
 
-function openSettings() {
-  SHEET = null;
-  const el = document.getElementById('sheet');
-  const TH = document.documentElement.dataset.theme;
-  const on = ' style="border-color:var(--accent);color:var(--accent)"';
-  el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
-    '<div class="sh-head"><span class="sh-name"><b>' + t('mtCfg') + '</b></span>' +
-    '<button class="iconbtn" id="sh-close">' + S_X + '</button></div>' +
-    '<div class="sh-row"><div style="flex:1;padding-top:9px"><b>' + t('cfgLang') + '</b></div>' +
-    '<div class="sh-actions" style="margin:0;flex:1.4">' +
-    '<button id="cfg-es"' + (LANG === 'es' ? on : '') + '>ES</button>' +
-    '<button id="cfg-en"' + (LANG === 'en' ? on : '') + '>EN</button></div></div>' +
-    '<div class="sh-row"><div style="flex:1;padding-top:9px"><b>' + t('cfgTheme') + '</b></div>' +
-    '<div class="sh-actions" style="margin:0;flex:1.4">' +
-    '<button id="cfg-light"' + (TH === 'light' ? on : '') + '>' + t('cfgLight') + '</button>' +
-    '<button id="cfg-dark"' + (TH === 'dark' ? on : '') + '>' + t('cfgDark') + '</button></div></div>';
-  el.classList.remove('min');
-  el.classList.add('show');
-  document.getElementById('sh-close').onclick = closeSheet;
-  const save = (k, v) => { try { localStorage[k] = v; } catch (e) {} location.reload(); };
-  document.getElementById('cfg-es').onclick = () => save('mtLang', 'es');
-  document.getElementById('cfg-en').onclick = () => save('mtLang', 'en');
-  document.getElementById('cfg-light').onclick = () => save('mtTheme', 'light');
-  document.getElementById('cfg-dark').onclick = () => save('mtTheme', 'dark');
-}
-
 document.querySelectorAll('#mseg button').forEach(b => b.onclick = () => mSetView(b.dataset.v));
 document.getElementById('mtheme').onclick = () => {
   try { localStorage.mtTheme = dark ? 'light' : 'dark'; } catch (e) {}
   track('theme_' + (dark ? 'light' : 'dark'));
   location.reload();
 };
-document.getElementById('mcfg-btn').onclick = () => openSettings();
+{
+  const ml = document.getElementById('mlang');
+  ml.textContent = LANG === 'es' ? 'EN' : 'ES';   // show the language you'd switch TO
+  ml.onclick = () => { try { localStorage.mtLang = LANG === 'es' ? 'en' : 'es'; } catch (e) {} location.reload(); };
+}
 document.getElementById('msrch-btn').onclick = () => {
   SRCH_FORCE = true;
   syncCollapse();
