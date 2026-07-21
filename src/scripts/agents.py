@@ -270,7 +270,7 @@ function renderMain(latest){
     '<div class="bar">'+(Object.keys(D.running).length
       ?'<span class="st run">chain running…</span>'
       :'<button onclick="launch(\\'full\\')">▶▶ run all</button>')+
-    '<span class="d" style="color:var(--ink2);font-size:11.5px">osm → denue-dl → denue → calles → google → instagram → facebook · also runs on its own daily at 07:00</span></div>'+
+    '<span class="d" style="color:var(--ink2);font-size:11.5px">refresh layers → discover (google/ig/fb) → verify &amp; prune · also runs on its own daily at 07:00</span></div>'+
     '<div class="loginpanel">🔑 <b>log into accounts</b> — opens a real Chrome window to sign in; the agent reuses the session, never your password:'+
       ['google','instagram','facebook'].map(p=>'<button class="ghost" id="lg-'+p+'" onclick="doLogin(\\''+p+'\\')">'+
         (LAUNCHED[p]?'✓ '+p+' opened — sign in, then close it':'open '+p)+'</button>').join('')+'</div>';
