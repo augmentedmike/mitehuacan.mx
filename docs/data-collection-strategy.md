@@ -81,18 +81,21 @@ rotting.
 
 ---
 
-## 4. Cross-source entity resolution — the next big lever
+## 4. Cross-source entity resolution — ✅ built (`unify`)
 
-Today each source's store is separate. The highest-value next step is a
-**unified place table** that merges records across sources by name + location
-proximity:
+Each source's store is separate; `unify.py` merges them into a **unified place
+table** by name + location proximity:
 
 - one canonical business ← its Google listing + IG handle + FB page
-- confidence scored by how many independent sources agree
-- conflicts (different coords, name variants) surfaced for review
+- confidence scored by how many independent sources agree (2+ = strong)
+- name-variant matching strips a leading generic category word ("Restaurante
+  Casa Vieja" ↔ "Casa Vieja"); a >250 m coord split keeps distinct same-name
+  shops apart
 
-This turns three noisy lists into one authoritative record per business, and it's
-what lets "Yoms! on Instagram" resolve to a pin on the map with hours and events.
+This turns three noisy lists into one authoritative record per business — what
+lets "Yoms! on Instagram" resolve to a pin with hours and events. **Next lever:**
+deepen IG/FB coverage (they're shallow vs google), and push the highest-confidence
+unified places into the admin approval queue — the last mile to the live map.
 
 ---
 
@@ -101,13 +104,14 @@ what lets "Yoms! on Instagram" resolve to a pin on the map with hours and events
 Same engine (zone × rotation × lifecycle store), new record types. Each is a new
 agent that drops into the existing framework:
 
-1. **Businesses** — ✅ the current three agents.
+1. **Businesses** — ✅ the three agents (google/instagram/facebook), merged by
+   the `unify` step into one canonical place each (cross-source resolution).
 2. **Streets & intersections** — ✅ `calles` from OSM. Extend: DENUE address
    parsing to fill blocks OSM hasn't mapped (Zinacatepec-type gaps).
 3. **Combi routes** — ✅ the core product; the admin `record` flow captures live
    telemetry. Discovery angle: FB/community pages that post route info.
-4. **Events / fiestas** — ▢ Facebook Events + municipal calendars, keyed by town +
-   date, with a lifecycle (past events archive, not prune).
+4. **Events / fiestas** — ✅ `fb_events` agent — Facebook events per town into
+   `fb_events.db`. Extend: municipal calendars; upcoming-only filter.
 5. **Services** — ▢ already partly captured as business categories; formalize the
    service taxonomy (plumbers, tutors, repairs) and add the informal ones that
    only advertise on FB Marketplace / IG.
@@ -115,6 +119,10 @@ agent that drops into the existing framework:
    contratando" posts.
 7. **…** — anything geo-local with a source: transit fares, market days,
    government offices' hours. Each is a taxonomy + a source adapter + a store.
+
+**Current harvest** (visible on the dashboard's harvest bar): ~3.9k canonical
+places merged from ~3.2k google + 730 facebook + 95 instagram, plus fiestas.
+Growing every run as the cursor laps the zone.
 
 The order is deliberate: businesses first (they anchor everything with a
 location), then the things that attach *to* businesses and places (events at a
