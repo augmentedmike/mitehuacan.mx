@@ -48,6 +48,8 @@ AGENTS = {
                          "desc": "re-check instagram handles, mark gone ones dead (prune)"},
     "facebook-verify":  {"cmd": [PY, "src/scripts/discover/run.py", "facebook", "--verify"],
                          "desc": "re-check facebook pages, mark gone ones dead (prune)"},
+    "unify":      {"cmd": [PY, "src/scripts/discover/unify.py"],
+                   "desc": "merge sources into one canonical place each (cross-source resolution)"},
     "denue-dl":   {"cmd": ["bash", "-c",
                            "curl -s -o /tmp/denue_mx.zip https://www.inegi.org.mx/contenidos/masiva/denue/denue_21_csv.zip"
                            " && unzip -o -q /tmp/denue_mx.zip -d /tmp/denue_mx"
@@ -58,7 +60,8 @@ AGENTS = {
 # daily chain: refresh authoritative layers, sweep discovery, then prune
 CHAINS = {"full": ["osm", "denue-dl", "denue", "calles",
                    "google", "instagram", "facebook",
-                   "google-verify", "instagram-verify", "facebook-verify"]}
+                   "google-verify", "instagram-verify", "facebook-verify",
+                   "unify"]}
 
 # data layers snapshotted before/after every run so the log records EXACTLY
 # what each agent added / removed / changed — the log is the archive
