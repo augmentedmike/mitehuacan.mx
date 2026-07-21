@@ -53,9 +53,10 @@ class InstagramAgent(DiscoveryAgent):
             handle, full = usr.get("username", ""), usr.get("full_name", "")
             if not handle:
                 continue
-            # keep only Tehuacán-relevant BUSINESS accounts
-            if "tehuacan" not in norm(handle) + norm(full):
-                continue
+            # the query is already geo-scoped ("tehuacan <keyword>"), so keep any
+            # BUSINESS account it returns — don't require "tehuacan" in the name,
+            # or we drop local shops like Yoms! that don't brand with the city.
+            # national chains that slip in dedupe out against the map layers.
             if not self._is_business(usr, full, handle):
                 continue
             out.append({"key": "ig:" + handle, "name": (full or handle)[:80], "source": "instagram",
