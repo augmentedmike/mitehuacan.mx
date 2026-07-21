@@ -173,12 +173,37 @@ admin `/lugares` approval queue is the gate.
 ### Operating model — Mike holds the session
 
 - **`21_discovery.py <platform> --login`** opens a real, headed browser on a
-  persistent profile in `.agent-auth/<platform>/`. Mike signs in and solves any
-  captcha himself, then presses Enter in the terminal. Cookies persist in the
-  profile.
+  persistent profile in `.agent-auth/<platform>/<profile>/`. Mike signs in and
+  solves any captcha himself, then presses Enter in the terminal. Cookies persist
+  in the profile.
 - **`21_discovery.py <platform>`** (or launching it from the dashboard) runs
   headless, reusing that saved session. The agent never sees or types Mike's
   credentials.
+
+**Sign-in tools (open Chrome to log in):**
+
+- **Dashboard button** — "🔑 log into accounts" opens a per-platform menu; each
+  button opens a real Chrome window (`--gui` mode). Sign in, then **close the
+  window** and the session saves automatically (`POST /api/login`).
+- **Terminal** — `python3 src/scripts/agents.py login` opens Chrome for each
+  platform in turn (or `login instagram facebook` for a subset). Press Enter when
+  done with each.
+
+**Separate accounts per platform.** Each platform has its own isolated profile,
+so the google / instagram / facebook logins never mix. If Mike has more than one
+account on a platform, `--profile NAME` (both on `--login` and on the scrape run)
+keeps them in separate profiles — e.g. `.agent-auth/google/personal/` vs
+`.agent-auth/google/business/`.
+
+### Logging — enough to debug without re-running
+
+Every discovery run logs, with elapsed timestamps: the platform/profile/mode, the
+profile dir, each query and the exact URL it hit, the landed page title and URL,
+HTTP status of each API call, per-query result counts (anchors found → rows kept
+→ cumulative), browser console errors / page errors / failed requests, the full
+dedup accounting (how many known names each layer contributed, how many were
+already-known vs new), every new candidate with its location, and a full
+traceback + error screenshot if the scrape throws.
 
 ### Captcha / login-wall handling — never bypass, always hand back
 
