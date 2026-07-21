@@ -382,6 +382,28 @@
     #topbar nav { gap: 0; }
     #topbar nav a { padding: 5px 7px; }
   }
+
+  /* ---- Desktop phone-frame: 99%+ of traffic is mobile, so on anything larger
+     than a phone we render the SAME mobile app inside a phone outline on a dark
+     zinc backdrop (rider app only; admin is unaffected). --------------------- */
+  @media (min-width: 701px) {
+    html { background: #18181b; display: flex; align-items: center; justify-content: center; min-height: 100dvh; }
+    body {
+      width: 412px; max-width: 412px; height: min(884px, 96dvh); margin: 0;
+      border: 11px solid #0a0a0b; border-radius: 46px;
+      box-shadow: 0 0 0 2px #3f3f46, 0 40px 90px rgba(0,0,0,.6);
+      overflow: hidden; position: relative;
+      transform: translateZ(0);   /* becomes the containing block for position:fixed children */
+    }
+    /* keep the MOBILE layout inside the frame — undo the wide-screen adaptations */
+    #trip-cols { display: block; }
+    #trip-right { display: none; }
+    #topbar-seg { display: none !important; }
+    #mtop-btns { display: flex; }
+    #mhead.collapsed #mcollapse { max-height: 0; opacity: 0; }
+    #mhead.collapsed #msrch-btn { display: flex; }
+    #toast { max-width: 340px; }
+  }
 </style>
 </head>
 <body>
@@ -522,14 +544,15 @@ const I18N = {
     builtBy: 'Hecho por Tylt',
     routesServing: (n, l) => n + (n === 1 ? ' ruta pasa por ' : ' rutas pasan por ') + '“' + l + '”',
     tripDetail: 'Detalles del viaje',
-    addBiz: '¿Es tu negocio? Agrégalo gratis',
-    addBizTitle: 'Agregar negocio al mapa',
-    addBizName: 'Nombre del negocio',
+    addBiz: '＋ Agregar un lugar o negocio',
+    addBizTitle: 'Agregar un lugar al mapa',
+    addBizName: 'Nombre del lugar o negocio',
     addBizKind: 'Tipo (tienda, comida, ropa…)',
-    addBizContact: 'WhatsApp o Instagram (para confirmarte)',
+    addBizContact: 'WhatsApp o Instagram (opcional)',
     addBizHere: 'Usar mi ubicación actual',
-    addBizSend: 'Enviar',
+    addBizSend: 'Agregar',
     addBizOk: '¡Gracias! Lo revisamos y aparece en el mapa en 1–2 días.',
+    addBizHint: 'Ponte en el lugar y usa tu ubicación, o quítala para que lo ubiquemos nosotros.',
     introLoc: 'Toca aquí para ubicarte en el mapa',
     introSearch: 'Escribe a dónde vas — por ejemplo “Walmart”',
     introPick: 'Elige un resultado de la lista',
@@ -626,14 +649,15 @@ const I18N = {
     builtBy: 'Built by Tylt',
     routesServing: (n, l) => n + (n === 1 ? ' route serves ' : ' routes serve ') + '“' + l + '”',
     tripDetail: 'Trip details',
-    addBiz: 'Is this your business? Add it free',
-    addBizTitle: 'Add a business to the map',
-    addBizName: 'Business name',
-    addBizKind: 'Type (tienda, comida, ropa…)',
-    addBizContact: 'WhatsApp or Instagram (so we can confirm)',
+    addBiz: '＋ Add a place or business',
+    addBizTitle: 'Add a place to the map',
+    addBizName: 'Place or business name',
+    addBizKind: 'Type (shop, food, clothes…)',
+    addBizContact: 'WhatsApp or Instagram (optional)',
     addBizHere: 'Use my current location',
-    addBizSend: 'Send',
+    addBizSend: 'Add',
     addBizOk: 'Thanks! We review it and it shows on the map in 1–2 days.',
+    addBizHint: 'Stand at the spot and use your location, or turn it off and we\'ll place it.',
     introLoc: 'Tap here to find yourself on the map',
     introSearch: 'Type where you’re going — e.g. “Walmart”',
     introPick: 'Pick a result from the list',
@@ -1699,6 +1723,7 @@ function openAddBiz(prefill) {
     '<input id="ab-contact" class="abin" placeholder="' + t('addBizContact') + '" maxlength="120">' +
     '<input id="ab-web" style="display:none" tabindex="-1" autocomplete="off">' +
     '<label class="ab-chk"><input id="ab-here" type="checkbox" checked> ' + t('addBizHere') + '</label>' +
+    '<div class="dt-note" style="margin:2px 0 8px">' + t('addBizHint') + '</div>' +
     '<button class="sh-cta" id="ab-send">' + t('addBizSend') + '</button>' +
     '<div class="dt-note" id="ab-msg" style="margin-top:8px"></div>';
   el.style.maxHeight = '';
@@ -2754,6 +2779,20 @@ function suggRow(html, cb) {
   return d;
 }
 
+function appendAddRow(q) {
+  // always-available "add a place" — the easy path for anything not on the map
+  const add = document.createElement('div');
+  add.className = 'it';
+  add.style.color = 'var(--accent)';
+  add.style.fontWeight = '700';
+  add.textContent = t('addBiz');
+  const go = e => { e.preventDefault(); hideSugg(); openAddBiz(String(q || '').trim()); };
+  add.onpointerdown = go;
+  add.onmousedown = go;
+  mlSugg.appendChild(add);
+  mlSugg.hidden = false;
+}
+
 function setSearchLabel(label) {
   // keep the picked place/route visible in the box; results live in the chips.
   // blur dismisses the phone keyboard (our mousedown preventDefault keeps focus otherwise)
@@ -2906,17 +2945,11 @@ async function runSugg(q) {
       none.style.color = 'var(--ink-2)';
       none.textContent = t('noResults') + ' \u201C' + q + '\u201D';
       mlSugg.appendChild(none);
-      const add = document.createElement('div');
-      add.className = 'it';
-      add.style.color = 'var(--accent)';
-      add.style.fontWeight = '700';
-      add.textContent = t('addBiz');
-      add.onpointerdown = e => { e.preventDefault(); hideSugg(); openAddBiz(q); };
-      add.onmousedown = e => { e.preventDefault(); hideSugg(); openAddBiz(q); };
-      mlSugg.appendChild(add);
     }
     mlSugg.hidden = false;
   }
+  // the "add a place" option is always available while searching
+  if (q.length >= 2) appendAddRow(q);
 }
 
 document.getElementById('ml-search').addEventListener('input', e => {
@@ -3053,6 +3086,7 @@ document.querySelectorAll('.filters button').forEach(b => {
 (() => {
   try { if (localStorage.mtIntro) return; } catch (e) { return; }
   if (params.get('ruta')) return;   // arrived from a QR scan: the route sheet already answers the question
+  if (window.matchMedia('(min-width:701px)').matches) return;   // desktop phone-frame: top-layer popovers escape the frame
   const STEPS = [
     {key: 'introLoc',    el: () => document.querySelector('.maplibregl-ctrl-geolocate')},
     {key: 'introSearch', el: () => document.getElementById('ml-search')},
