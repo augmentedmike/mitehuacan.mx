@@ -1,0 +1,5 @@
+# Seed business names — searched DIRECTLY BY NAME across the agents, alongside
+# the category sweep. Use this for brand-named local shops that don't rank for
+# category keywords (Instagram-native businesses like Yoms!). One name per line;
+# lines starting with # are comments. Every agent reads this file.
+Yoms
