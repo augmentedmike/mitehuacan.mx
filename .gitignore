@@ -38,3 +38,7 @@ resources/poi/denue_puebla.csv
 .agent-runs/
 .agent-auth/
 resources/discovery/
+
+# generated sticker sheets (regeneratable via 22_sticker_sheet.py)
+resources/stickers/*.pdf
+resources/stickers/*-preview.png
