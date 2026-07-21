@@ -90,7 +90,11 @@ def main():
     udb.execute("""CREATE TABLE places(
         key TEXT PRIMARY KEY, name TEXT, lat REAL, lon REAL, category TEXT,
         sources TEXT, confidence INTEGER,
-        google TEXT, instagram TEXT, facebook TEXT, updated TEXT)""")
+        google TEXT, instagram TEXT, facebook TEXT,
+        address TEXT, phone TEXT, hours TEXT, updated TEXT)""")
+
+    def first(ms, col):
+        return next((m[col] for m in ms if m.get(col)), None)
 
     now = now_iso()
     unified, conf = 0, {1: 0, 2: 0, 3: 0}
@@ -108,18 +112,19 @@ def main():
             gg = next((m["url"] for m in ms if m["source"] == "google"), None)
             ig = next((m.get("handle") or m.get("url") for m in ms if m["source"] == "instagram"), None)
             fb = next((m["url"] for m in ms if m["source"] == "facebook"), None)
-            udb.execute("INSERT OR REPLACE INTO places VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            udb.execute("INSERT OR REPLACE INTO places VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                         (f"{k}:{i}", name[:80], lat, lon, ", ".join(cats),
-                         ", ".join(srcs), len(srcs), gg, ig, fb, now))
+                         ", ".join(srcs), len(srcs), gg, ig, fb,
+                         first(ms, "address"), first(ms, "phone"), first(ms, "hours"), now))
             unified += 1
             conf[len(srcs)] = conf.get(len(srcs), 0) + 1
     udb.commit()
 
     # export the merged queue
-    rows = udb.execute("SELECT name,lat,lon,category,sources,confidence,google,instagram,facebook "
-                       "FROM places ORDER BY confidence DESC, name").fetchall()
+    cols = ["name", "lat", "lon", "category", "sources", "confidence",
+            "google", "instagram", "facebook", "address", "phone", "hours"]
+    rows = udb.execute(f"SELECT {','.join(cols)} FROM places ORDER BY confidence DESC, name").fetchall()
     with open(DISC / "unified.jsonl", "w", encoding="utf-8") as fh:
-        cols = ["name", "lat", "lon", "category", "sources", "confidence", "google", "instagram", "facebook"]
         for r in rows:
             fh.write(json.dumps({c: v for c, v in zip(cols, r) if v is not None}, ensure_ascii=False) + "\n")
     udb.close()
