@@ -8,11 +8,15 @@ writes, how it fails, and how it's operated.
 
 - **Runner + console:** `src/scripts/agents.py` (dashboard at
   `http://localhost:8790`)
-- **Agent scripts:** `src/scripts/{16,17,20,21}_*.py` + the `denue-dl` shell step
+- **Authoritative scripts:** `src/scripts/{16,17,20}_*.py` + the `denue-dl` shell step
+- **Discovery package:** `src/scripts/discover/` — `lib.py` (shared engine),
+  `gmaps.py` / `instagram.py` / `facebook.py` (one self-contained agent each),
+  `run.py` (CLI). Each agent owns its setup, algorithm, and data.
 - **Run artifacts:** `.agent-runs/` (gitignored) — one full log per run plus
   `runs.jsonl`, the index the dashboard reads
-- **Sessions for the social scrapers:** `.agent-auth/<platform>/` (gitignored)
-- **Discovery output:** `resources/discovery/<platform>.jsonl` (gitignored)
+- **Sessions for the social scrapers:** `.agent-auth/<platform>/<profile>/` (gitignored)
+- **Discovery data:** `resources/discovery/<agent>.db` — the SQLite lifecycle
+  store — plus `<agent>.jsonl`, the store's export for the admin queue (gitignored)
 
 ---
 
@@ -161,61 +165,98 @@ up-to-date data for cleaner dedup.
 
 ---
 
-## Discovery scraper agents
+## Discovery agents — the `discover/` package
 
-All three share `src/scripts/21_discovery.py` and the same operating model. They
-find businesses that exist on a platform but **not** in our map data, dedupe each
-find against `denue.js / places.js / pois.js` **and** previously discovered
-candidates, and append only genuinely-new names to
-`resources/discovery/<platform>.jsonl`. Nothing they write is published — the
-admin `/lugares` approval queue is the gate.
+Procedural, and **each agent owns its own setup, algorithm, and data.**
+`src/scripts/discover/lib.py` is the shared engine; `gmaps.py`, `instagram.py`,
+and `facebook.py` are one self-contained agent each; `run.py` is the CLI.
+
+```
+python3 src/scripts/discover/run.py <agent> [MODE] [OPTS]
+  MODE  (default) discover next batch    --verify  prune pass
+        --login  sign in                 --stats   print store counts
+  OPTS  --batch N   --all (whole plan)   --profile NAME
+```
+
+Each agent finds businesses that exist on its platform but **not** in our map
+data and records them in its store. Nothing is published — the admin `/lugares`
+approval queue is the gate.
+
+### Systematic sweep — space × category, not one flat search
+
+Repeating a search plateaus. Google sweeps a **plan** of 2,075 items = 25 points
+(centro + rings at 1.5/3/5 km, eight compass points each) × an 83-subcategory
+taxonomy, **point-major** so it exhausts every category at centro before moving
+outward. Each search is centered on its point and its results feed is paginated
+fully (≈80+ results/search vs ~7 unpaginated). Instagram and Facebook are
+keyword-only, so they sweep the taxonomy as `"<subcat> tehuacán"` queries.
+
+A run does a bounded **batch** (default 24) starting at a persistent per-agent
+**cursor** and advances it, so repeated runs walk the whole plan without
+repeating; `--all` sweeps everything.
+
+### Lifecycle store — records are maintained, not appended
+
+Each agent's data is `resources/discovery/<agent>.db` (SQLite). Every record has
+a stable key (google place id / ig handle / fb page) and carries state:
+`first_seen`, `last_seen`, `times_seen`, `status` (candidate → approved /
+rejected / dead), `status_reason`, `status_at`, `last_verified`.
+
+- **discover** upserts: a re-encountered record bumps `last_seen`/`times_seen`
+  (no duplicate row); a genuinely-new one inserts as `candidate`. Deduped against
+  the map layers (`denue/places/pois`) **and** the store itself.
+- **verify** (`--verify`, the prune pass) re-checks live records
+  least-recently-verified first and marks the gone ones `dead` with a reason —
+  Google "permanently closed", a 404'd IG handle, a removed FB page. Pruning is
+  **quarantine, never a hard delete**, so it's reversible.
+- A record already **decided** (`dead`/`rejected`) stays decided; re-encountering
+  it just bumps `last_seen` and it never re-surfaces to the export/queue.
+- `<agent>.jsonl` is the store's **export** of the live queue (candidate +
+  approved) for the admin flow — deterministic: same store ⇒ same file.
+
+### Idempotent by construction
+
+The store is keyed, so running the same work twice converges to the same state:
+discover upserts create no duplicates (verified: a re-run of a slice added 0 new,
+125 re-seen, store unchanged), and re-marking a dead record dead is a no-op.
+`--all` and fixed-slice reruns are fully data-idempotent; the cursor is the only
+progress state.
 
 ### Operating model — Mike holds the session
 
-- **`21_discovery.py <platform> --login`** opens a real, headed browser on a
-  persistent profile in `.agent-auth/<platform>/<profile>/`. Mike signs in and
-  solves any captcha himself, then presses Enter in the terminal. Cookies persist
-  in the profile.
-- **`21_discovery.py <platform>`** (or launching it from the dashboard) runs
-  headless, reusing that saved session. The agent never sees or types Mike's
-  credentials.
+The human owns auth; the agent does the work.
 
-**Sign-in tools (open Chrome to log in):**
-
-- **Dashboard button** — "🔑 log into accounts" opens a per-platform menu; each
-  button opens a real Chrome window (`--gui` mode). Sign in, then **close the
-  window** and the session saves automatically (`POST /api/login`).
-- **Terminal** — `python3 src/scripts/agents.py login` opens Chrome for each
-  platform in turn (or `login instagram facebook` for a subset). Press Enter when
-  done with each.
-
-**Separate accounts per platform.** Each platform has its own isolated profile,
-so the google / instagram / facebook logins never mix. If Mike has more than one
-account on a platform, `--profile NAME` (both on `--login` and on the scrape run)
-keeps them in separate profiles — e.g. `.agent-auth/google/personal/` vs
-`.agent-auth/google/business/`.
+- **Sign-in** — the dashboard's "🔑 log into accounts" buttons (or
+  `run.py <agent> --login`, or `agents.py login`) open a **real, un-automated
+  Chrome** on the agent's profile. Google blocks sign-in in any browser Playwright
+  drives (it detects the debugging port), so login deliberately bypasses Playwright
+  and launches the actual Chrome binary. Sign in, close the window, session saved.
+- **Scrape** runs headless, reusing that profile's cookies. The agent never sees
+  or types credentials.
+- **Separate accounts** — each platform has its own isolated profile
+  (`.agent-auth/<platform>/<profile>/`) so logins never mix; `--profile NAME`
+  keeps multiple accounts per platform (`google/personal` vs `google/business`).
 
 ### Logging — enough to debug without re-running
 
-Every discovery run logs, with elapsed timestamps: the platform/profile/mode, the
-profile dir, each query and the exact URL it hit, the landed page title and URL,
-HTTP status of each API call, per-query result counts (anchors found → rows kept
-→ cumulative), browser console errors / page errors / failed requests, the full
-dedup accounting (how many known names each layer contributed, how many were
-already-known vs new), every new candidate with its location, and a full
-traceback + error screenshot if the scrape throws.
+Every run logs, with elapsed timestamps: agent/profile/mode, the profile dir, the
+plan slice and cursor, each item's center point + category, per-item result and
+new-to-store counts, the dedup picture (map names + store stats), browser console
+errors / page errors / failed requests (Google's own telemetry noise filtered
+out), every dead-marking with its reason, and a full traceback + error screenshot
+if a scrape throws.
 
 ### Captcha / login-wall handling — never bypass, always hand back
 
-When a headless run hits a captcha, a login wall, or a rate-limit, the agent does
-**not** try to get past it. It:
+When a run hits a captcha, login wall, or rate-limit, the agent does **not** try
+to get past it. It:
 
-1. screenshots the wall to `.agent-runs/attention-<platform>.png`,
-2. fires a desktop notification ("needs you: … — run `<platform> --login`"),
+1. screenshots the wall to `.agent-runs/attention-<agent>.png`,
+2. fires a desktop notification ("needs you: … — re-login `<agent>`"),
 3. exits with code **3**, which shows red in the dashboard.
 
-Mike then runs `--login`, refreshes the session, and re-runs. This keeps the
-system honest about platform terms and puts the human exactly where the human is
+Mike then re-logs in, refreshes the session, and re-runs. This keeps the system
+honest about platform terms and puts the human exactly where the human is
 needed.
 
 ### `google` — Google Maps discovery
@@ -246,13 +287,15 @@ needed.
 
 ---
 
-## Candidate record shape
+## Record shape
 
-Each line in `resources/discovery/<platform>.jsonl`:
+A record in `resources/discovery/<agent>.db` (and in the `.jsonl` export):
 
 ```json
-{"name": "...", "source": "google|instagram|facebook", "query": "...",
- "lat": 18.46, "lon": -97.39, "url": "...", "handle": "..."}
+{"key": "g:0x…:0x…", "name": "...", "source": "google", "category": "...",
+ "subcat": "...", "where": "centro", "lat": 18.46, "lon": -97.39,
+ "url": "...", "handle": "...", "first_seen": "...", "last_seen": "...",
+ "times_seen": 3, "status": "candidate", "last_verified": "..."}
 ```
 
 `lat`/`lon`/`url`/`handle` are present when the platform exposed them. On import
@@ -266,8 +309,8 @@ posture as the public "¿Es tu negocio?" self-registration intake).
 ```
 authoritative:  Overpass / INEGI ──> osm, denue-dl→denue, calles ──> resources/map-data/*.js
                                                                           │
-discovery:      Google / IG / FB  ──> 21_discovery.py ──> resources/discovery/*.jsonl
-                                                                          │
+discovery:  Google / IG / FB ──> discover/<agent> ──> <agent>.db ──(export)──> <agent>.jsonl
+                                       ▲  verify prunes dead          │
                                                           admin /lugares approval queue
                                                                           │
                                                           rebuild (build step) + PR ──> production
