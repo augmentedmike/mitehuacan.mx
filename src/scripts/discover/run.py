@@ -25,8 +25,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))   # import sibling modu
 from gmaps import GoogleAgent          # noqa: E402
 from instagram import InstagramAgent    # noqa: E402
 from facebook import FacebookAgent      # noqa: E402
+from fb_events import FacebookEventsAgent  # noqa: E402
 
-AGENTS = {"google": GoogleAgent, "instagram": InstagramAgent, "facebook": FacebookAgent}
+AGENTS = {"google": GoogleAgent, "instagram": InstagramAgent, "facebook": FacebookAgent,
+          "fb_events": FacebookEventsAgent}
 
 
 def opt(name, default=None):
