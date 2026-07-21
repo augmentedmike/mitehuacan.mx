@@ -243,6 +243,14 @@ class DiscoveryAgent:
             ctx = pw.chromium.launch_persistent_context(str(self.profile_dir()), channel="chrome", **opts)
             self.log("launched real Chrome (channel=chrome)")
         except Exception as e:  # noqa: BLE001
+            msg = str(e)
+            # profile locked = the login window for this agent is still open.
+            # do NOT fall back to a session-less browser — that just yields a 401.
+            if "ProcessSingleton" in msg or "SingletonLock" in msg or "already in use" in msg:
+                self.log(f"profile in use — the {self.NAME} login window is still OPEN.")
+                self.log(f"  CLOSE the {self.NAME} Chrome window (that saves the session), then re-run.")
+                self.notify(f"close the {self.NAME} login window, then re-run")
+                sys.exit(3)
             self.log(f"channel=chrome unavailable ({e!r}); using bundled chromium")
             ctx = pw.chromium.launch_persistent_context(str(self.profile_dir()), **opts)
         ctx.add_init_script("Object.defineProperty(navigator,'webdriver',{get:()=>undefined})")
