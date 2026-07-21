@@ -10,7 +10,14 @@ import re
 
 from lib import DiscoveryAgent, norm, SUBCATS   # shared taxonomy.json
 
-_JUNK = re.compile(r"^(me gusta|like|follow|seguir|compartir|share|ver|see|facebook|iniciar|log in)\b", re.I)
+# a real business page link: a vanity URL or profile.php?id=
+_BIZ = re.compile(r"facebook\.com/(profile\.php\?id=\d+|[A-Za-z0-9.]{3,})/?(\?|$)")
+# facebook chrome / nav / non-business links to ignore
+_CHROME = re.compile(r"/(notifications|login|login_alerts|marketplace|groups|search|watch|gaming|events|"
+                     r"reel|stories|messages|friends|help|policies|privacy|settings|bookmarks|ads|business)/"
+                     r"|modal=|__rsid|l\.php|/photo|/videos", re.I)
+_JUNK = re.compile(r"^(me gusta|like|follow|seguir|compartir|share|ver|see all|pages|reels|unread|"
+                   r"facebook|iniciar|log in|más|more)\b", re.I)
 
 
 class FacebookAgent(DiscoveryAgent):
@@ -19,28 +26,40 @@ class FacebookAgent(DiscoveryAgent):
     LOGIN_URL = "https://www.facebook.com/login/"
 
     def build_plan(self):
+        # /search/pages/ returns business Pages specifically (cleaner than places)
         return [{"q": f"{sub} Tehuacán", "cat": cat, "sub": sub, "label": f"{cat}/{sub}"}
                 for cat, sub in SUBCATS]
 
+    @staticmethod
+    def _key(href):
+        m = re.search(r"facebook\.com/(?:profile\.php\?id=(\d+)|([A-Za-z0-9.]+))", href)
+        return "fb:" + (m.group(1) or m.group(2)) if m else None
+
     def scrape_item(self, page, context, it):
-        url = "https://www.facebook.com/search/places/?q=" + it["q"].replace(" ", "%20")
+        url = "https://www.facebook.com/search/pages/?q=" + it["q"].replace(" ", "%20")
         page.goto(url, timeout=60000)
-        page.wait_for_timeout(4500)
+        page.wait_for_timeout(6000)                 # let the GraphQL results render
         if (w := self.walled(page)):
             self.attention(page, w)
-        for _ in range(3):
-            page.mouse.wheel(0, 2500)
-            page.wait_for_timeout(1400)
-        out = []
-        for a in page.query_selector_all('div[role="main"] a[role="link"]'):
-            name = (a.inner_text() or "").strip().split("\n")[0]
+        for _ in range(4):
+            page.mouse.wheel(0, 2200)
+            page.wait_for_timeout(1500)
+        out, seen = [], set()
+        for a in page.query_selector_all('div[role="main"] a[href*="facebook.com/"]'):
             href = a.get_attribute("href") or ""
-            if len(name) > 3 and not _JUNK.match(name) and \
-               ("/pages/" in href or re.search(r"facebook\.com/[^/?]+/?(\?|$)", href)):
-                clean = href.split("?")[0]
-                out.append({"key": "fb:" + (re.sub(r"https?://[^/]+/", "", clean).strip("/") or norm(name)),
-                            "name": name[:80], "source": "facebook", "category": it["cat"], "subcat": it["sub"],
-                            "handle": None, "url": clean[:200], "lat": None, "lon": None})
+            if not href.startswith("http") or _CHROME.search(href) or not _BIZ.search(href):
+                continue
+            name = (a.inner_text() or "").strip().split("\n")[0]
+            if len(name) < 3 or _JUNK.match(name):
+                continue
+            key = self._key(href)
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            out.append({"key": key, "name": name[:80], "source": "facebook",
+                        "category": it["cat"], "subcat": it["sub"], "handle": None,
+                        "url": href.split("?")[0][:200] if "profile.php" not in href else href[:200],
+                        "lat": None, "lon": None})
         return out
 
     def verify_record(self, page, rec):
