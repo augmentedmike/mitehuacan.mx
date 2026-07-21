@@ -165,80 +165,109 @@ def load_runs():
 HTML = """<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>agentes locales · mitehuacán</title><style>
-:root{--bg:#17171b;--panel:#1f1f24;--ink:#ececf0;--ink2:#a5a5b0;--line:#33333a;--accent:#6ea6ff;--chip:#26262c;--ok:#4ade80;--err:#ff7b6b;--warn:#f5a623}
-@media(prefers-color-scheme:light){:root{--bg:#fff;--panel:#f7f7f8;--ink:#1a1a1e;--ink2:#55555e;--line:#e2e2e6;--accent:#0f62fe;--chip:#fff;--ok:#1a7f37;--err:#d4351c;--warn:#b7791f}}
+:root{--bg:#17171b;--panel:#1f1f24;--ink:#ececf0;--ink2:#a5a5b0;--line:#33333a;--accent:#6ea6ff;--ok:#4ade80;--err:#ff7b6b;--warn:#f5a623}
+@media(prefers-color-scheme:light){:root{--bg:#fff;--panel:#f7f7f8;--ink:#1a1a1e;--ink2:#55555e;--line:#e2e2e6;--accent:#0f62fe;--ok:#1a7f37;--err:#d4351c;--warn:#b7791f}}
 *{box-sizing:border-box}body{margin:0;font:13.5px/1.5 system-ui,sans-serif;color:var(--ink);background:var(--bg);padding:16px}
-.wrap{max-width:820px;margin:0 auto}h1{font-size:18px;margin:0 0 2px}
+.wrap{max-width:900px;margin:0 auto}h1{font-size:18px;margin:0 0 2px}
 .sub{color:var(--ink2);font-size:12px;margin:0 0 14px}
 #alert{display:none;background:rgba(220,60,60,.12);border:1.5px solid var(--err);color:var(--err);border-radius:12px;padding:11px 14px;font-weight:700;margin-bottom:12px}
-.agents{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.ag{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:9px 12px;display:flex;gap:9px;align-items:center}
-.ag b{font-size:13px}.ag .d{color:var(--ink2);font-size:11px;max-width:190px}
-.ag button{border:none;border-radius:8px;padding:6px 12px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
-.ag button:disabled{opacity:.5}
-.run{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 13px;margin:7px 0;cursor:pointer}
-.run .row{display:flex;gap:10px;align-items:center}
-.st{padding:2px 10px;border-radius:999px;font-size:11px;font-weight:800}
+.tblwrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink2);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{cursor:pointer}tbody tr:hover td{background:rgba(110,166,255,.06)}
+td .d{color:var(--ink2);font-size:11.5px}
+.st{padding:2px 10px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
 .st.ok{background:rgba(46,204,113,.15);color:var(--ok)}
 .st.fail{background:rgba(220,60,60,.18);color:var(--err)}
 .st.run{background:rgba(245,166,35,.2);color:var(--warn)}
 .st.warn2{background:rgba(245,166,35,.15);color:var(--warn)}
 .st.delta{background:rgba(110,166,255,.15);color:var(--accent)}
-.ag{cursor:pointer}.ag.sel{outline:2px solid var(--accent)}
-.when{margin-left:auto;color:var(--ink2);font-size:11.5px;white-space:nowrap}
-.tail{color:var(--ink2);font-size:11.5px;margin-top:4px;white-space:pre-wrap}
-pre{display:none;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px;font-size:11px;max-height:420px;overflow:auto;white-space:pre-wrap;margin:8px 0 0}
-.run.open pre{display:block}
+.st.none{background:transparent;color:var(--ink2);font-weight:400}
+button{border:none;border-radius:8px;padding:6px 12px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5}
+.bar{display:flex;gap:10px;align-items:center;margin:12px 0}
+a.back{color:var(--accent);text-decoration:none;font-weight:700}
+.logrow td{padding:0;border-bottom:1px solid var(--line);cursor:default}
+.logrow pre{margin:0;background:var(--bg);padding:11px 13px;font-size:11px;max-height:420px;overflow:auto;white-space:pre-wrap}
+.when{color:var(--ink2);font-size:11.5px;white-space:nowrap}
 </style></head><body><div class="wrap">
-<h1>Agentes locales</h1>
-<p class="sub">corren en ESTA máquina · logs en .agent-runs/ · esta página vive solo en localhost</p>
+<h1 id="title">Agentes de datos</h1>
+<p class="sub" id="subtitle">recolectan datos para los mapas · corren en ESTA máquina · logs en .agent-runs/</p>
 <div id="alert"></div>
-<div class="agents" id="agents"></div>
-<div id="runs"></div>
+<div id="main"></div>
 </div><script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/</g,'&lt;');
 const ago=iso=>{const s=(Date.now()-new Date(iso))/1e3;
   return s<90?Math.round(s)+' s':s<5400?Math.round(s/60)+' min':s<172800?(s/3600).toFixed(1)+' h':Math.round(s/86400)+' días';};
+const stChip=r=>r.exit===0?'<span class="st ok">ok</span>':'<span class="st fail">exit '+r.exit+'</span>';
+const dChip=r=>r.delta&&(r.delta['+']||r.delta['-']||r.delta['~'])
+  ?'<span class="st delta">+'+r.delta['+']+' \u2212'+r.delta['-']+' ~'+r.delta['~']+'</span>':'<span class="st none">sin cambios</span>';
+const wChip=r=>r.exit===0&&r.warns?'<span class="st warn2">'+r.warns+'</span>':'<span class="st none">0</span>';
+let VIEW=null,OPEN={},D=null;
 async function refresh(){
-  const d=await (await fetch('/api/state')).json();
-  $('agents').innerHTML=Object.entries(d.agents).map(([n,a])=>{
-    const running=d.running[n];
-    return '<div class="ag'+(FILTER===n?' sel':'')+'" onclick="setFilter(\\''+n+'\\')"><div><b>'+n+'</b><div class="d">'+esc(a.desc)+'</div></div>'+
-      (running?'<span class="st run">corriendo '+ago(running.start)+'</span>'
-              :'<button onclick="event.stopPropagation();launch(\\''+n+'\\')">▶</button>')+'</div>';
-  }).join('')+'<div class="ag"><div><b>full</b><div class="d">osm → denue → calles → build</div></div>'+
-    (Object.keys(d.running).length?'<span class="st run">…</span>':'<button onclick="launch(\\'full\\')">▶▶</button>')+'</div>';
-  const latestByName={};
-  d.runs.forEach(r=>{if(!(r.name in latestByName))latestByName[r.name]=r;});
-  const bad=Object.values(latestByName).filter(r=>r.exit!==0);
+  D=await (await fetch('/api/state')).json();
+  const latest={};D.runs.forEach(r=>{if(!(r.name in latest))latest[r.name]=r;});
+  const bad=Object.values(latest).filter(r=>r.exit!==0);
   $('alert').style.display=bad.length?'block':'none';
-  $('alert').textContent=bad.length?('⚠️ última corrida FALLÓ: '+bad.map(r=>r.name).join(', ')+' — revisa el log abajo'):'';
-  const shown=FILTER?d.runs.filter(r=>r.name===FILTER):d.runs;
-  $('runs').innerHTML=(FILTER?'<p class="sub">historial de <b>'+FILTER+'</b> · <a href="#" onclick="setFilter(null);return false" style="color:var(--accent)">ver todos</a></p>':'')+shown.slice(0,60).map((r,i)=>
-    '<div class="run" onclick="toggle(this,\\''+r.log+'\\')"><div class="row">'+
-    '<b>'+r.name+'</b><span class="st '+(r.exit===0?'ok':'fail')+'">'+(r.exit===0?'ok':'exit '+r.exit)+'</span>'+
-    (r.exit===0&&r.warns?'<span class="st warn2">'+r.warns+' avisos</span>':'')+
-    (r.delta&&(r.delta['+']||r.delta['-']||r.delta['~'])?'<span class="st delta">+'+r.delta['+']+' \u2212'+r.delta['-']+' ~'+r.delta['~']+'</span>':'')+
-    '<span class="d" style="color:var(--ink2);font-size:11.5px">'+r.dur_s+' s</span>'+
-    '<span class="when">'+new Date(r.start).toLocaleString('es-MX')+' · hace '+ago(r.start)+'</span></div>'+
-    '<div class="tail">'+esc(r.tail)+'</div><pre></pre></div>').join('')||
-    '<p class="sub">sin corridas aún — lanza un agente arriba o corre: python3 src/scripts/agents.py run full</p>';
-  for(const n of Object.keys(d.running)){
-    const el=document.querySelector('.run.open pre');
-    if(el&&el.dataset.live)el.textContent=await (await fetch('/api/log?f='+encodeURIComponent(d.running[n].log.split('/').pop())+'&tail=1')).text();
-  }
+  $('alert').textContent=bad.length?('⚠️ última corrida FALLÓ: '+bad.map(r=>r.name).join(', ')+' — haz clic en el agente para ver el log'):'';
+  VIEW?renderDetail():renderMain(latest);
+  const live=document.querySelector('.logrow pre[data-live]');
+  if(live)live.textContent=await (await fetch('/api/log?f='+encodeURIComponent(live.dataset.live)+'&tail=1')).text();
 }
-async function toggle(el,log){
-  el.classList.toggle('open');
-  const pre=el.querySelector('pre');
-  if(el.classList.contains('open')&&!pre.textContent){
-    pre.textContent=await (await fetch('/api/log?f='+encodeURIComponent(log))).text();
-  }
+function renderMain(latest){
+  $('title').textContent='Agentes de datos';
+  $('subtitle').innerHTML='recolectan datos para los mapas · corren en ESTA máquina · logs en .agent-runs/';
+  const rows=Object.entries(D.agents).map(([n,a])=>{
+    const r=latest[n],run=D.running[n];
+    const estado=run?'<span class="st run">corriendo '+ago(run.start)+'</span>':r?stChip(r):'<span class="st none">nunca</span>';
+    return '<tr onclick="show(\\''+n+'\\')"><td><b>'+n+'</b><div class="d">'+esc(a.desc)+'</div></td>'+
+      '<td>'+estado+'</td>'+
+      '<td class="when">'+(r?new Date(r.start).toLocaleString('es-MX')+'<br>hace '+ago(r.start):'—')+'</td>'+
+      '<td>'+(r?r.dur_s+' s':'—')+'</td>'+
+      '<td>'+(r?dChip(r):'—')+'</td>'+
+      '<td>'+(r?wChip(r):'—')+'</td>'+
+      '<td>'+(run?'':'<button onclick="event.stopPropagation();launch(\\''+n+'\\')">▶</button>')+'</td></tr>';
+  }).join('');
+  $('main').innerHTML='<div class="tblwrap"><table><thead><tr>'+
+    '<th>agente</th><th>estado</th><th>última corrida</th><th>duración</th><th>cambios</th><th>avisos</th><th></th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<div class="bar">'+(Object.keys(D.running).length
+      ?'<span class="st run">cadena en curso…</span>'
+      :'<button onclick="launch(\\'full\\')">▶▶ correr todos</button>')+
+    '<span class="d" style="color:var(--ink2);font-size:11.5px">osm → denue-dl → denue → calles · también corre solo cada día a las 07:00</span></div>';
+}
+function renderDetail(){
+  const n=VIEW,a=D.agents[n],run=D.running[n];
+  $('title').textContent=n;
+  $('subtitle').innerHTML='<a class="back" href="#" onclick="VIEW=null;OPEN={};refresh();return false">← todos los agentes</a> · '+esc(a?a.desc:'');
+  const runs=D.runs.filter(r=>r.name===n);
+  const rows=runs.slice(0,80).map(r=>{
+    const open=OPEN[r.log];
+    return '<tr onclick="toggleLog(\\''+r.log+'\\')">'+
+      '<td class="when">'+new Date(r.start).toLocaleString('es-MX')+'<br>hace '+ago(r.start)+'</td>'+
+      '<td>'+stChip(r)+'</td><td>'+r.dur_s+' s</td><td>'+dChip(r)+'</td><td>'+wChip(r)+'</td>'+
+      '<td class="d" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.tail.split('\\n').pop())+'</td></tr>'+
+      (open?'<tr class="logrow"><td colspan="6"><pre id="log-'+r.log+'">cargando…</pre></td></tr>':'');
+  }).join('');
+  $('main').innerHTML='<div class="bar">'+(run
+      ?'<span class="st run">corriendo '+ago(run.start)+'</span>'
+      :'<button onclick="launch(\\''+n+'\\')">▶ correr ahora</button>')+'</div>'+
+    '<div class="tblwrap"><table><thead><tr>'+
+    '<th>cuándo</th><th>estado</th><th>duración</th><th>cambios</th><th>avisos</th><th>última línea</th>'+
+    '</tr></thead><tbody>'+(rows||'<tr><td colspan="6" class="d">sin corridas aún</td></tr>')+'</tbody></table></div>'+
+    (run?'<div class="tblwrap" style="margin-top:10px"><table><tbody><tr class="logrow"><td><pre data-live="'+run.log.split('/').pop()+'">…</pre></td></tr></tbody></table></div>':'');
+  for(const f of Object.keys(OPEN))loadLog(f);
+}
+function show(n){VIEW=n;OPEN={};refresh();}
+function toggleLog(f){OPEN[f]?delete OPEN[f]:OPEN[f]=1;renderDetail();}
+async function loadLog(f){
+  const el=$('log-'+f);
+  if(el&&el.textContent==='cargando…')el.textContent=await (await fetch('/api/log?f='+encodeURIComponent(f))).text();
 }
 async function launch(n){await fetch('/api/run?name='+n,{method:'POST'});setTimeout(refresh,400);}
-let FILTER=null;
-function setFilter(n){FILTER=FILTER===n?null:n;refresh();}
 refresh();setInterval(refresh,3000);
 </script></body></html>"""
 
