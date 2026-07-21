@@ -9,23 +9,37 @@ extract name + coords + place id. VERIFY re-opens a place and reads whether
 Google marks it permanently/temporarily closed.
 DATA: resources/discovery/google.db
 """
+import json
 import math
 import re
+from pathlib import Path
 
 from lib import DiscoveryAgent, norm, SUBCATS   # SUBCATS from the shared taxonomy.json
 
-CENTER = (18.4620, -97.3960)
+# service-area towns (inside Mike's boundary) — the rotation of places we mine.
+TOWNS = json.loads((Path(__file__).resolve().parent / "towns.json").read_text(encoding="utf-8"))
+TEHUACAN = next((t for t in TOWNS if "tehuac" in t["name"].lower()), TOWNS[0])
+CENTER = (TEHUACAN["lat"], TEHUACAN["lon"])
 
 
 def _points():
-    pts = [("centro", CENTER)]
+    """Every service-area town is a search center. Tehuacán is large so it also
+    gets a ring of points around it; the smaller towns get one center each
+    (at z16 that covers the whole town)."""
+    pts = []
     compass = {"N": (1, 0), "NE": (0.7, 0.7), "E": (0, 1), "SE": (-0.7, 0.7),
                "S": (-1, 0), "SW": (-0.7, -0.7), "W": (0, -1), "NW": (0.7, -0.7)}
     latc = math.cos(math.radians(CENTER[0]))
+    pts.append(("Tehuacán", CENTER))
     for r_km, ring in [(1.5, "r1"), (3.0, "r2"), (5.0, "r3")]:
         d = r_km / 111.0
         for name, (dy, dx) in compass.items():
-            pts.append((f"{ring}-{name}", (round(CENTER[0] + dy * d, 5), round(CENTER[1] + dx * d / latc, 5))))
+            pts.append((f"Tehuacán-{ring}-{name}",
+                        (round(CENTER[0] + dy * d, 5), round(CENTER[1] + dx * d / latc, 5))))
+    for t in TOWNS:
+        if "tehuac" in t["name"].lower():
+            continue                              # Tehuacán already covered by rings
+        pts.append((t["name"], (t["lat"], t["lon"])))
     return pts
 
 
