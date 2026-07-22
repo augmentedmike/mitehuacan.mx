@@ -246,6 +246,7 @@
     #sheet.show { display: block; animation: panelIn .26s cubic-bezier(.32,.72,0,1) both;
                   transition: max-height .28s cubic-bezier(.32,.72,0,1); }
     #sheet.min { max-height: 64px; overflow: hidden; }
+    #sheet.max { max-height: 94dvh; }
     /* second panel: POI / sponsor details, slides on TOP of the route sheet */
     #sheet2 { position: fixed; left: 0; right: 0; bottom: 0; z-index: 34;
               background: var(--glass); border: 1px solid var(--line); border-bottom: none;
@@ -255,6 +256,7 @@
     #sheet2.show { display: block; animation: panelIn .26s cubic-bezier(.32,.72,0,1) both;
                    transition: max-height .28s cubic-bezier(.32,.72,0,1); }
     #sheet2.min { max-height: 64px; overflow: hidden; }
+    #sheet2.max { max-height: 94dvh; }
     .grabwrap { padding: 8px 0 8px; margin: -8px -16px 0; cursor: grab; touch-action: none;
                 display: flex; justify-content: center; }
     .grabwrap:active { cursor: grabbing; }
@@ -2735,8 +2737,8 @@ function makeDraggable(sheetEl) {
     const dy = startY - e.clientY;
     if (Math.abs(dy) > 6) moved = true;
     if (!moved) return;
-    sheetEl.style.maxHeight = Math.max(64, Math.min(innerHeight * 0.85, startH + dy)) + 'px';
-    sheetEl.classList.remove('min');
+    sheetEl.style.maxHeight = Math.max(64, Math.min(innerHeight * 0.94, startH + dy)) + 'px';
+    sheetEl.classList.remove('min', 'max');   // inline height wins while dragging
     e.preventDefault();
   }, {passive: false});
   const end = () => {
@@ -2761,18 +2763,24 @@ function makeDraggable(sheetEl) {
 makeDraggable(document.getElementById('sheet'));
 makeDraggable(document.getElementById('sheet2'));
 
+// tapping the handle toggles between full height and closed (min)
+function toggleSheetMax(elS) {
+  elS.style.maxHeight = '';
+  const goMax = !elS.classList.contains('max');   // not-max -> open full; max -> close
+  elS.classList.toggle('max', goMax);
+  elS.classList.toggle('min', !goMax);
+  return goMax;
+}
 document.getElementById('sheet2').addEventListener('click', e => {
   const elS = document.getElementById('sheet2');
   if (!e.target.closest('.grabwrap') || elS.dataset.dragged) return;
-  elS.style.maxHeight = '';
-  elS.classList.toggle('min');
+  toggleSheetMax(elS);
 });
 document.getElementById('sheet').addEventListener('click', e => {
   const elS = document.getElementById('sheet');
   if (!e.target.closest('.grabwrap') || elS.dataset.dragged) return;
-  elS.style.maxHeight = '';
-  elS.classList.toggle('min');
-  track('sheet_' + (elS.classList.contains('min') ? 'min' : 'open'));
+  const goMax = toggleSheetMax(elS);
+  track('sheet_' + (goMax ? 'open' : 'min'));
   if (isMobile()) {
     const on = M.chips.filter(c => c.on).map(c => c.id);
     if (on.length) setTimeout(() => fitToSelection(on), 300);  // after the slide transition
