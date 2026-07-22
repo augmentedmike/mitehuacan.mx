@@ -3255,6 +3255,12 @@ document.querySelectorAll('.filters button').forEach(b => {
 let installPrompt = null;
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function() {});
+  // when a new service worker takes over (a deploy), reload once so the fresh
+  // build shows immediately instead of the old cached one sticking around
+  var swRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (swRefreshing) return; swRefreshing = true; location.reload();
+  });
   window.addEventListener('beforeinstallprompt', function(e) {
     e.preventDefault();
     installPrompt = e;
