@@ -1668,9 +1668,8 @@ function renderTripSheet() {
     (info && info.a ? '<div class="dt-note" style="margin-top:2px">📍 ' + esc(info.a) + '</div>' : '') +
     '</span></div>' + swap +
     (tab === 'info' ? infoBody : routesBody);
-  el.style.maxHeight = '';
-  el.classList.remove('min');
   el.classList.add('show');
+  applySheetHeight(el);   // keep the user's dragged/toggled height across re-renders (tab switch)
   el.querySelectorAll('.seg2 button').forEach(b => b.onclick = () => { TRIP.tab = b.dataset.tab; renderTripSheet(); });
   if (tab === 'info') return;
   el.querySelectorAll('.opt').forEach(d => d.onclick = () => mSelectTripOption(+d.dataset.i));
@@ -2720,7 +2719,20 @@ document.getElementById('msrch-btn').onclick = () => {
 };
 document.getElementById('mclear').onclick = clearSelection;
 
-// panel handles: tap toggles open/closed, drag resizes vertically (touch + mouse)
+// user-chosen sheet height (px). explicit HEIGHT (not max-height) so a short panel
+// still honors the drag, and it persists across re-renders (tab switches).
+let SHEET_H = null;
+// tallest the sheet may grow: fill the map area but leave the header + search bar
+function sheetMaxH() {
+  return Math.max(180, (document.body.getBoundingClientRect().height || innerHeight) - 168);
+}
+function applySheetHeight(el) {
+  el.classList.remove('min', 'max');
+  if (SHEET_H) { el.style.height = SHEET_H + 'px'; el.style.maxHeight = 'none'; }
+  else { el.style.height = ''; el.style.maxHeight = ''; }   // default: CSS content-sized
+}
+
+// panel handles: tap toggles full/closed, drag resizes vertically (touch + mouse)
 function makeDraggable(sheetEl) {
   let startY = 0, startH = 0, dragging = false, moved = false;
   sheetEl.addEventListener('pointerdown', e => {
@@ -2737,8 +2749,10 @@ function makeDraggable(sheetEl) {
     const dy = startY - e.clientY;
     if (Math.abs(dy) > 6) moved = true;
     if (!moved) return;
-    sheetEl.style.maxHeight = Math.max(64, Math.min(innerHeight * 0.94, startH + dy)) + 'px';
-    sheetEl.classList.remove('min', 'max');   // inline height wins while dragging
+    SHEET_H = Math.max(120, Math.min(sheetMaxH(), startH + dy));
+    sheetEl.style.height = SHEET_H + 'px';
+    sheetEl.style.maxHeight = 'none';
+    sheetEl.classList.remove('min', 'max');
     e.preventDefault();
   }, {passive: false});
   const end = () => {
@@ -2748,8 +2762,9 @@ function makeDraggable(sheetEl) {
     if (!moved) return;
     sheetEl.dataset.dragged = '1';                       // suppress the tap-toggle that follows
     setTimeout(() => { delete sheetEl.dataset.dragged; }, 250);
-    if (sheetEl.getBoundingClientRect().height < 110) {  // dragged low -> snap to the slim bar
-      sheetEl.style.maxHeight = '';
+    if (sheetEl.getBoundingClientRect().height < 110) {  // dragged low -> collapse to the slim bar
+      SHEET_H = null;
+      applySheetHeight(sheetEl);
       sheetEl.classList.add('min');
     }
     if (isMobile() && sheetEl.id === 'sheet') {
@@ -2765,11 +2780,16 @@ makeDraggable(document.getElementById('sheet2'));
 
 // tapping the handle toggles between full height and closed (min)
 function toggleSheetMax(elS) {
-  elS.style.maxHeight = '';
-  const goMax = !elS.classList.contains('max');   // not-max -> open full; max -> close
-  elS.classList.toggle('max', goMax);
-  elS.classList.toggle('min', !goMax);
-  return goMax;
+  const big = (SHEET_H && SHEET_H > 130) || elS.classList.contains('max');
+  if (big) {                                    // collapse to the slim bar
+    SHEET_H = null;
+    applySheetHeight(elS);
+    elS.classList.add('min');
+    return false;
+  }
+  SHEET_H = Math.round(sheetMaxH());              // open to full
+  applySheetHeight(elS);
+  return true;
 }
 document.getElementById('sheet2').addEventListener('click', e => {
   const elS = document.getElementById('sheet2');
