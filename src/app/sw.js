@@ -1,4 +1,4 @@
-const CACHE = "mitehuacan-v4";
+const CACHE = "mitehuacan-v5";
 const SHELL = [
   "./",
   "./index.html",
