@@ -3162,7 +3162,16 @@ function highlightRoutes(ids, label, lnglat, dotColor) {
   if (typeof clearTrip === 'function') clearTrip();
   M.chips = ids.map(id => ({id, on: true}));
   mSetView('map');
-  mApply('force');   // search-result highlight frames the matched route(s)
+  // A DESTINATION search (a place/POI/address — walmart, etc.) centers on THAT point
+  // at a local zoom: fitting the whole matched routes would zoom way out for long
+  // intercity lines (e.g. 32-Colosio runs 30 km south). A route-by-name search has no
+  // point, so it still frames the route start–end.
+  if (lnglat) {
+    mApply(false);
+    map.easeTo({center: lnglat, zoom: 14.2, duration: 600});
+  } else {
+    mApply('force');
+  }
   if (SRCH_MARKER) { SRCH_MARKER.remove(); SRCH_MARKER = null; }
   if (lnglat) dropSearchDot(lnglat, label, dotColor);
   track('town_select', label);
