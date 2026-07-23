@@ -86,8 +86,9 @@ struct RouteListView: View {
                     }
                 }
             }
-            .navigationTitle("Rutas")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) { SectionTitle() }
                 ToolbarItem(placement: .topBarLeading) {
                     Button { Task { await sync() } } label: {
                         if loading { ProgressView() } else { Label("Cargar rutas", systemImage: "arrow.down.circle") }

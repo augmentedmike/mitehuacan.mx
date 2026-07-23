@@ -53,8 +53,9 @@ struct StickerAdminView: View {
                     .searchable(text: $query, prompt: "Buscar código, ruta o unidad")
                 }
             }
-            .navigationTitle("Calcomanías")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) { SectionTitle() }
                 ToolbarItem(placement: .primaryAction) {
                     Button { showManual = true } label: { Label("Código manual", systemImage: "keyboard") }
                 }

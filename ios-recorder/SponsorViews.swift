@@ -75,8 +75,9 @@ struct SponsorListView: View {
                     }
                 }
             }
-            .navigationTitle("Patrocinadores")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) { SectionTitle() }
                 ToolbarItem(placement: .topBarLeading) {
                     Button { startLoad() } label: {
                         if loading { ProgressView() } else { Label("Cargar", systemImage: "arrow.down.circle") }
