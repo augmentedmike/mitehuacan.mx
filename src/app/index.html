@@ -1009,6 +1009,23 @@ function routesAboveLabels(above) {
   } catch (e) {}
 }
 
+// The basemap carries street names (transportation_name) but tiny + faint gray —
+// unreadable over the colorful routes. Make them bright, strongly haloed, and
+// grow with zoom, and pack them tighter so more names show as you zoom in. They
+// already sit above the routes while browsing (routes are below LBL).
+function boostStreetLabels() {
+  ['highway_name_other', 'highway_name_motorway'].forEach(id => {
+    if (!map.getLayer(id)) return;
+    try {
+      map.setLayoutProperty(id, 'text-size', ['interpolate', ['linear'], ['zoom'], 12, 11, 16, 15]);
+      map.setLayoutProperty(id, 'symbol-spacing', 250);
+      map.setPaintProperty(id, 'text-color', dark ? '#f2f2f4' : '#15151a');
+      map.setPaintProperty(id, 'text-halo-color', dark ? '#08080c' : '#ffffff');
+      map.setPaintProperty(id, 'text-halo-width', 1.9);
+    } catch (e) {}
+  });
+}
+
 function paintHover(id) {
   map.setPaintProperty('routes', 'line-width', ['case', ['==', ['get', 'id'], id], 4.5, 1.6]);
   map.setPaintProperty('routes', 'line-opacity', ['case', ['==', ['get', 'id'], id], 1, 0.15]);
@@ -2209,6 +2226,7 @@ map.on('load', () => {
             'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.8, 15, 3.5],
             'line-opacity': 0.85}
   }, LBL);
+  boostStreetLabels();   // make street names read over the routes + grow on zoom
   // the RIDDEN stretches only — the answer to "which segment do I actually ride"
   map.addLayer({
     id: 'trip-legs', type: 'line', source: 'trip-legs',
