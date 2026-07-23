@@ -3563,14 +3563,18 @@ document.querySelectorAll('.filters button').forEach(b => {
         (r.width + 12) + 'px;height:' + (r.height + 12) + 'px;';
       ring.hidden = false;
     } else ring.hidden = true;
-    const pw = Math.min(290, innerWidth - 28);
-    const left = Math.max(14, Math.min(r.left, innerWidth - pw - 14));
+    // clamp the popover to the PHONE-FRAME container — document.body IS the frame on
+    // desktop (a centered 412px box) and the full viewport on mobile — so the coach
+    // mark never spills outside the frame it points into, at any screen size.
+    const fr = document.body.getBoundingClientRect();
+    const pw = Math.min(290, fr.width - 28);
+    const left = Math.max(fr.left + 14, Math.min(r.left, fr.right - pw - 14));
     pop.style.left = left + 'px';
     // offsetHeight forces a synchronous layout — no rAF (throttled tabs never fire it)
     const ph = pop.offsetHeight || 120;
-    // below the control unless that runs off-screen, then above
+    // below the control unless that runs off the frame bottom, then above
     let top = r.bottom + 12;
-    if (top + ph > innerHeight - 12) top = Math.max(12, r.top - ph - 12);
+    if (top + ph > fr.bottom - 12) top = Math.max(fr.top + 12, r.top - ph - 12);
     pop.style.top = top + 'px';
   }
 
