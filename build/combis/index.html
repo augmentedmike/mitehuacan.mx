@@ -864,6 +864,23 @@ const map = new maplibregl.Map({
   attributionControl: false
 });
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
+// DEV ONLY: browser geolocation is unreliable locally; stub to a fixed San Isidro
+// point (near San Diego, Tehuacán) so the locate button + board-here flow are
+// testable at http://localhost:8799/. Every path (locate control, saveLoc, walk
+// connector, boarding options) runs through navigator.geolocation, so overriding
+// it here feeds them all one honest fix. Production (any non-localhost) is untouched.
+if (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.port === '8799') {
+  const DEV_LOC = {latitude: 18.4386, longitude: -97.3822, accuracy: 20,
+                   altitude: null, altitudeAccuracy: null, heading: null, speed: null};
+  const devPos = () => ({coords: DEV_LOC, timestamp: Date.now()});
+  const stub = {
+    getCurrentPosition(ok) { setTimeout(() => ok(devPos()), 60); },
+    watchPosition(ok) { const id = setTimeout(() => ok(devPos()), 60); return id; },
+    clearWatch(id) { clearTimeout(id); },
+  };
+  try { Object.defineProperty(navigator, 'geolocation', {value: stub, configurable: true}); }
+  catch (e) { try { navigator.geolocation = stub; } catch (e2) {} }
+}
 const GEOCTL = new maplibregl.GeolocateControl({
   // without a timeout, desktops without GPS wait forever — no fix, no error, no feedback
   positionOptions: {enableHighAccuracy: true, timeout: 8000}, trackUserLocation: true, showUserHeading: true,
@@ -898,6 +915,18 @@ GEOCTL.on('geolocate', p => {
       replanPins();
     }
   }
+});
+/* route-boarding connector: when a route is ALREADY selected and the user taps
+   locate, the FIRST fix of that activation draws a walk connector to the nearest
+   boarding point(s) on the selected route (planBoarding lives with the trip/plan
+   code below — function declarations hoist). Armed on activation only, so the
+   live stream's later ticks never clobber the boarding option the user picked. */
+let boardArmed = false;
+GEOCTL.on('trackuserlocationstart', () => { boardArmed = true; });
+GEOCTL.on('geolocate', p => {
+  if (!boardArmed) return;
+  boardArmed = false;
+  if (typeof planBoarding === 'function') planBoarding([p.coords.longitude, p.coords.latitude]);
 });
 GEOCTL.on('trackuserlocationend', () => { BLUEDOT = null; });
 GEOCTL.on('error', e => {
@@ -1540,6 +1569,7 @@ function clearTrip() {
     if (map.getSource(s)) map.getSource(s).setData({type: 'FeatureCollection', features: []});
   });
   TRIP = null;
+  if (typeof BOARD !== 'undefined') BOARD = null;   // the trip planner reclaims the walk layers
 }
 
 // location is persisted: cached fixes answer instantly (no repeated prompts/waits);
@@ -1833,6 +1863,120 @@ function mSelectTripOption(i) {
   // the view is bounded by the two pins — origin and destination frame the trip
   fitToSelection([], [TRIP.from, TRIP.dest]);
   track('trip_option', o.type);
+}
+
+/* ---------- board-here: connect the rider to the SELECTED route ----------
+   Tapping locate with a route already selected answers "where do I catch this
+   combi?" — the nearest point(s) on the route polyline become boarding options,
+   each with its walk distance, drawn on the same plan-walk / plan-pts layers the
+   trip planner uses. It never disturbs the route selection (M.chips stay put). */
+let BOARD = null;   // {loc, routeId, cands:[{d,at,lnglat}], sel}
+
+// boarding candidates: the closest projection on each segment, then a greedy
+// pick that keeps only points separated along the route — so an out-and-back
+// route whose two stretches both pass nearby offers both, not two of the same.
+function boardingCandidates(ptM, r, max) {
+  const samples = [];
+  for (let i = 0; i < r.pts.length - 1; i++) {
+    if (r.brk.has(i)) continue;
+    const a = r.pts[i], b = r.pts[i + 1];
+    const abx = b[0] - a[0], aby = b[1] - a[1];
+    const len2 = abx * abx + aby * aby;
+    let tt = len2 ? ((ptM[0] - a[0]) * abx + (ptM[1] - a[1]) * aby) / len2 : 0;
+    tt = Math.max(0, Math.min(1, tt));
+    const proj = [a[0] + tt * abx, a[1] + tt * aby];
+    samples.push({d: distM(ptM, proj), at: r.cum[i] + tt * (r.cum[i + 1] - r.cum[i]),
+                  lnglat: [proj[0] / MLON, proj[1] / MLAT]});
+  }
+  samples.sort((x, y) => x.d - y.d);
+  const picked = [], SEP = 450;   // min along-route gap between distinct options (m)
+  for (const s of samples) {
+    if (picked.length >= (max || 3)) break;
+    if (picked.some(p => Math.abs(p.at - s.at) < SEP)) continue;
+    picked.push(s);
+  }
+  return picked;   // already ascending by walk distance; [0] is the nearest
+}
+
+// entry point from the locate control's first fix
+function planBoarding(loc) {
+  if (typeof TRIP !== 'undefined' && TRIP) return false;   // the trip planner owns the walk layers
+  const on = isMobile() ? M.chips.filter(c => c.on).map(c => c.id)
+                        : (state.sel ? [state.sel] : []);
+  if (!on.length) return false;
+  const ptM = mx(loc);
+  // when more than one route is selected, board the one that runs nearest
+  let routeId = null, rBest = null, bd = Infinity;
+  on.forEach(id => {
+    const r = flat.find(x => x.id === id);
+    if (!r || !r.pts.length) return;
+    const d = nearest(ptM, r).d;
+    if (d < bd) { bd = d; routeId = id; rBest = r; }
+  });
+  if (!rBest) return false;
+  const cands = boardingCandidates(ptM, rBest, 3);
+  if (!cands.length) return false;
+  BOARD = {loc, routeId, cands, sel: 0};
+  drawBoarding();
+  renderBoardSheet();
+  track('board_here', routeId);
+  return true;
+}
+
+function drawBoarding() {
+  if (!BOARD) return;
+  const sel = BOARD.cands[BOARD.sel] || BOARD.cands[0];
+  const walkFeats = [{type: 'Feature', properties: {},
+    geometry: {type: 'LineString', coordinates: [BOARD.loc, sel.lnglat]}}];
+  const ptFeats = BOARD.cands.map(c => ({type: 'Feature', properties: {},
+    geometry: {type: 'Point', coordinates: c.lnglat}}));
+  if (map.getSource('plan-walk')) {
+    map.getSource('plan-walk').setData({type: 'FeatureCollection', features: walkFeats});
+    map.getSource('plan-pts').setData({type: 'FeatureCollection', features: ptFeats});
+  }
+  fitToSelection([], [BOARD.loc, sel.lnglat]);   // frame the rider + chosen boarding point
+}
+
+function clearBoarding() {
+  if (!BOARD) return;
+  BOARD = null;
+  ['plan-walk', 'plan-pts'].forEach(s => {
+    if (map.getSource(s)) map.getSource(s).setData({type: 'FeatureCollection', features: []});
+  });
+}
+
+function renderBoardSheet() {
+  if (!BOARD) return;
+  const el = document.getElementById('sheet');
+  const p = routeById(BOARD.routeId);
+  const EN = document.documentElement.lang === 'en';
+  const esc = s => String(s == null ? '' : s).replace(/</g, '&lt;');
+  const rows = BOARD.cands.map((c, i) => {
+    const label = i === 0 ? (EN ? 'Board here' : 'Súbete aquí')
+                          : (EN ? 'Another boarding point' : 'Otro punto de abordaje');
+    const dist = (EN ? 'Walk ' : 'Camina ') + fmt(c.d);
+    return '<div class="opt' + (i === BOARD.sel ? ' sel' : '') + '" data-i="' + i + '">' +
+      '<div class="legs"><span class="swatch" style="background:' + p.color + '"></span>' + esc(label) + '</div>' +
+      '<div class="meta">' + dist + '</div></div>';
+  }).join('');
+  SHEET = null;   // boarding content, not a plain route sheet
+  el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
+    '<div class="sh-head"><span class="tile" style="' + tileStyle(p.color) + '">' + S_PIN2 + '</span>' +
+    '<span class="sh-name" id="board-back" style="cursor:pointer"><b>' +
+    (EN ? 'Catch ' : 'Aborda ') + esc(p.name) + '</b>' +
+    '<div class="dt-note" style="margin-top:2px">' +
+    (BOARD.cands.length > 1 ? (EN ? 'Pick where to board' : 'Elige dónde subir')
+                            : (EN ? 'Tap the route name to go back' : 'Toca el nombre para volver')) +
+    '</div></span></div>' +
+    '<div id="trip-cols"><div id="trip-left">' + rows + '</div><div id="trip-right"></div></div>';
+  el.classList.remove('min');
+  el.classList.add('show');
+  applySheetHeight(el);
+  el.querySelectorAll('.opt').forEach(d => d.onclick = () => {
+    BOARD.sel = +d.dataset.i; drawBoarding(); renderBoardSheet();
+  });
+  const back = document.getElementById('board-back');
+  if (back) back.onclick = () => { clearBoarding(); openSheet(p.id, SHEET_MODE || 'compact'); };
 }
 
 const S_NAV = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 19-8-8 19-2.5-8.5L3 11Z"/></svg>';
@@ -2388,6 +2532,8 @@ function fuzzyScore(q, hay) {
 
 function mApply(fit) {
   const on = M.chips.filter(c => c.on).map(c => c.id);
+  // the board-here overlay only makes sense while its route stays selected
+  if (typeof BOARD !== 'undefined' && BOARD && !on.includes(BOARD.routeId)) clearBoarding();
   // the map shows the search/pill-filtered set PLUS the active selection;
   // a query with zero direct matches never blanks the map (suggestions guide instead)
   const matched = feats.filter(mlVisible);
