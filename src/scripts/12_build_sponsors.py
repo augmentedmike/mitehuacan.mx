@@ -15,6 +15,7 @@ MLON = 111320 * math.cos(math.radians(18.462)); MLAT = 110570
 SPONSORS = {
     "oxxo": {
         "name": "OXXO",
+        "type": "Tiendas de conveniencia",   # Spanish category — drives the map's sponsor-type filter
         "logo": "patrocinadores/oxxo.png",
         "logo2x": "patrocinadores/oxxo@2x.png",
         "seed": True,  # placeholder per PRD-revenue §3 — replaced by first paying sponsor
@@ -22,6 +23,7 @@ SPONSORS = {
     },
     "3b": {
         "name": "3B",
+        "type": "Abarrotes",
         "logo": "patrocinadores/3b.png",      # tiendas3b.com brand mark, circular-masked
         "logo2x": "patrocinadores/3b@2x.png",
         "seed": True,      # free destination-pin seed (Tiendas 3B), like OXXO
@@ -41,14 +43,21 @@ def main():
     out = {"sponsors": {}, "by_route": {}}
     for sid, s in SPONSORS.items():
         locs = json.loads(s["locations_file"].read_text())["locations"]
-        out["sponsors"][sid] = {"name": s["name"], "logo": s["logo"], "logo2x": s["logo2x"], "seed": s["seed"]}
+        # the sponsor carries its FULL location list (its directory "homepage" needs
+        # them all); route pins reference a location by its index so nothing is duped.
+        clean = [{"lon": round(l["lon"], 6), "lat": round(l["lat"], 6),
+                  "addr": l.get("addr") or None, "hours": l.get("hours") or None,
+                  "phone": l.get("phone") or None} for l in locs]
+        out["sponsors"][sid] = {"name": s["name"], "type": s.get("type") or None,
+                                "logo": s["logo"], "logo2x": s["logo2x"], "seed": s["seed"],
+                                "locations": clean}
         for rid, pts in flat.items():
             near = []
-            for loc in locs:
+            for idx, loc in enumerate(locs):
                 lx, ly = loc["lon"] * MLON, loc["lat"] * MLAT
                 d = min(math.hypot(px - lx, py - ly) for px, py in pts)  # meters
                 if d <= NEAR_M:
-                    near.append([round(loc["lon"], 6), round(loc["lat"], 6), loc.get("addr") or loc.get("name") or s["name"]])
+                    near.append([round(loc["lon"], 6), round(loc["lat"], 6), idx])
             if near:
                 out["by_route"].setdefault(rid, {})[sid] = near
 

@@ -1269,7 +1269,9 @@ function setSponsorPins(routeIds) {
       const key = sid + l[0] + ',' + l[1];
       if (seen.has(key)) return;
       seen.add(key);
-      feats.push({type: 'Feature', properties: {sponsor: sid, icon: 'sp-' + sid, label: l[2] || ''},
+      // l[2] is the index into SPONSORS.sponsors[sid].locations; the panel resolves
+      // the tapped store's address/hours/phone from there.
+      feats.push({type: 'Feature', properties: {sponsor: sid, icon: 'sp-' + sid, loc: l[2]},
                   geometry: {type: 'Point', coordinates: [l[0], l[1]]}});
     }));
   });
@@ -1447,35 +1449,50 @@ function onLockedTap(e, lockIds) {
 
 const S_BACK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
 
+const S_PHONE = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+
 function openSpotPanel(type, f) {
-  // POI/sponsor details REPLACE the main panel (no stacking); the back arrow
-  // restores whatever was there — trip options or the route sheet. No
-  // directions button here: the user is already inside a route/trip context.
+  // POI/sponsor details pop OVER the map, replacing the route sheet; the map (and
+  // the selected route on it) stays underneath. Dismiss by dragging the panel down
+  // — that restores whatever was here before (trip options or the route sheet), so
+  // there's no separate close button. Seed of the sponsor "homepage" in the directory.
   const el = document.getElementById('sheet');
   const prev = TRIP ? {kind: 'trip'} : (SHEET ? {kind: 'route', id: SHEET, mode: SHEET_MODE} : null);
   const pr = f.properties;
-  // impressions are sponsor_view (route sheet render); this is the harder signal — a tap
-  track(type === 'sponsor' ? 'sponsor_tap' : 'poi_select', pr.n || pr.label || pr.sponsor || '');
-  let head;
+  const EN = document.documentElement.lang === 'en';
+  const esc = v => String(v).replace(/</g, '&lt;');
+  track(type === 'sponsor' ? 'sponsor_tap' : 'poi_select', pr.n || pr.sponsor || '');
+  let head, body = '';
   if (type === 'sponsor') {
     const s = (typeof SPONSORS !== 'undefined' && (SPONSORS.sponsors || {})[pr.sponsor]) || {name: pr.sponsor || ''};
-    head = (s.logo ? '<img src="' + s.logo + '" srcset="' + (s.logo2x || s.logo) + ' 2x" alt="" style="height:26px;flex:none">' : '') +
-      '<span class="sh-name"><b>' + (s.name || '') + '</b>' +
-      (pr.label ? '<span style="display:block;color:var(--ink-2);font-size:12.5px;margin-top:3px">' + String(pr.label).replace(/</g, '&lt;') + '</span>' : '') +
+    const locs = s.locations || [];
+    const loc = locs[pr.loc] || {};
+    head = (s.logo ? '<img src="' + s.logo + '" srcset="' + (s.logo2x || s.logo) + ' 2x" alt="" style="height:30px;flex:none">' : '') +
+      '<span class="sh-name"><b>' + esc(s.name || '') + '</b>' +
+      (s.type ? '<span class="kbadge" style="background:var(--accent)22;color:var(--accent)">' + esc(s.type) + '</span>' : '') +
       '</span>';
+    const phone = loc.phone || s.phone;
+    if (loc.addr)  body += shRow(S_PIN2,  EN ? 'Address' : 'Dirección', esc(loc.addr));
+    if (loc.hours) body += shRow(S_CLOCK, EN ? 'Hours' : 'Horario', esc(loc.hours));
+    if (phone)     body += shRow(S_PHONE, EN ? 'Phone' : 'Teléfono',
+      '<a href="tel:+52' + phone.replace(/\D/g, '') + '" style="color:var(--accent);font-weight:600">' + esc(phone) + '</a>');
+    if (locs.length > 1) body += '<div class="sh-row" style="opacity:.6;font-size:12.5px">' +
+      (EN ? locs.length + ' branches in the city' : locs.length + ' sucursales en la ciudad') + '</div>';
   } else {
     head = '<span class="tile" style="background:' + (pr.color || '#888') + ';color:#fff">' + S_POI + '</span>' +
-      '<span class="sh-name"><b>' + String(pr.name).replace(/</g, '&lt;') + '</b>' +
+      '<span class="sh-name"><b>' + esc(pr.name) + '</b>' +
       '<span class="kbadge" style="background:' + pr.color + '22;color:' + pr.color + '">' + t('poiCat')(pr.cat) + '</span></span>';
   }
-  SHEET = null;  // spot content owns the panel until back
+  SHEET = null;  // spot content owns the panel until dismissed
   el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
-    '<div class="sh-head"><button class="iconbtn" id="sp-back">' + S_BACK + '</button>' + head + '</div>';
+    '<div class="sh-head">' + head + '</div>' + body;
   el.style.maxHeight = '';
   el.classList.remove('min');
   el.classList.add('show');
   poiHighlight(type === 'poi' ? pr.idx : null);  // spotlight the tapped dot, soften the rest
-  document.getElementById('sp-back').onclick = () => {
+  // dragging the panel down (or picking another pin) restores the prior context
+  window.__spotDismiss = () => {
+    window.__spotDismiss = null;
     poiHighlight(null);
     if (prev && prev.kind === 'trip' && TRIP) {
       renderTripSheet();
@@ -2345,7 +2362,7 @@ map.on('load', () => {
       M.chips = [{id: ruta, on: true}];
       mSetView('map');
       openSheet(ruta, 'compact');  // sheet first, so the fit accounts for its height
-      mApply(true);
+      mApply('force');             // deep-link/QR arrival frames the route
     } else select(ruta, true);
   } else if (BOOT) {
     if (isMobile() && Array.isArray(BOOT.chips) && BOOT.chips.length) {
@@ -2395,17 +2412,18 @@ function mApply(fit) {
   mRenderChips();
   if (typeof syncCollapse === 'function') syncCollapse();
   if (typeof saveStatus === 'function') saveStatus();
-  if (fit && on.length) fitToSelection(on);
+  if (fit && on.length) fitToSelection(on, null, fit === 'force');
 }
 
 // fit the selection into the map area that is ACTUALLY visible on this device.
 // Deferred a frame so it measures the real geometry AFTER the sheet/chips render,
 // whatever order the caller used (map tap, search pick, deep link, ver-en-el-mapa).
 let FIT_T = null;
-function fitToSelection(ids, extra) {
-  // auto-fit is opt-in (Ajustes → "Zoom al seleccionar"); default OFF so selecting a
-  // route never moves the rider's current zoom/pan. Kept as a toggleable feature.
-  try { if (localStorage.getItem('mtFitSelect') !== '1') return; } catch (e) { return; }
+function fitToSelection(ids, extra, force) {
+  // A route picked from the LIST/search/deep-link frames its start–end (force=true).
+  // A route TAPPED on the map keeps the rider's current zoom/pan unless they opt in
+  // via Ajustes → "Zoom al seleccionar" (default off). One flag, two entry behaviors.
+  if (!force) { try { if (localStorage.getItem('mtFitSelect') !== '1') return; } catch (e) { return; } }
   clearTimeout(FIT_T);
   FIT_T = setTimeout(() => {
     const b = new maplibregl.LngLatBounds();
@@ -2458,12 +2476,14 @@ function mRenderChips() {
   });
 }
 
-function mAddRoute(id) {
+function mAddRoute(id, force) {
   // one active route at a time; a fresh selection resets any trip leftovers
   if (typeof clearTrip === 'function') clearTrip();
   M.chips = [{id, on: true}];
   track('route_select', id);
-  mApply(true);   // the fit itself is gated by the "Zoom al seleccionar" setting (off by default)
+  // force=true (list/search/deep-link) always frames the route; a bare call
+  // (map tap) fits only if the "Zoom al seleccionar" setting is on.
+  mApply(force ? 'force' : true);
 }
 
 // towns/colonias are first-class search results: picking one toggles ON every
@@ -2501,7 +2521,7 @@ function mAddMany(ids, trackLabel) {
     if (c) c.on = true; else M.chips.push({id, on: true});
   });
   track('town_select', trackLabel);
-  mApply(true);
+  mApply('force');   // picking a town/colonia from search frames its routes
 }
 
 const msearch = document.getElementById('msearch');
@@ -2529,7 +2549,7 @@ msearch.addEventListener('input', () => {
     d.innerHTML = '<span class="swatch" style="background:' + p.color + '"></span>' +
                   '<span style="flex:1">' + p.name + '</span>' +
                   (p.kind === 'foránea' ? '<span class="tag">' + t('tagForanea') + '</span>' : '');
-    d.onclick = () => { msugg.hidden = true; msearch.value = ''; mAddRoute(p.id); };
+    d.onclick = () => { msugg.hidden = true; msearch.value = ''; mAddRoute(p.id, true); };
     msugg.appendChild(d);
   });
   msugg.hidden = (places.length + routes.length) === 0;
@@ -2708,6 +2728,7 @@ function fareParts(s) {
 }
 
 function openSheet(id, mode) {
+  window.__spotDismiss = null;   // leaving any spot/sponsor panel
   SHEET = id;
   // compact on the map (stats strip + CTA), full on the list — per the design
   mode = mode || (document.body.dataset.mview === 'map' ? 'compact' : 'full');
@@ -2748,7 +2769,7 @@ function openSheet(id, mode) {
       M.chips = [{id, on: true}];
       mSetView('map');
       openSheet(id, 'compact');   // sheet first, so the fit accounts for its height
-      mApply(true);
+      mApply('force');            // "ver en el mapa" brings the route into view
     };
     document.getElementById('sh-share').onclick = () => shareRoute(id);
   }
@@ -2862,8 +2883,12 @@ function makeDraggable(sheetEl) {
     if (!moved) return;
     sheetEl.dataset.dragged = '1';                       // suppress the tap-toggle that follows
     setTimeout(() => { delete sheetEl.dataset.dragged; }, 250);
-    if (sheetEl.getBoundingClientRect().height < 110) {  // dragged low -> collapse to the slim bar
-      SHEET_H = null;
+    if (sheetEl.getBoundingClientRect().height < 110) {  // dragged low
+      if (sheetEl.id === 'sheet' && window.__spotDismiss) {  // a spot/sponsor panel: restore prior context
+        window.__spotDismiss();
+        return;
+      }
+      SHEET_H = null;                                    // otherwise collapse to the slim bar
       applySheetHeight(sheetEl);
       sheetEl.classList.add('min');
     }
@@ -2987,7 +3012,7 @@ function highlightRoutes(ids, label, lnglat, dotColor) {
   if (typeof clearTrip === 'function') clearTrip();
   M.chips = ids.map(id => ({id, on: true}));
   mSetView('map');
-  mApply(true);
+  mApply('force');   // search-result highlight frames the matched route(s)
   if (SRCH_MARKER) { SRCH_MARKER.remove(); SRCH_MARKER = null; }
   if (lnglat) dropSearchDot(lnglat, label, dotColor);
   track('town_select', label);

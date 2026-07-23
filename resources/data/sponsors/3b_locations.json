@@ -1,113 +1,149 @@
 {
- "source": "Google Maps places (tiendas 3b, Tehuacán) — retail stores only, cedis excluded",
+ "source": "Google Maps places (tiendas 3b, Tehuacán), retail stores only",
  "locations": [
   {
    "lon": -97.382725,
    "lat": 18.447773,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Av. de la Juventud 2101, Nicolás Bravo",
+   "hours": "7:00 – 21:00",
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.38235,
    "lat": 18.464734,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Calle 11 Norte, esq. 2 Oriente, Moctezuma",
+   "hours": "7:00 – 21:00",
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.384862,
    "lat": 18.460778,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "C. 9 Sur 172, La Purísima",
+   "hours": "7:00 – 21:00",
+   "phone": "55 4510 9999"
   },
   {
-   "lon": -97.377199,
-   "lat": 18.462407,
+   "lon": -97.377206,
+   "lat": 18.462207,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Av. Independencia Ote. 1904, Las Flores",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.384735,
    "lat": 18.458554,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Calle 5 Ote 723, La Purísima",
+   "hours": "7:00 – 22:00",
+   "phone": "55 4510 9999"
   },
   {
-   "lon": -97.392024,
-   "lat": 18.453448,
+   "lon": -97.392022,
+   "lat": 18.453546,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Calle 13 Ote 305, Guadalupe",
+   "hours": "7:00 – 22:00",
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.410687,
    "lat": 18.446832,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "C. 23 Pte. 2430, Puebla",
+   "hours": "7:00 – 22:00",
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.378707,
    "lat": 18.437939,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Av. de la Juventud 3305, Nacional",
+   "hours": "7:00 – 21:00",
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.384455,
    "lat": 18.477221,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Av. Ejército Mexicano 903, Emiliano Zapata",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.391684,
    "lat": 18.4568,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Calle 3 Sur 542, Guadalupe Hidalgo",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
-   "lon": -97.389902,
-   "lat": 18.464848,
+   "lon": -97.38988,
+   "lat": 18.464705,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Calle 2 Ote 334, Centro de la Ciudad",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.406347,
    "lat": 18.456875,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Calle 7 Pte 807, El Riego",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.41003,
    "lat": 18.457482,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Av. Enrique Mont Solórzano, V. Carranza",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.403354,
    "lat": 18.472251,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Revolución, Constituyentes",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
-   "lon": -97.392888,
-   "lat": 18.470505,
+   "lon": -97.393056,
+   "lat": 18.470254,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "C. 1 Nte 801, Francisco Sarabia",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.405534,
    "lat": 18.450096,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Calle 19 Pte 1404, 16 de Marzo",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.408447,
    "lat": 18.441661,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "C. Veinticuatro 522, Santa María",
+   "hours": null,
+   "phone": "55 4510 9999"
   },
   {
    "lon": -97.403052,
    "lat": 18.46513,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "2 Pte. y 10 Nte. 1000, Aquiles Serdán",
+   "hours": null,
+   "phone": "55 4510 9999"
   }
  ]
 }
