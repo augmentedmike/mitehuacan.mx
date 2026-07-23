@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MiTehuacán">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link href="maplibre-gl.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -469,6 +469,8 @@
       <div class="set-seg" id="set-lang"><button data-l="es">Español</button><button data-l="en">English</button></div></div>
     <div class="set-row"><span id="set-theme-lbl"></span>
       <div class="set-seg" id="set-theme"><button data-t="light" id="set-light"></button><button data-t="dark" id="set-dark"></button></div></div>
+    <div class="set-row"><span id="set-fit-lbl"></span>
+      <div class="set-seg" id="set-fit"><button data-f="off" id="set-fit-off"></button><button data-f="on" id="set-fit-on"></button></div></div>
   </div>
 </div>
 <div id="app">
@@ -2326,7 +2328,7 @@ map.on('load', () => {
     const id = nearestRouteId(ids, e.lngLat);
     if (isMobile()) {
       openSheet(id);              // sheet first, so the fit accounts for its height
-      mAddRoute(id, false);       // tapping a route on the map keeps the current zoom/pan
+      mAddRoute(id);
     } else if (document.querySelector('#tabs button.on').dataset.pane === 'browse') {
       select(id, false);
     }
@@ -2401,6 +2403,9 @@ function mApply(fit) {
 // whatever order the caller used (map tap, search pick, deep link, ver-en-el-mapa).
 let FIT_T = null;
 function fitToSelection(ids, extra) {
+  // auto-fit is opt-in (Ajustes → "Zoom al seleccionar"); default OFF so selecting a
+  // route never moves the rider's current zoom/pan. Kept as a toggleable feature.
+  try { if (localStorage.getItem('mtFitSelect') !== '1') return; } catch (e) { return; }
   clearTimeout(FIT_T);
   FIT_T = setTimeout(() => {
     const b = new maplibregl.LngLatBounds();
@@ -2453,12 +2458,12 @@ function mRenderChips() {
   });
 }
 
-function mAddRoute(id, fit = true) {
+function mAddRoute(id) {
   // one active route at a time; a fresh selection resets any trip leftovers
   if (typeof clearTrip === 'function') clearTrip();
   M.chips = [{id, on: true}];
   track('route_select', id);
-  mApply(fit);   // fit=false for a direct map tap: keep the user's current zoom/pan
+  mApply(true);   // the fit itself is gated by the "Zoom al seleccionar" setting (off by default)
 }
 
 // towns/colonias are first-class search results: picking one toggles ON every
@@ -2782,10 +2787,15 @@ document.querySelectorAll('#mseg button').forEach(b => b.onclick = () => mSetVie
   document.getElementById('set-theme-lbl').textContent = es ? 'Tema' : 'Theme';
   document.getElementById('set-light').textContent = es ? 'Claro' : 'Light';
   document.getElementById('set-dark').textContent = es ? 'Oscuro' : 'Dark';
+  document.getElementById('set-fit-lbl').textContent = es ? 'Zoom al seleccionar' : 'Zoom on select';
+  document.getElementById('set-fit-off').textContent = es ? 'No' : 'Off';
+  document.getElementById('set-fit-on').textContent = es ? 'Sí' : 'On';
+  const fitOn = () => { try { return localStorage.getItem('mtFitSelect') === '1'; } catch (e) { return false; } };
   const sync = () => {
     const L = document.documentElement.lang, TH = document.documentElement.dataset.theme;
     document.querySelectorAll('#set-lang button').forEach(b => b.classList.toggle('on', b.dataset.l === L));
     document.querySelectorAll('#set-theme button').forEach(b => b.classList.toggle('on', b.dataset.t === TH));
+    document.querySelectorAll('#set-fit button').forEach(b => b.classList.toggle('on', b.dataset.f === (fitOn() ? 'on' : 'off')));
   };
   document.getElementById('msettings').onclick = () => { sync(); wrap.hidden = false; };
   document.getElementById('setback').onclick = () => { wrap.hidden = true; };
@@ -2795,6 +2805,11 @@ document.querySelectorAll('#mseg button').forEach(b => b.onclick = () => mSetVie
   document.querySelectorAll('#set-theme button').forEach(b => b.onclick = () => {
     try { localStorage.mtTheme = b.dataset.t; } catch (e) {}
     track('theme_' + b.dataset.t); location.reload();
+  });
+  // no reload: fitToSelection reads the flag live on the next selection
+  document.querySelectorAll('#set-fit button').forEach(b => b.onclick = () => {
+    try { localStorage.setItem('mtFitSelect', b.dataset.f === 'on' ? '1' : '0'); } catch (e) {}
+    track('fitselect_' + b.dataset.f); sync();
   });
 }
 document.getElementById('msrch-btn').onclick = () => {
@@ -3349,7 +3364,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('beforeinstallprompt', function(e) {
     e.preventDefault();
     installPrompt = e;
-    document.getElementById('pwa-install').classList.remove('pwa-hide');
+    if (!pwaDismissed('pwa-install')) document.getElementById('pwa-install').classList.remove('pwa-hide');
   });
   window.addEventListener('appinstalled', function() {
     installPrompt = null;
@@ -3363,8 +3378,17 @@ function pwaInstall() {
   installPrompt.userChoice.then(function() { installPrompt = null; });
 }
 
+// once the user dismisses an install bar, never show it again (persisted per bar)
+function pwaDismissed(id) { try { return localStorage.getItem('mtPwaDismiss_' + id) === '1'; } catch (e) { return false; } }
+function pwaDismiss(id) {
+  document.getElementById(id).classList.add('pwa-hide');
+  try { localStorage.setItem('mtPwaDismiss_' + id, '1'); } catch (e) {}
+}
+
 var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-if (isIOS) {
+var inStandalone = window.navigator.standalone === true ||
+  (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+if (isIOS && !inStandalone && !pwaDismissed('pwa-ios')) {
   var i = document.getElementById('pwa-ios');
   if (i) i.classList.remove('pwa-hide');
 }
@@ -3373,12 +3397,12 @@ if (isIOS) {
 <div id="pwa-install" class="pwa-hide pwa-bar">
   <span class="pwa-text">Instala MiTehuacán en tu teléfono</span>
   <button class="pwa-btn" onclick="pwaInstall()">Instalar</button>
-  <button class="pwa-close" onclick="this.parentElement.classList.add('pwa-hide')">✕</button>
+  <button class="pwa-close" onclick="pwaDismiss('pwa-install')">✕</button>
 </div>
 
 <div id="pwa-ios" class="pwa-hide pwa-bar">
   <span class="pwa-text">📱 Para instalar: Compartir <span style="font-size:18px">⬆️</span> → Agregar a Inicio</span>
-  <button class="pwa-close" onclick="this.parentElement.classList.add('pwa-hide')">✕</button>
+  <button class="pwa-close" onclick="pwaDismiss('pwa-ios')">✕</button>
 </div>
 
 <style>
