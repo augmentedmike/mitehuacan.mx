@@ -861,13 +861,13 @@ const map = new maplibregl.Map({
   attributionControl: false
 });
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
-// DEV ONLY: browser geolocation is unreliable locally; stub to a fixed San Isidro
-// point (near San Diego, Tehuacán) so the locate button + board-here flow are
+// DEV ONLY: browser geolocation is unreliable locally; stub to a fixed San Diego
+// Chalma, Tehuacán point so the locate button + board-here flow are
 // testable at http://localhost:8799/. Every path (locate control, saveLoc, walk
 // connector, boarding options) runs through navigator.geolocation, so overriding
 // it here feeds them all one honest fix. Production (any non-localhost) is untouched.
 if (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.port === '8799') {
-  const DEV_LOC = {latitude: 18.4386, longitude: -97.3822, accuracy: 20,
+  const DEV_LOC = {latitude: 18.4405, longitude: -97.3765, accuracy: 20,
                    altitude: null, altitudeAccuracy: null, heading: null, speed: null};
   const devPos = () => ({coords: DEV_LOC, timestamp: Date.now()});
   const stub = {
