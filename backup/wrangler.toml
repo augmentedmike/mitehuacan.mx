@@ -1,0 +1,21 @@
+# Daily D1 backup Worker (free tier: Cron Trigger + D1). Copies every table's schema
+# + rows from the main database (SRC) into the backup database (BAK) once a day, so
+# the hand-entered data (schedules, sponsors, businesses, GPS recordings, feedback)
+# survives an accident on the main DB. Complements D1 Time Travel (30-day PITR).
+# Deploy (from this dir): wrangler deploy   — under the mauriciotellezdev CF account.
+name = "mitehuacan-db-backup"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+[triggers]
+crons = ["0 9 * * *"]   # daily at 09:00 UTC (~03:00 Tehuacán, low traffic)
+
+[[d1_databases]]
+binding = "SRC"
+database_name = "mitehuacan"
+database_id = "57ff6a8d-ae71-4f40-b494-c7f16dd083e4"
+
+[[d1_databases]]
+binding = "BAK"
+database_name = "mitehuacan-backup"
+database_id = "8f8accd3-643d-4b1d-af6e-f955ee9f6ff9"
