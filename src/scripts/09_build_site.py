@@ -512,6 +512,20 @@ function thx(f){var en=document.documentElement.lang==='en';
  background:var(--chip);color:var(--ink2);border:1px solid var(--line);width:fit-content}
 .dir-br{font-size:12.5px;color:var(--ink2);margin-top:auto;display:inline-flex;align-items:center;gap:5px}
 .dir-br svg{width:14px;height:14px;opacity:.7}
+/* --- "list your business free" call to action --- */
+.dir-cta{display:flex;align-items:center;gap:13px;margin:18px 0 2px;padding:15px 15px;border-radius:16px;
+ text-decoration:none;color:#fff;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 62%,#7b5cff));
+ box-shadow:0 6px 22px var(--accsh)}
+.dir-cta:active{transform:translateY(1px)}
+.dir-cta .cta-ic{flex:none;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);
+ display:flex;align-items:center;justify-content:center}
+.dir-cta .cta-ic svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:1.9;
+ stroke-linecap:round;stroke-linejoin:round}
+.dir-cta .cta-tx{flex:1;min-width:0}
+.dir-cta .cta-tx b{display:block;font-size:15.5px;font-weight:800;line-height:1.2}
+.dir-cta .cta-tx small{display:block;font-size:13px;opacity:.92;margin-top:2px}
+.dir-cta .cta-go{flex:none;font-weight:800;font-size:14px;background:#fff;color:var(--accent);
+ padding:9px 15px;border-radius:99px;white-space:nowrap}
 /* --- sponsor profile page --- */
 .pf-head{display:flex;gap:14px;align-items:center;margin:8px 0 2px}
 .pf-logo{width:78px;height:78px;border-radius:18px;object-fit:contain;background:#fff;
@@ -563,6 +577,15 @@ function thx(f){var en=document.documentElement.lang==='en';
         'página con sus sucursales, horarios y teléfono — y muy pronto fotos, precios y ofertas.</span>'
         '<span class="en">Businesses and services in Tehuacán. Each has its own page with branches, hours '
         'and phone — and soon photos, prices and deals.</span></p>'
+        '<a class="dir-cta" href="/directorio/alta.html">'
+        '<span class="cta-ic"><svg viewBox="0 0 24 24"><path d="M3 9l1.6-5h14.8L21 9"/>'
+        '<path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M9.5 20v-5.5h5V20"/></svg></span>'
+        '<span class="cta-tx">'
+        '<b><span class="es">¿Tienes un negocio en Tehuacán?</span>'
+        '<span class="en">Own a business in Tehuacán?</span></b>'
+        '<small><span class="es">Aparece gratis en el directorio · 2 minutos, sin costo</span>'
+        '<span class="en">Get listed free · 2 minutes, no cost</span></small></span>'
+        '<span class="cta-go"><span class="es">Aparecer</span><span class="en">List it</span></span></a>'
         '<div class="dir-grid">' + "".join(cards) + '</div>')
     (APPROOT / "directorio").mkdir(parents=True, exist_ok=True)
     (APPROOT / "directorio" / "index.html").write_text(
