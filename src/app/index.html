@@ -1633,9 +1633,7 @@ function openSpotPanel(type, f) {
     window.__spotDismiss = null;
     poiHighlight(null);
     if (prev && prev.kind === 'trip' && TRIP) {
-      renderTripSheet();
-      const sel = document.querySelectorAll('#sheet .opt')[TRIP.sel];
-      if (sel) sel.classList.add('sel');
+      renderTripSheet();   // re-opens the trip options (the sel option is marked in tripBodyHTML)
     } else if (prev && prev.kind === 'route') {
       openSheet(prev.id, prev.mode);
     } else {
@@ -1781,9 +1779,8 @@ async function mPlanTo(dest, label) {
   TRIP = {opts, sel: 0, from, dest, destLabel: label, locFallback, dragged: false};
   ensureTripMarkers();
   document.getElementById('sheet2').classList.remove('show');
-  renderTripSheet();
-  mSetView('map');                      // starting a trip shows the map ONCE;
-  if (opts.length) mSelectTripOption(0);  // option taps afterwards never switch views
+  renderTripSheet();                    // options panel; renderTripSheet draws option 0 on the map
+  mSetView('map');                      // starting a trip shows the map ONCE
   track('trip_from_me', label.slice(0, 40));
   autoCorrectOrigin();
 }
@@ -1830,72 +1827,81 @@ function replanPins(fromDrag) {
   TRIP.from = [a.lng, a.lat];
   TRIP.dest = [b.lng, b.lat];
   TRIP.opts = findTrips(TRIP.from, TRIP.dest);
-  renderTripSheet();
-  if (TRIP.opts.length) mSelectTripOption(0);
-  else { M.chips = []; mApply(false); }
+  renderTripSheet();   // draws option 0 on the map when there are options
+  if (!TRIP.opts.length) { M.chips = []; mApply(false); }
   track('trip_pin_drag');
 }
 
+// the trip planner runs on the Stack: options = parent panel, a tapped option's
+// step-by-step directions = child panel on top (shared handle, back arrow to return).
 function renderTripSheet() {
-  const el = document.getElementById('sheet');
+  if (!TRIP) return;
+  SHEET = null;  // trip content, not a route sheet
+  const info = SEL_INFO;
+  const hasInfo = !!(info && (info.a || info.tel || info.h || info.lnk));
+  const tab = hasInfo ? (TRIP.tab || 'routes') : 'routes';
+  Stack.open({
+    title: t('tripTitle') + ' ' + Stack.esc(TRIP.destLabel),
+    sub: (info && info.a) ? '📍 ' + Stack.esc(info.a) : '',
+    html: tripBodyHTML(tab, hasInfo),
+    onBack: () => clearTrip(),
+    wire: el => wireTripParent(el, tab),
+  });
+  if (tab !== 'info' && TRIP.opts.length) drawTripOption(typeof TRIP.sel === 'number' ? TRIP.sel : 0);
+}
+
+// parent-panel body: share button, routes/info tabs, refresh link + the option list
+function tripBodyHTML(tab, hasInfo) {
+  const esc = Stack.esc;
+  const info = SEL_INFO;
+  const share = TRIP.dest
+    ? '<div style="display:flex;justify-content:flex-end;margin:-2px 0 6px"><button class="iconbtn" id="trip-share" aria-label="' + t('shareBtn') + '">' + S_SHARE + '</button></div>'
+    : '';
+  const swap = hasInfo
+    ? '<div class="seg2"><button data-tab="routes"' + (tab === 'routes' ? ' class="on"' : '') + '>' + t('tabRutas') + '</button>' +
+      '<button data-tab="info"' + (tab === 'info' ? ' class="on"' : '') + '>' + t('tabInfo') + '</button></div>'
+    : '';
+  if (tab === 'info') {
+    const infoRow = (icon, html) => '<div class="biz-row"><span class="biz-ic">' + icon + '</span><div>' + html + '</div></div>';
+    return share + swap + '<div class="bizinfo">' +
+      (info.a ? infoRow('📍', esc(info.a)) : '') +
+      (info.h ? infoRow('🕖', esc(info.h)) : '') +
+      (info.tel ? '<a class="biz-row" href="tel:' + esc(info.tel).replace(/\s/g, '') + '"><span class="biz-ic">📞</span><div style="color:var(--accent)">' + esc(info.tel) + '</div></a>' : '') +
+      (info.lnk ? '<a class="biz-row" href="' + esc(info.lnk) + '" target="_blank" rel="noopener"><span class="biz-ic">' + (/instagram/.test(info.lnk) ? '📸' : '🔗') + '</span><div style="color:var(--accent)">' + t('infoProfile') + '</div></a>' : '') +
+      '</div>';
+  }
   const isLong = o => o.walkA > WALK_MAX || o.walkB > WALK_MAX || (o.transfer || 0) > TRANSFER_MAX;
   const allLong = TRIP.opts.length && TRIP.opts.every(isLong);
   const rows = TRIP.opts.map((o, i) => {
-    const legs = o.legs.map(id => {
-      const p = routeById(id);
-      return '<span class="swatch" style="background:' + p.color + '"></span>' + p.name;
-    }).join(' <span style="color:var(--ink-2)">→</span> ');
+    const legs = o.legs.map(id => { const p = routeById(id);
+      return '<span class="swatch" style="background:' + p.color + '"></span>' + p.name; }).join(' <span style="color:var(--ink-2)">→</span> ');
     const eta = nextCombiAt(o.legs[0], o.boardAt);
     const meta = (isLong(o) ? '⚠️ ' : '') + t('walkTo')(fmt(o.walkA)) + ' · ' +
       (o.type === 'transfer' ? t('transferTxt')(fmt(o.transfer), '') + ' · ' : t('direct') + ' · ') +
       t('rideTxt')(fmt(o.ride)) + ' · ' + t('alightTxt')(fmt(o.walkB)) +
       (eta && !eta.done ? ' · <b style="color:var(--ok)">' + t('etaShort')(Math.max(1, Math.round(eta.wait))) + '</b>' : '') +
       (o.alts && o.alts.length ? '<br>' + t('alsoRoutes') + [...new Set(o.alts)].map(id => routeById(id).name).join(', ') : '');
-    return '<div class="opt" data-i="' + i + '"><div class="legs">' + legs + '</div><div class="meta">' + meta + '</div></div>';
+    return '<div class="opt' + (i === TRIP.sel ? ' sel' : '') + '" data-i="' + i + '"><div class="legs">' + legs + '</div><div class="meta">' + meta + '</div></div>';
   }).join('');
-  SHEET = null;  // trip content, not a route sheet
-  const esc = s => String(s == null ? '' : s).replace(/</g, '&lt;');
-  const info = SEL_INFO;
-  const hasInfo = !!(info && (info.a || info.tel || info.h || info.lnk));
-  const tab = hasInfo ? (TRIP.tab || 'routes') : 'routes';
-  const swap = hasInfo
-    ? '<div class="seg2">' +
-      '<button data-tab="routes"' + (tab === 'routes' ? ' class="on"' : '') + '>' + t('tabRutas') + '</button>' +
-      '<button data-tab="info"' + (tab === 'info' ? ' class="on"' : '') + '>' + t('tabInfo') + '</button></div>'
-    : '';
-  const infoRow = (icon, html) => '<div class="biz-row"><span class="biz-ic">' + icon + '</span><div>' + html + '</div></div>';
-  const infoBody = hasInfo ? '<div class="bizinfo">' +
-    (info.a ? infoRow('📍', esc(info.a)) : '') +
-    (info.h ? infoRow('🕖', esc(info.h)) : '') +
-    (info.tel ? '<a class="biz-row" href="tel:' + esc(info.tel).replace(/\s/g, '') + '"><span class="biz-ic">📞</span><div style="color:var(--accent)">' + esc(info.tel) + '</div></a>' : '') +
-    (info.lnk ? '<a class="biz-row" href="' + esc(info.lnk) + '" target="_blank" rel="noopener"><span class="biz-ic">' + (/instagram/.test(info.lnk) ? '📸' : '🔗') + '</span><div style="color:var(--accent)">' + t('infoProfile') + '</div></a>' : '') +
-    '</div>' : '';
-  const routesBody =
+  return share + swap +
     (TRIP.locFallback ? '<div class="dt-note" style="margin-bottom:8px">' + t('locFallback') + '</div>' : '') +
     (allLong ? '<div class="msg" style="margin-bottom:8px">⚠️ ' + t('longWalk') + '</div>' : '') +
     '<div class="dt-note" style="margin-bottom:8px"><a href="#" id="t-refresh" style="color:var(--accent)">' + t('locRefresh') + '</a></div>' +
-    (TRIP.opts.length
-      ? '<div id="trip-cols"><div id="trip-left">' + rows + '</div><div id="trip-right"></div></div>'
-      : '<div class="msg">' + t('tripNone') + '</div>');
-  el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
-    '<div class="sh-head"><span class="tile" style="background:var(--accent);color:#fff">' + S_PIN2 + '</span>' +
-    '<span class="sh-name"><b>' + t('tripTitle') + ' ' + esc(TRIP.destLabel) + '</b>' +
-    (info && info.a ? '<div class="dt-note" style="margin-top:2px">📍 ' + esc(info.a) + '</div>' : '') +
-    '</span></div>' + swap +
-    (tab === 'info' ? infoBody : routesBody);
-  el.classList.add('show');
-  applySheetHeight(el);   // keep the user's dragged/toggled height across re-renders (tab switch)
+    (TRIP.opts.length ? rows : '<div class="msg">' + t('tripNone') + '</div>');
+}
+
+function wireTripParent(el, tab) {
+  const ts = el.querySelector('#trip-share');
+  if (ts) ts.onclick = () => shareDest(TRIP.destLabel, TRIP.dest);
   el.querySelectorAll('.seg2 button').forEach(b => b.onclick = () => { TRIP.tab = b.dataset.tab; renderTripSheet(); });
   if (tab === 'info') return;
-  el.querySelectorAll('.opt').forEach(d => d.onclick = () => mSelectTripOption(+d.dataset.i));
-  fillTripDetail(TRIP.sel || 0);
-  const tr = document.getElementById('t-refresh');
+  el.querySelectorAll('.opt').forEach(d => d.onclick = () => openTripDir(+d.dataset.i));
+  const tr = el.querySelector('#t-refresh');
   if (tr) tr.onclick = async e => {
     e.preventDefault();
     tr.textContent = t('locating');
     try { localStorage.removeItem('mtLoc'); } catch (err) {}
     if (TRIP) TRIP.dragged = false;         // allow the fresh fix to move the pin
-    // prefer the locate control — its fix also feeds our cache + auto-correct
     if (typeof GEOCTL !== 'undefined' && GEOCTL.trigger && GEOCTL.trigger()) return;
     try {
       const c = await getMyLocation();      // forced fresh fix (cache was just cleared)
@@ -1906,40 +1912,39 @@ function renderTripSheet() {
   };
 }
 
-// the selected option's step-by-step directions plus fare/schedule for each combi
-// it rides — stacked below the option list (mobile-only, always visible)
-function fillTripDetail(i) {
-  const box = document.getElementById('trip-right');
-  if (!box) return;
-  const o = TRIP && TRIP.opts[i];
-  if (!o) { box.innerHTML = ''; return; }
-  const eta = nextCombiAt(o.legs[0], o.boardAt);
-  const legRows = o.legs.map(id => {
-    const p = routeById(id);
-    const s = SCHEDULES[id];
-    const fr = fareParts(s);
-    return '<div class="sh-row"><span class="swatch" style="background:' + p.color + '"></span><div><b>' +
-      p.name + '</b><span class="v">' + (s ? t('schedRange')(s) : t('schedNone')) + '<br>' +
-      t('fareLine')(fr.base, fr.max, fr.approx) + '</span></div></div>';
-  }).join('');
-  box.innerHTML =
-    '<div class="dt-note" style="margin-bottom:4px"><b>' + t('tripDetail') + '</b></div>' +
-    shRow(S_PIN2, t('walkTo')(fmt(o.walkA)),
-          eta && !eta.done ? t('etaShort')(Math.max(1, Math.round(eta.wait))) : '') +
-    (o.type === 'transfer' ? shRow(S_ROUTE, t('transferTxt')(fmt(o.transfer), ''), '') : '') +
-    shRow(S_PIN2, t('alightTxt')(fmt(o.walkB)), '') +
-    legRows;
+// tap a trip option -> draw it on the map + push its directions as a child panel
+function openTripDir(i) {
+  if (!TRIP || !TRIP.opts[i]) return;
+  drawTripOption(i);
+  const o = TRIP.opts[i];
+  const EN = document.documentElement.lang === 'en';
+  Stack.push({
+    title: EN ? 'Trip details' : 'Detalles del viaje',
+    sub: o.legs.map(id => Stack.esc(routeById(id).name)).join(' → '),
+    html: tripDirHTML(i),
+  });
 }
 
-function mSelectTripOption(i) {
+// the selected option's step-by-step directions + fare/schedule per combi (child panel)
+function tripDirHTML(i) {
+  const o = TRIP && TRIP.opts[i];
+  if (!o) return '';
+  const eta = nextCombiAt(o.legs[0], o.boardAt);
+  const legRows = o.legs.map(id => { const p = routeById(id), s = SCHEDULES[id], fr = fareParts(s);
+    return '<div class="sh-row"><span class="swatch" style="background:' + p.color + '"></span><div><b>' +
+      Stack.esc(p.name) + '</b><span class="v">' + (s ? t('schedRange')(s) : t('schedNone')) + '<br>' +
+      t('fareLine')(fr.base, fr.max, fr.approx) + '</span></div></div>'; }).join('');
+  return shRow(S_PIN2, t('walkTo')(fmt(o.walkA)), eta && !eta.done ? t('etaShort')(Math.max(1, Math.round(eta.wait))) : '') +
+    (o.type === 'transfer' ? shRow(S_ROUTE, t('transferTxt')(fmt(o.transfer), ''), '') : '') +
+    shRow(S_PIN2, t('alightTxt')(fmt(o.walkB)), '') + legRows;
+}
+
+// draw a trip option on the map: the ridden leg(s), walk connectors, transfer points
+function drawTripOption(i) {
   const o = TRIP && TRIP.opts[i];
   if (!o) return;
   TRIP.sel = i;
-  document.querySelectorAll('#sheet .opt').forEach((el, j) => el.classList.toggle('sel', i === j));
-  fillTripDetail(i);
   M.chips = o.legs.map(id => ({id, on: true}));
-  // stay in whichever view the user is in — picking an option never yanks
-  // them to the map; the map state updates underneath either way
   mApply(false);
   // draw ONLY the ridden stretch of each leg — never the whole route out of town
   const segFeat = (id, a, b) => ({type: 'Feature', properties: {color: routeById(id).color},
@@ -1947,8 +1952,6 @@ function mSelectTripOption(i) {
   const legFeats = o.type === 'direct'
     ? [segFeat(o.legs[0], o.boardAt, o.alightAt)]
     : [segFeat(o.legs[0], o.boardAt, o.t1At), segFeat(o.legs[1], o.t2At, o.alightAt)];
-  const legCoords = [];
-  legFeats.forEach(f => legCoords.push(...f.geometry.coordinates));
   if (map.getSource('trip-legs'))
     map.getSource('trip-legs').setData({type: 'FeatureCollection',
       features: legFeats.filter(f => f.geometry.coordinates.length > 1)});
@@ -1969,10 +1972,11 @@ function mSelectTripOption(i) {
     map.getSource('plan-pts').setData({type: 'FeatureCollection', features: ptFeats});
   }
   ensureTripMarkers();
-  // the view is bounded by the two pins — origin and destination frame the trip
-  fitToSelection([], [TRIP.from, TRIP.dest]);
+  fitToSelection([], [TRIP.from, TRIP.dest]);   // frame origin + destination
   track('trip_option', o.type);
 }
+// select an option and open its details (callers that jump straight to a specific option)
+function mSelectTripOption(i) { openTripDir(i); }
 
 /* ---------- board-here: connect the rider to the SELECTED route ----------
    Tapping locate with a route already selected answers "how do I catch this
@@ -2453,7 +2457,12 @@ function brightenBasemap() {
   }
 }
 
-map.on('load', () => {
+// declared before __onMapLoad: the load handler can run synchronously (warm/cached
+// style) and references both — a later const would sit in the temporal dead zone
+const M = {chips: []};  // [{id, on}]
+const isMobile = () => true;  // the app shell is the only UI now, every width
+
+const __onMapLoad = () => {
   brightenBasemap();
   map.addSource('boundary', {type: 'geojson', data: boundaryCircle});
   map.addLayer({
@@ -2633,6 +2642,7 @@ map.on('load', () => {
   // deep link: /combis/?ruta=<id> pre-selects a route (used by sharing + QR);
   // otherwise restore the last session's routes from the device
   const ruta = params.get('ruta');
+  const toParam = params.get('to');
   if (ruta && feats.some(f => f.properties.id === ruta)) {
     if (isMobile()) {
       M.chips = [{id: ruta, on: true}];
@@ -2640,6 +2650,18 @@ map.on('load', () => {
       openSheet(ruta, 'compact');  // sheet first, so the fit accounts for its height
       mApply('force');             // deep-link/QR arrival frames the route
     } else select(ruta, true);
+  } else if (toParam && /^-?\d[\d.]*,-?\d[\d.]*$/.test(toParam)) {
+    // shared destination (?to=lon,lat&n=label): show which combis serve it, and —
+    // if the opener's location is known — their own way there. The "spread locally" link.
+    const c = toParam.split(',').map(Number);
+    const label = (params.get('n') || (document.documentElement.lang === 'en' ? 'Destination' : 'Destino')).slice(0, 60);
+    const ptM = mx(c);
+    const near = flat.map(rt => ({id: rt.id, d: nearest(ptM, rt).d})).sort((a, b) => a.d - b.d);
+    let ids = near.filter(x => x.d <= 500).map(x => x.id).slice(0, 6);
+    if (!ids.length) ids = near.slice(0, 3).map(x => x.id);
+    setSearchLabel(label);
+    highlightRoutes(ids, label, c);
+    openDestPanel(label, c);
   } else if (BOOT) {
     if (isMobile() && Array.isArray(BOOT.chips) && BOOT.chips.length) {
       M.chips = BOOT.chips.filter(c => c && feats.some(f => f.properties.id === c.id));
@@ -2648,11 +2670,12 @@ map.on('load', () => {
     }
   }
   if (isMobile()) mApply(false);  // apply restored chips / search / pills to the map layers
-});
+};
+// run whether the style already finished loading (fast/cached) or not — a late
+// handler registration would miss the one-shot 'load' event, breaking deep links + layers
+if (map.loaded()) __onMapLoad(); else map.on('load', __onMapLoad);
 
 /* ---------- mobile all-map bar: fuzzy search, chips, reset ---------- */
-const M = {chips: []};  // [{id, on}]
-const isMobile = () => true;  // the app shell is the only UI now, every width
 
 function fuzzyScore(q, hay) {
   const i = hay.indexOf(q);
@@ -3064,20 +3087,31 @@ function openSheet(id, mode) {
   track('route_select', id);
 }
 
-async function shareRoute(id) {
-  // path-relative so the app works at / (vercel) and at /combis/ (mitehuacan.mx)
-  const url = location.origin + location.pathname.replace(/[^/]*$/, '') + '?ruta=' + encodeURIComponent(id);
-  const p = routeById(id);
+// path-relative so links work at / (vercel) and at /combis/ (mitehuacan.mx)
+const shareBase = () => location.origin + location.pathname.replace(/[^/]*$/, '');
+async function doShare(url, text, ev, label) {
   try {
-    if (navigator.share) {
-      await navigator.share({title: 'Combi ' + p.name + ' — MiTehuacán', url});
-    } else {
-      await navigator.clipboard.writeText(url);
-      const b = document.getElementById('sh-share');
-      if (b) { b.lastChild.textContent = t('linkCopied'); setTimeout(() => { if (SHEET === id) openSheet(id, SHEET_MODE); }, 1600); }
-    }
-    track('share', id);
+    if (navigator.share) await navigator.share({ title: 'MiTehuacán', text, url });
+    else { await navigator.clipboard.writeText(url); if (typeof toast === 'function') toast(t('linkCopied')); }
+    track(ev, label);
   } catch (e) { /* user cancelled the share sheet */ }
+}
+async function shareRoute(id) {
+  const p = routeById(id);
+  const EN = document.documentElement.lang === 'en';
+  const places = (p.places || '').split(',').map(x => x.trim()).filter(Boolean);
+  const via = places.length > 1 ? ' (' + places[0] + ' → ' + places[places.length - 1] + ')' : (places[0] ? ' (' + places[0] + ')' : '');
+  const text = 'Combi ' + p.name + via + (EN ? ' — see where it runs on MiTehuacán:' : ' — mira por dónde pasa en MiTehuacán:');
+  await doShare(shareBase() + '?ruta=' + encodeURIComponent(id), text, 'share', id);
+}
+// share a DESTINATION — the link deep-links (?to=) so whoever opens it sees which
+// combis serve that place and their own way there. This is the "spread locally" loop.
+async function shareDest(label, coords) {
+  if (!coords) return;
+  const EN = document.documentElement.lang === 'en';
+  const url = shareBase() + '?to=' + coords.map(n => (+n).toFixed(5)).join(',') + '&n=' + encodeURIComponent(label);
+  const text = (EN ? 'How to get to ' : 'Cómo llegar a ') + label + (EN ? ' by combi — MiTehuacán:' : ' en combi — MiTehuacán:');
+  await doShare(url, text, 'share_dest', label);
 }
 
 document.querySelectorAll('#mseg button').forEach(b => b.onclick = () => mSetView(b.dataset.v));
