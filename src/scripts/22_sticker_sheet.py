@@ -115,7 +115,7 @@ def main():
                 rows_csv.append((sid, BASE_URL + sid))
                 n += 1
         idx = args.start // per_sheet + s + 1 if per_sheet else s + 1
-        stem = f"mapa-de-rutas-sheet-{s+1:02d}"
+        stem = f"mapa-de-rutas-sheet-{idx:02d}"
         pdf = OUT / f"{stem}.pdf"
         sheet.save(pdf, "PDF", resolution=DPI)
         preview = OUT / f"{stem}-preview.png"
