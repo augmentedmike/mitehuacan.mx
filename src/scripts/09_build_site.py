@@ -135,7 +135,7 @@ FOOTER = f"""<footer class="site"><div class="cols">
 <div><span class="es">MiTehuacán — el portal libre y gratuito de Tehuacán, Puebla.</span><span class="en">MiTehuacán — the free, open portal of Tehuacán, Puebla.</span><br>
 <span class="es">Datos abiertos (ODbL) · código abierto (AGPL) · hecho con proyectos ciudadanos y OpenStreetMap.</span><span class="en">Open data (ODbL) · open source (AGPL) · built on citizen projects and OpenStreetMap.</span><br>
 <span class="es">Hecho con ♥ en Tehuacán por</span><span class="en">Built with ♥ in Tehuacán by</span> <a href="https://tylt-dev.vercel.app/" rel="noopener">Tylt</a> · <a href="https://github.com/augmentedmike/mitehuacan.mx" rel="me">GitHub</a></div>
-<div><a href="/">Combis</a> · <a href="/eventos/"><span class="es">Eventos</span><span class="en">Events</span></a> · <a href="/descubre/"><span class="es">Descubre</span><span class="en">Discover</span></a> · <a href="/roadmap/">Roadmap</a></div>
+<div><a href="/">Combis</a> · <a href="/eventos/"><span class="es">Eventos</span><span class="en">Events</span></a> · <a href="/descubre/"><span class="es">Descubre</span><span class="en">Discover</span></a> · <a href="/directorio/"><span class="es">Directorio</span><span class="en">Directory</span></a> · <a href="/roadmap/">Roadmap</a></div>
 </div></footer>"""
 
 
@@ -466,6 +466,179 @@ function thx(f){var en=document.documentElement.lang==='en';
              crumb_items=[(bi("Inicio", "Home"), "/"), (bi("Eventos", "Events"), None)],
              title_en="Events & fiestas in Tehuacán"),
         encoding="utf-8")
+
+    # ---- /directorio : the service & store directory (app-of-apps module).
+    # Each sponsor gets a Google-Maps-style "homepage": name, category, phone,
+    # every location, and labeled placeholders (Fotos / Precios y especiales) that
+    # a later content-agent will fill. Data source: resources/map-data/sponsors.js
+    # (const SPONSORS = {...};), also copied into the build for the map layer.
+    sponsors_raw = (ROOT / "resources" / "map-data" / "sponsors.js").read_text(encoding="utf-8")
+    sponsors_json = sponsors_raw.split("const SPONSORS = ", 1)[1].strip()
+    if sponsors_json.endswith(";"):
+        sponsors_json = sponsors_json[:-1]
+    SPONSORS = json.loads(sponsors_json)
+    sp_all = SPONSORS.get("sponsors", {})
+
+    def _has_content(sp):
+        # keep sponsors with at least one real location detail (addr/hours/phone);
+        # drops empty seeds but keeps OXXO & 3B (both carry real branch data).
+        return any(l.get("addr") or l.get("hours") or l.get("phone")
+                   for l in sp.get("locations", []))
+
+    dir_sponsors = sorted(
+        ((sid, sp) for sid, sp in sp_all.items() if _has_content(sp)),
+        key=lambda kv: kv[1]["name"].lower())
+
+    D_PIN = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
+             'stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12'
+             'a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>')
+    D_CLOCK = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
+               'stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/>'
+               '<path d="M12 7v5l3.5 2"/></svg>')
+    D_PHONE = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
+               'stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 '
+               '19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3'
+               'a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.8a16 16 0 0 0 6 6l1.3-1.3a2 '
+               '2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.8 2Z"/></svg>')
+
+    dir_style = """<style>
+.dir-intro{color:var(--ink2);font-size:14.5px;max-width:44em;margin:2px 0 0}
+.dir-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0 4px}
+.dir-card{display:flex;flex-direction:column;gap:9px;padding:15px 14px;border:1px solid var(--line);
+ border-radius:16px;background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl);
+ text-decoration:none;color:inherit}
+.dir-card:active{transform:translateY(1px)}
+.dir-logo{width:56px;height:56px;border-radius:13px;object-fit:contain;background:#fff;
+ border:1px solid var(--line);padding:6px}
+.dir-card .nm{font-weight:700;font-size:15.5px;line-height:1.25}
+.dir-cat{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;
+ background:var(--chip);color:var(--ink2);border:1px solid var(--line);width:fit-content}
+.dir-br{font-size:12.5px;color:var(--ink2);margin-top:auto;display:inline-flex;align-items:center;gap:5px}
+.dir-br svg{width:14px;height:14px;opacity:.7}
+/* --- sponsor profile page --- */
+.pf-head{display:flex;gap:14px;align-items:center;margin:8px 0 2px}
+.pf-logo{width:78px;height:78px;border-radius:18px;object-fit:contain;background:#fff;
+ border:1px solid var(--line);padding:9px;flex:none}
+.pf-name{font-size:22px;font-weight:800;line-height:1.15;margin:0}
+.pf-meta{margin-top:7px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pf-call{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;
+ background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:14px;
+ box-shadow:0 4px 16px var(--accsh);margin:16px 0 2px}
+.pf-call svg{width:16px;height:16px}
+.pf-sec{margin:24px 0 0}
+.pf-sec h2{font-size:16px;margin:0 0 10px}
+.pf-soon{border:1px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;
+ color:var(--ink2);background:var(--chip)}
+.pf-soon .big{font-size:15px;font-weight:700;color:var(--ink)}
+.pf-soon .sm{font-size:13px;margin-top:3px}
+.pf-count{font-size:13px;color:var(--ink2);margin:0 0 10px}
+.pf-loc{display:flex;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:14px;
+ background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl);margin-bottom:10px}
+.pf-loc .pin{flex:none;width:34px;height:34px;border-radius:99px;background:var(--g1);
+ display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.pf-loc .pin svg{width:18px;height:18px}
+.pf-loc .info{flex:1;min-width:0}
+.pf-loc .addr{font-weight:600;font-size:14.5px;line-height:1.35}
+.pf-loc .hrs{font-size:13px;color:var(--ink2);margin-top:3px;display:flex;align-items:center;gap:6px}
+.pf-loc .hrs svg{width:13px;height:13px;opacity:.7;flex:none}
+.pf-loc .maplink{font-size:13px;font-weight:600;margin-top:5px;display:inline-block}
+</style>"""
+
+    def _cat(t):
+        return f'<span class="dir-cat">{html.escape(t)}</span>'
+
+    def _branches(n):
+        return (f'<span class="dir-br">{D_PIN}'
+                f'<span class="es">{n} {"sucursal" if n == 1 else "sucursales"}</span>'
+                f'<span class="en">{n} {"branch" if n == 1 else "branches"}</span></span>')
+
+    # directory listing: one card per sponsor -> its homepage
+    cards = []
+    for sid, sp in dir_sponsors:
+        n = len(sp["locations"])
+        cards.append(
+            f'<a class="dir-card" href="/directorio/{sid}/">'
+            f'<img class="dir-logo" src="/{sp["logo"]}" alt="{html.escape(sp["name"])}" loading="lazy">'
+            f'<div class="nm">{html.escape(sp["name"])}</div>{_cat(sp["type"])}{_branches(n)}</a>')
+    dir_body = (dir_style +
+        '<h1><span class="es">Directorio</span><span class="en">Directory</span></h1>'
+        '<p class="dir-intro"><span class="es">Negocios y servicios de Tehuacán. Cada negocio tiene su '
+        'página con sus sucursales, horarios y teléfono — y muy pronto fotos, precios y ofertas.</span>'
+        '<span class="en">Businesses and services in Tehuacán. Each has its own page with branches, hours '
+        'and phone — and soon photos, prices and deals.</span></p>'
+        '<div class="dir-grid">' + "".join(cards) + '</div>')
+    (APPROOT / "directorio").mkdir(parents=True, exist_ok=True)
+    (APPROOT / "directorio" / "index.html").write_text(
+        page("Directorio de negocios — MiTehuacán",
+             "Directorio de negocios y servicios de Tehuacán, Puebla: sucursales, horarios y teléfonos.",
+             dir_body, f"{DOMAIN}/directorio/",
+             crumb_items=[(bi("Inicio", "Home"), "/"), (bi("Directorio", "Directory"), None)],
+             title_en="Business directory — MiTehuacán"),
+        encoding="utf-8")
+
+    # one Google-Maps-style homepage per sponsor
+    for sid, sp in dir_sponsors:
+        locs = sp["locations"]
+        n = len(locs)
+        phone = next((l["phone"] for l in locs if l.get("phone")), None)
+        call = ""
+        if phone:
+            tel = "".join(c for c in phone if c.isdigit() or c == "+")
+            call = (f'<a class="pf-call" href="tel:{tel}">{D_PHONE}'
+                    f'<span class="es">Llamar</span><span class="en">Call</span>'
+                    f' · {html.escape(phone)}</a>')
+        rows = []
+        for l in locs:
+            addr = l.get("addr")
+            addr_html = (html.escape(addr) if addr else
+                         '<span class="es">Ubicación en el mapa</span>'
+                         '<span class="en">Location on the map</span>')
+            hrs = l.get("hours")
+            hrs_html = (f'{D_CLOCK}{html.escape(hrs)}' if hrs else
+                        f'{D_CLOCK}<span class="es">Horario por confirmar</span>'
+                        '<span class="en">Hours to confirm</span>')
+            maps = f'https://www.google.com/maps/search/?api=1&query={l["lat"]},{l["lon"]}'
+            rows.append(
+                f'<div class="pf-loc"><div class="pin">{D_PIN}</div><div class="info">'
+                f'<div class="addr">{addr_html}</div><div class="hrs">{hrs_html}</div>'
+                f'<a class="maplink" href="{maps}" target="_blank" rel="noopener">'
+                f'<span class="es">Ver en mapa →</span><span class="en">View on map →</span></a>'
+                f'</div></div>')
+        pf_body = (dir_style +
+            '<div class="pf-head">'
+            f'<img class="pf-logo" src="/{sp["logo"]}" alt="{html.escape(sp["name"])}">'
+            f'<div><h1 class="pf-name">{html.escape(sp["name"])}</h1>'
+            f'<div class="pf-meta">{_cat(sp["type"])}{_branches(n)}</div></div></div>'
+            + call +
+            # Fotos — placeholder for the future content pipeline
+            '<div class="pf-sec"><h2><span class="es">Fotos</span><span class="en">Photos</span></h2>'
+            '<div class="pf-soon"><div class="big"><span class="es">Próximamente</span>'
+            '<span class="en">Coming soon</span></div>'
+            '<div class="sm"><span class="es">Fotos del negocio muy pronto.</span>'
+            '<span class="en">Business photos coming soon.</span></div></div></div>'
+            # Precios / Especiales — placeholder
+            '<div class="pf-sec"><h2><span class="es">Precios y especiales</span>'
+            '<span class="en">Prices &amp; specials</span></h2>'
+            '<div class="pf-soon"><div class="big"><span class="es">Próximamente</span>'
+            '<span class="en">Coming soon</span></div>'
+            '<div class="sm"><span class="es">Ofertas y precios muy pronto.</span>'
+            '<span class="en">Deals and prices coming soon.</span></div></div></div>'
+            # Sucursales — the real data
+            '<div class="pf-sec"><h2><span class="es">Sucursales</span><span class="en">Branches</span></h2>'
+            f'<p class="pf-count"><span class="es">{n} '
+            f'{"ubicación" if n == 1 else "ubicaciones"}</span>'
+            f'<span class="en">{n} {"location" if n == 1 else "locations"}</span></p>'
+            + "".join(rows) + '</div>')
+        (APPROOT / "directorio" / sid).mkdir(parents=True, exist_ok=True)
+        (APPROOT / "directorio" / sid / "index.html").write_text(
+            page(f'{sp["name"]} — Directorio MiTehuacán',
+                 f'{sp["name"]}: {sp["type"]} en Tehuacán, Puebla. Sucursales, horarios y teléfono.',
+                 pf_body, f"{DOMAIN}/directorio/{sid}/",
+                 crumb_items=[(bi("Inicio", "Home"), "/"),
+                              (bi("Directorio", "Directory"), "/directorio/"),
+                              (html.escape(sp["name"]), None)],
+                 title_en=f'{sp["name"]} — MiTehuacán Directory'),
+            encoding="utf-8")
 
     # ---- /roadmap : the next-year plan, synthesized from the planning docs
     # (business/research/09-organic-phase-reorder.md is canonical; financials +

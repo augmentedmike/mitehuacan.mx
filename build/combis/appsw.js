@@ -11,19 +11,22 @@
     cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 2.5v4M16 2.5v4"/></svg>',
     list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>',
     home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/></svg>',
-    compass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2z"/></svg>'
+    compass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2z"/></svg>',
+    store: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 11.5V20h14v-8.5"/><path d="M9 20v-5h6v5"/></svg>'
   };
 
   // combis (rutas) is the HOME module — it lives at /. Others are subpaths.
   var APPS = [
     { k: 'combis',   href: '/',          es: 'Combis',   en: 'Combis',   des_es: 'rutas de combis',      des_en: 'combi routes',   ic: I.bus },
     { k: 'eventos',  href: '/eventos/',  es: 'Eventos',  en: 'Events',   des_es: 'fiestas y eventos',    des_en: 'events & fiestas', ic: I.cal },
+    { k: 'directorio', href: '/directorio/', es: 'Directorio', en: 'Directory', des_es: 'negocios y servicios', des_en: 'businesses & services', ic: I.store },
     { k: 'descubre', href: '/descubre/', es: 'Descubre', en: 'Discover', des_es: 'novedades, negocios y más', des_en: 'news, places & more', ic: I.compass }
   ];
 
   function cur() {
     var p = location.pathname;
     if (p.indexOf('/eventos') === 0) return 'eventos';
+    if (p.indexOf('/directorio') === 0) return 'directorio';
     if (p.indexOf('/descubre') === 0) return 'descubre';
     return 'combis';   // the home module at /
   }

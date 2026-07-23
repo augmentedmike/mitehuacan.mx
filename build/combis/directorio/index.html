@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Eventos y fiestas de Tehuacán</title>
-<meta name="description" content="Agenda de eventos, ferias y fiestas patronales de Tehuacán, Puebla y su región.">
-<link rel="canonical" href="https://mitehuacan.mx/eventos/">
+<title>Directorio de negocios — MiTehuacán</title>
+<meta name="description" content="Directorio de negocios y servicios de Tehuacán, Puebla: sucursales, horarios y teléfonos.">
+<link rel="canonical" href="https://mitehuacan.mx/directorio/">
 <style>
 :root{--bg:#f5f5f7;--panel:rgba(255,255,255,.62);--ink:#1d1d1f;--ink2:#6e6e73;--line:rgba(0,0,0,.08);
  --accent:#0071e3;--chip:rgba(255,255,255,.8);--glass:rgba(255,255,255,.55);--hl:rgba(255,255,255,.75);
@@ -80,7 +80,7 @@ header.site nav a.thm{padding:6px 8px;font-size:14px;line-height:1.3}
   overflow-y:auto;overflow-x:hidden;position:relative;transform:translateZ(0)}
 }
 </style>
-<script>window.TITLES={"es": "Eventos y fiestas de Tehuacán", "en": "Events & fiestas in Tehuacán"}</script>
+<script>window.TITLES={"es": "Directorio de negocios — MiTehuacán", "en": "Business directory — MiTehuacán"}</script>
 <script>
 const LANG=(()=>{try{const s=localStorage.mtLang;if(s==='es'||s==='en')return s}catch(e){}
 return (navigator.language||'es').toLowerCase().startsWith('en')?'en':'es'})();
@@ -107,83 +107,49 @@ addEventListener('DOMContentLoaded',syncLang);
 </nav>
 </header>
 <div class="wrap">
-<nav class="crumbs" aria-label="ruta de navegación"><a href="/"><span class="es">Inicio</span><span class="en">Home</span></a><span class="sep">›</span><span><span class="es">Eventos</span><span class="en">Events</span></span></nav>
+<nav class="crumbs" aria-label="ruta de navegación"><a href="/"><span class="es">Inicio</span><span class="en">Home</span></a><span class="sep">›</span><span><span class="es">Directorio</span><span class="en">Directory</span></span></nav>
 <style>
-.ev-intro{color:var(--ink2);font-size:14.5px;max-width:44em}
-.ev-filters{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 4px}
-.ev-filters button{font:inherit;font-size:13px;cursor:pointer;padding:6px 12px;border-radius:99px;
- border:1px solid var(--line);background:var(--panel);color:var(--ink2)}
-.ev-filters button.on{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 3px 12px var(--accsh)}
-.month{font-size:14px;font-weight:700;color:var(--ink2);text-transform:capitalize;margin:24px 0 10px;
- letter-spacing:.02em;border-bottom:1px solid var(--line);padding-bottom:6px}
-.ev{display:flex;gap:14px;padding:13px 14px;border:1px solid var(--line);border-radius:14px;
+.dir-intro{color:var(--ink2);font-size:14.5px;max-width:44em;margin:2px 0 0}
+.dir-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0 4px}
+.dir-card{display:flex;flex-direction:column;gap:9px;padding:15px 14px;border:1px solid var(--line);
+ border-radius:16px;background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl);
+ text-decoration:none;color:inherit}
+.dir-card:active{transform:translateY(1px)}
+.dir-logo{width:56px;height:56px;border-radius:13px;object-fit:contain;background:#fff;
+ border:1px solid var(--line);padding:6px}
+.dir-card .nm{font-weight:700;font-size:15.5px;line-height:1.25}
+.dir-cat{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;
+ background:var(--chip);color:var(--ink2);border:1px solid var(--line);width:fit-content}
+.dir-br{font-size:12.5px;color:var(--ink2);margin-top:auto;display:inline-flex;align-items:center;gap:5px}
+.dir-br svg{width:14px;height:14px;opacity:.7}
+/* --- sponsor profile page --- */
+.pf-head{display:flex;gap:14px;align-items:center;margin:8px 0 2px}
+.pf-logo{width:78px;height:78px;border-radius:18px;object-fit:contain;background:#fff;
+ border:1px solid var(--line);padding:9px;flex:none}
+.pf-name{font-size:22px;font-weight:800;line-height:1.15;margin:0}
+.pf-meta{margin-top:7px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pf-call{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;
+ background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:14px;
+ box-shadow:0 4px 16px var(--accsh);margin:16px 0 2px}
+.pf-call svg{width:16px;height:16px}
+.pf-sec{margin:24px 0 0}
+.pf-sec h2{font-size:16px;margin:0 0 10px}
+.pf-soon{border:1px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;
+ color:var(--ink2);background:var(--chip)}
+.pf-soon .big{font-size:15px;font-weight:700;color:var(--ink)}
+.pf-soon .sm{font-size:13px;margin-top:3px}
+.pf-count{font-size:13px;color:var(--ink2);margin:0 0 10px}
+.pf-loc{display:flex;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:14px;
  background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl);margin-bottom:10px}
-.ev .date{flex:none;width:50px;text-align:center;padding-top:2px}
-.ev .date .d{font-size:23px;font-weight:800;line-height:1;color:var(--ink)}
-.ev .date .m{font-size:11px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-top:2px}
-.ev .body{flex:1;min-width:0}
-.ev .t{font-weight:600;font-size:15.5px;line-height:1.35}
-.ev .meta{font-size:13px;color:var(--ink2);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:5px}
-.ev .meta a{font-weight:600}
-.cat{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;border:1px solid transparent}
-.cat.religioso{background:rgba(147,51,234,.14);color:#9333ea}
-.cat.feria{background:rgba(234,88,12,.14);color:#ea580c}
-.cat.cultural{background:rgba(2,132,199,.14);color:#0284c7}
-.cat.deportivo{background:rgba(22,163,74,.14);color:#16a34a}
-.cat.civico{background:rgba(220,38,38,.14);color:#dc2626}
-.cat.otro{background:var(--chip);color:var(--ink2)}
-.confirm{font-size:11px;font-weight:600;color:#b26b00;background:rgba(217,119,6,.13);padding:2px 8px;border-radius:99px}
-:root[data-theme=dark] .confirm{color:#f5b756}
-.ev-empty{color:var(--ink2);padding:30px 0}
-.ev-count{font-size:13px;color:var(--ink2);margin-top:4px}
-</style><h1><span class="es">Eventos y fiestas</span><span class="en">Events &amp; fiestas</span></h1><p class="ev-intro"><span class="es">La agenda de Tehuacán y su región: ferias, fiestas patronales, eventos culturales y deportivos. Las marcadas <b>“por confirmar”</b> se derivan del calendario del santo patrono y aún falta confirmar la fecha local.</span><span class="en">What's on in Tehuacán and its region: fairs, patron-saint fiestas, cultural and sporting events. Ones marked <b>“to confirm”</b> are derived from the patron saint's calendar and still need a confirmed local date.</span></p><div id="evfilters" class="ev-filters"></div><div id="evroot"></div><p class="muted" style="margin-top:22px"><a href="/"><span class="es">← Volver al mapa de combis</span><span class="en">← Back to the combi map</span></a></p><script src="/events.js"></script>
-<script>
-(function(){
- var root=document.getElementById('evroot'),bar=document.getElementById('evfilters');
- var data=(typeof EVENTS!=='undefined'&&EVENTS.events)||[];
- // show only today .. next 3 months (computed client-side so it never goes stale)
- (function(){var n=new Date();function p(x){return(x<10?'0':'')+x;}
-  function iso(d){return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
-  var t=iso(n),c=iso(new Date(n.getFullYear(),n.getMonth()+3,n.getDate()));
-  data=data.filter(function(e){return e.d>=t&&e.d<=c;});})();
- var MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
- var EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
- var CAT={religioso:['Religioso','Religious'],feria:['Feria','Fair'],cultural:['Cultural','Cultural'],
-  deportivo:['Deportivo','Sports'],civico:['Cívico','Civic'],otro:['Otro','Other']};
- var filter='all';
- function L(){return document.documentElement.lang==='en'?1:0;}
- function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
- function fmt(iso){var p=iso.split('-');return{y:+p[0],m:+p[1]-1,d:+p[2]};}
- function chips(){
-  var cats=['all'];data.forEach(function(e){if(cats.indexOf(e.k)<0)cats.push(e.k);});
-  bar.innerHTML=cats.map(function(c){
-   var lbl=c==='all'?(L()?'All':'Todos'):(CAT[c]||CAT.otro)[L()];
-   return '<button data-c="'+c+'"'+(c===filter?' class="on"':'')+'>'+lbl+'</button>';}).join('');
-  [].forEach.call(bar.children,function(b){b.onclick=function(){filter=b.dataset.c;chips();render();};});
- }
- function render(){
-  var list=data.filter(function(e){return filter==='all'||e.k===filter;});
-  if(!list.length){root.innerHTML='<p class="ev-empty">'+(L()?'No upcoming events.':'No hay eventos próximos.')+'</p>';return;}
-  var out='',cur='';
-  list.forEach(function(e){
-   var f=fmt(e.d),mk=f.y+'-'+f.m,MN=(L()?EN:MES);
-   if(mk!==cur){cur=mk;out+='<div class="month">'+MN[f.m]+' '+f.y+'</div>';}
-   var cat=CAT[e.k]||CAT.otro;
-   out+='<div class="ev"><div class="date"><div class="d">'+f.d+'</div><div class="m">'+MN[f.m].slice(0,3)+'</div></div>'+
-    '<div class="body"><div class="t">'+esc(e.t)+'</div><div class="meta">'+
-    '<span class="cat '+e.k+'">'+cat[L()]+'</span>'+
-    '<span>'+esc(e.v)+'</span>'+
-    (e.tm?'<span>'+e.tm+'</span>':'')+
-    (e.x?'<span class="confirm">'+(L()?'date to confirm':'fecha por confirmar')+'</span>':'')+
-    (e.u?'<a href="'+esc(e.u)+'" target="_blank" rel="noopener">'+(L()?'details':'ver más')+'</a>':'')+
-    '</div></div></div>';
-  });
-  root.innerHTML='<div class="ev-count">'+list.length+(L()?' events':' eventos')+'</div>'+out;
- }
- chips();render();
- [].forEach.call(document.querySelectorAll('.lng'),function(a){a.addEventListener('click',function(){setTimeout(function(){chips();render();},0);});});
-})();
-</script>
+.pf-loc .pin{flex:none;width:34px;height:34px;border-radius:99px;background:var(--g1);
+ display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.pf-loc .pin svg{width:18px;height:18px}
+.pf-loc .info{flex:1;min-width:0}
+.pf-loc .addr{font-weight:600;font-size:14.5px;line-height:1.35}
+.pf-loc .hrs{font-size:13px;color:var(--ink2);margin-top:3px;display:flex;align-items:center;gap:6px}
+.pf-loc .hrs svg{width:13px;height:13px;opacity:.7;flex:none}
+.pf-loc .maplink{font-size:13px;font-weight:600;margin-top:5px;display:inline-block}
+</style><h1><span class="es">Directorio</span><span class="en">Directory</span></h1><p class="dir-intro"><span class="es">Negocios y servicios de Tehuacán. Cada negocio tiene su página con sus sucursales, horarios y teléfono — y muy pronto fotos, precios y ofertas.</span><span class="en">Businesses and services in Tehuacán. Each has its own page with branches, hours and phone — and soon photos, prices and deals.</span></p><div class="dir-grid"><a class="dir-card" href="/directorio/3b/"><img class="dir-logo" src="/patrocinadores/3b.png" alt="3B" loading="lazy"><div class="nm">3B</div><span class="dir-cat">Abarrotes</span><span class="dir-br"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg><span class="es">18 sucursales</span><span class="en">18 branches</span></span></a><a class="dir-card" href="/directorio/oxxo/"><img class="dir-logo" src="/patrocinadores/oxxo.png" alt="OXXO" loading="lazy"><div class="nm">OXXO</div><span class="dir-cat">Tiendas de conveniencia</span><span class="dir-br"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg><span class="es">11 sucursales</span><span class="en">11 branches</span></span></a></div>
 </div>
 <footer class="site"><div class="cols">
 <div><span class="es">MiTehuacán — el portal libre y gratuito de Tehuacán, Puebla.</span><span class="en">MiTehuacán — the free, open portal of Tehuacán, Puebla.</span><br>
