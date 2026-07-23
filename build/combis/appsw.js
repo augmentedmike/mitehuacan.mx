@@ -71,7 +71,11 @@
     '#appsw-frame{display:none}' +
     '@media(min-width:701px){html:not([data-view="full"]) #appsw-frame{display:block;position:fixed;top:50%;left:50%;' +
     'transform:translate(-50%,-50%);width:412px;height:min(884px,96dvh);' +
-    'border:11px solid #0a0a0b;border-radius:46px;pointer-events:none;z-index:99998}}' +
+    'border:11px solid #0a0a0b;border-radius:46px;pointer-events:none;z-index:99998;' +
+    /* the last shadow floods everything OUTSIDE the rounded frame with the backdrop
+       color, masking the body's square corners that bleed past the overlay's round;
+       the first two are the frame ring + drop shadow, drawn on top of that flood. */
+    'box-shadow:0 0 0 2px #3f3f46,0 40px 90px rgba(0,0,0,.6),0 0 0 100vmax #18181b}}' +
     dark(':root[data-theme=dark]') +
     '@media(prefers-color-scheme:dark){' + dark(':root:not([data-theme=light])') + '}';
 

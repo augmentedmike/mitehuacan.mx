@@ -426,8 +426,7 @@
     html:not([data-view="full"]) body {
       width: 412px; max-width: 412px; height: min(884px, 96dvh); margin: 0;
       border: 11px solid #0a0a0b; border-radius: 46px;
-      box-shadow: 0 0 0 2px #3f3f46, 0 40px 90px rgba(0,0,0,.6);
-      overflow: hidden; position: relative;
+      overflow: hidden; position: relative;   /* ring + drop shadow now on #appsw-frame overlay */
       transform: translateZ(0);       /* containing block for position:fixed children */
     }
     /* in the frame, bottom-anchored overlays become absolute (relative to the frame
