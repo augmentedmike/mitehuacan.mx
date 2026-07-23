@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eventos y fiestas de Tehuacán</title>
+<meta name="description" content="Agenda de eventos, ferias y fiestas patronales de Tehuacán, Puebla y su región.">
+<link rel="canonical" href="https://mitehuacan.mx/eventos/">
+<style>
+:root{--bg:#f5f5f7;--panel:rgba(255,255,255,.62);--ink:#1d1d1f;--ink2:#6e6e73;--line:rgba(0,0,0,.08);
+ --accent:#0071e3;--chip:rgba(255,255,255,.8);--glass:rgba(255,255,255,.55);--hl:rgba(255,255,255,.75);
+ --shadow:0 8px 32px rgba(0,0,0,.08);--g1:rgba(0,113,227,.10);--g2:rgba(255,150,70,.08);
+ --livebg:rgba(255,255,255,.72);--livebrd:rgba(0,113,227,.35);--accsh:rgba(0,113,227,.30)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e0e12;--panel:rgba(28,28,34,.6);
+ --ink:#f5f5f7;--ink2:#98989d;--line:rgba(255,255,255,.10);--accent:#0a84ff;--chip:rgba(66,66,74,.5);
+ --glass:rgba(24,24,30,.55);--hl:rgba(255,255,255,.08);--shadow:0 8px 32px rgba(0,0,0,.5);
+ --g1:rgba(10,132,255,.14);--g2:rgba(255,140,60,.05);--livebg:rgba(16,42,74,.45);
+ --livebrd:rgba(10,132,255,.45);--accsh:rgba(10,132,255,.35)}}
+:root[data-theme=dark]{--bg:#0e0e12;--panel:rgba(28,28,34,.6);
+ --ink:#f5f5f7;--ink2:#98989d;--line:rgba(255,255,255,.10);--accent:#0a84ff;--chip:rgba(66,66,74,.5);
+ --glass:rgba(24,24,30,.55);--hl:rgba(255,255,255,.08);--shadow:0 8px 32px rgba(0,0,0,.5);
+ --g1:rgba(10,132,255,.14);--g2:rgba(255,140,60,.05);--livebg:rgba(16,42,74,.45);
+ --livebrd:rgba(10,132,255,.45);--accsh:rgba(10,132,255,.35)}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.55 system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+ background:radial-gradient(55% 45% at 8% 0%,var(--g1),transparent 65%),
+            radial-gradient(45% 40% at 94% 6%,var(--g2),transparent 60%)}
+header.site{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;
+ padding:0 14px;height:50px;border-bottom:1px solid var(--line);background:var(--glass);
+ -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%)}
+header.site .brand{color:var(--ink);text-decoration:none;font-weight:700;font-size:17px;flex:none}
+header.site .brand span{color:var(--accent)}
+header.site nav{display:flex;gap:2px;margin-left:auto}
+header.site nav a{color:var(--ink2);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:8px;white-space:nowrap}
+header.site nav a.on,header.site nav a:active{color:var(--ink);background:var(--chip)}
+.crumbs{font-size:13px;color:var(--ink2);padding:10px 0 0}
+.crumbs a{color:var(--ink2);text-decoration:none}
+.crumbs a:active,.crumbs a:hover{color:var(--accent)}
+.crumbs .sep{margin:0 6px;opacity:.6}
+.wrap{max-width:480px;margin:0 auto;padding:0 16px 28px}
+h1{font-size:23px;margin:.7em 0 .35em;line-height:1.25}
+h2{font-size:18px;margin:1.5em 0 .5em}
+p{margin:.5em 0}.muted{color:var(--ink2);font-size:14px}
+a{color:var(--accent)}
+.btn{display:block;text-align:center;background:var(--accent);color:#fff;padding:12px 20px;border-radius:12px;
+ text-decoration:none;font-weight:600;margin:8px 0;box-shadow:0 4px 16px var(--accsh)}
+.btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btnrow{margin:14px 0}
+form#report-form{display:flex;flex-direction:column;gap:10px;max-width:560px}
+form#report-form input[type=text],form#report-form textarea{width:100%;padding:11px 12px;
+ border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);
+ font:inherit;font-size:15px}
+form#report-form input:focus,form#report-form textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+form#report-form .btn{margin:0;border:none;cursor:pointer;font:inherit;font-weight:600}
+footer.site{margin-top:36px;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+ border-top:1px solid var(--line);font-size:13px;color:var(--ink2)}
+footer.site .cols{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+footer.site a{color:var(--ink2)}
+/* no desktop layout — mobile everywhere; on large screens the mobile column is
+   wrapped in a phone frame (see the min-width:701px block at the end). */
+html[lang=en] .es{display:none!important}
+html[lang=es] .en{display:none!important}
+header.site nav a.lng{padding:6px 8px;font-weight:600;font-size:12px;border:1px solid var(--line);border-radius:8px}
+html[lang=es] header.site nav a.lng[data-l=es]{display:none}
+html[lang=en] header.site nav a.lng[data-l=en]{display:none}
+header.site nav a.thm{padding:6px 8px;font-size:14px;line-height:1.3}
+.ic-sun{display:none}
+:root[data-theme=dark] .ic-sun{display:inline}
+:root[data-theme=dark] .ic-moon{display:none}
+@media(max-width:480px){header.site{gap:6px;padding:0 10px}header.site nav a{padding:6px 7px;font-size:13px}}
+/* All mobile: on anything wider than a phone, render the SAME mobile layout inside
+   a phone outline on a dark zinc backdrop — identical treatment to the rutas app,
+   so every module looks like one mobile app. The content scrolls inside the frame;
+   transform makes the body the containing block so the app-switcher stays in-frame. */
+@media(min-width:701px){
+ html{background:#18181b;display:flex;align-items:center;justify-content:center;min-height:100dvh}
+ body{width:412px;max-width:412px;height:min(884px,96dvh);margin:0;
+  border:11px solid #0a0a0b;border-radius:46px;
+  box-shadow:0 0 0 2px #3f3f46,0 40px 90px rgba(0,0,0,.6);
+  overflow-y:auto;overflow-x:hidden;position:relative;transform:translateZ(0)}
+}
+</style>
+<script>window.TITLES={"es": "Eventos y fiestas de Tehuacán", "en": "Events & fiestas in Tehuacán"}</script>
+<script>
+const LANG=(()=>{try{const s=localStorage.mtLang;if(s==='es'||s==='en')return s}catch(e){}
+return (navigator.language||'es').toLowerCase().startsWith('en')?'en':'es'})();
+document.documentElement.lang=LANG;
+const THEME=(()=>{try{const s=localStorage.mtTheme;if(s==='light'||s==='dark')return s}catch(e){}
+return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'})();
+document.documentElement.dataset.theme=THEME;
+function syncLang(){const L=document.documentElement.lang;
+if(window.TITLES&&TITLES[L])document.title=TITLES[L];
+document.querySelectorAll('[data-ph-es]').forEach(el=>el.placeholder=L==='en'?el.dataset.phEn:el.dataset.phEs);}
+function setLang(l){try{localStorage.mtLang=l}catch(e){}document.documentElement.lang=l;syncLang();return false}
+function toggleTheme(){const th=document.documentElement.dataset.theme==='dark'?'light':'dark';
+try{localStorage.mtTheme=th}catch(e){}document.documentElement.dataset.theme=th;return false}
+addEventListener('DOMContentLoaded',syncLang);
+</script>
+</head>
+<body>
+<header class="site">
+<a class="brand" href="/">mi<span>tehuacan</span>.mx</a>
+<nav>
+<a href="#" class="lng" data-l="es" onclick="return setLang('es')">ES</a>
+<a href="#" class="lng" data-l="en" onclick="return setLang('en')">EN</a>
+<a href="#" class="thm" onclick="return toggleTheme()" aria-label="tema / theme"><span class="ic-moon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span><span class="ic-sun"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></a>
+</nav>
+</header>
+<div class="wrap">
+<nav class="crumbs" aria-label="ruta de navegación"><a href="/"><span class="es">Inicio</span><span class="en">Home</span></a><span class="sep">›</span><span><span class="es">Eventos</span><span class="en">Events</span></span></nav>
+<style>
+.ev-intro{color:var(--ink2);font-size:14.5px;max-width:44em}
+.ev-filters{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 4px}
+.ev-filters button{font:inherit;font-size:13px;cursor:pointer;padding:6px 12px;border-radius:99px;
+ border:1px solid var(--line);background:var(--panel);color:var(--ink2)}
+.ev-filters button.on{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 3px 12px var(--accsh)}
+.month{font-size:14px;font-weight:700;color:var(--ink2);text-transform:capitalize;margin:24px 0 10px;
+ letter-spacing:.02em;border-bottom:1px solid var(--line);padding-bottom:6px}
+.ev{display:flex;gap:14px;padding:13px 14px;border:1px solid var(--line);border-radius:14px;
+ background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl);margin-bottom:10px}
+.ev .date{flex:none;width:50px;text-align:center;padding-top:2px}
+.ev .date .d{font-size:23px;font-weight:800;line-height:1;color:var(--ink)}
+.ev .date .m{font-size:11px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-top:2px}
+.ev .body{flex:1;min-width:0}
+.ev .t{font-weight:600;font-size:15.5px;line-height:1.35}
+.ev .meta{font-size:13px;color:var(--ink2);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:5px}
+.ev .meta a{font-weight:600}
+.cat{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;border:1px solid transparent}
+.cat.religioso{background:rgba(147,51,234,.14);color:#9333ea}
+.cat.feria{background:rgba(234,88,12,.14);color:#ea580c}
+.cat.cultural{background:rgba(2,132,199,.14);color:#0284c7}
+.cat.deportivo{background:rgba(22,163,74,.14);color:#16a34a}
+.cat.civico{background:rgba(220,38,38,.14);color:#dc2626}
+.cat.otro{background:var(--chip);color:var(--ink2)}
+.confirm{font-size:11px;font-weight:600;color:#b26b00;background:rgba(217,119,6,.13);padding:2px 8px;border-radius:99px}
+:root[data-theme=dark] .confirm{color:#f5b756}
+.ev-empty{color:var(--ink2);padding:30px 0}
+.ev-count{font-size:13px;color:var(--ink2);margin-top:4px}
+</style><h1><span class="es">Eventos y fiestas</span><span class="en">Events &amp; fiestas</span></h1><p class="ev-intro"><span class="es">La agenda de Tehuacán y su región: ferias, fiestas patronales, eventos culturales y deportivos. Las marcadas <b>“por confirmar”</b> se derivan del calendario del santo patrono y aún falta confirmar la fecha local.</span><span class="en">What's on in Tehuacán and its region: fairs, patron-saint fiestas, cultural and sporting events. Ones marked <b>“to confirm”</b> are derived from the patron saint's calendar and still need a confirmed local date.</span></p><div id="evfilters" class="ev-filters"></div><div id="evroot"></div><p class="muted" style="margin-top:22px"><a href="/"><span class="es">← Volver al mapa de combis</span><span class="en">← Back to the combi map</span></a></p><script src="/events.js"></script>
+<script>
+(function(){
+ var root=document.getElementById('evroot'),bar=document.getElementById('evfilters');
+ var data=(typeof EVENTS!=='undefined'&&EVENTS.events)||[];
+ // show only today .. next 3 months (computed client-side so it never goes stale)
+ (function(){var n=new Date();function p(x){return(x<10?'0':'')+x;}
+  function iso(d){return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+  var t=iso(n),c=iso(new Date(n.getFullYear(),n.getMonth()+3,n.getDate()));
+  data=data.filter(function(e){return e.d>=t&&e.d<=c;});})();
+ var MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+ var EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+ var CAT={religioso:['Religioso','Religious'],feria:['Feria','Fair'],cultural:['Cultural','Cultural'],
+  deportivo:['Deportivo','Sports'],civico:['Cívico','Civic'],otro:['Otro','Other']};
+ var filter='all';
+ function L(){return document.documentElement.lang==='en'?1:0;}
+ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+ function fmt(iso){var p=iso.split('-');return{y:+p[0],m:+p[1]-1,d:+p[2]};}
+ function chips(){
+  var cats=['all'];data.forEach(function(e){if(cats.indexOf(e.k)<0)cats.push(e.k);});
+  bar.innerHTML=cats.map(function(c){
+   var lbl=c==='all'?(L()?'All':'Todos'):(CAT[c]||CAT.otro)[L()];
+   return '<button data-c="'+c+'"'+(c===filter?' class="on"':'')+'>'+lbl+'</button>';}).join('');
+  [].forEach.call(bar.children,function(b){b.onclick=function(){filter=b.dataset.c;chips();render();};});
+ }
+ function render(){
+  var list=data.filter(function(e){return filter==='all'||e.k===filter;});
+  if(!list.length){root.innerHTML='<p class="ev-empty">'+(L()?'No upcoming events.':'No hay eventos próximos.')+'</p>';return;}
+  var out='',cur='';
+  list.forEach(function(e){
+   var f=fmt(e.d),mk=f.y+'-'+f.m,MN=(L()?EN:MES);
+   if(mk!==cur){cur=mk;out+='<div class="month">'+MN[f.m]+' '+f.y+'</div>';}
+   var cat=CAT[e.k]||CAT.otro;
+   out+='<div class="ev"><div class="date"><div class="d">'+f.d+'</div><div class="m">'+MN[f.m].slice(0,3)+'</div></div>'+
+    '<div class="body"><div class="t">'+esc(e.t)+'</div><div class="meta">'+
+    '<span class="cat '+e.k+'">'+cat[L()]+'</span>'+
+    '<span>'+esc(e.v)+'</span>'+
+    (e.tm?'<span>'+e.tm+'</span>':'')+
+    (e.x?'<span class="confirm">'+(L()?'date to confirm':'fecha por confirmar')+'</span>':'')+
+    (e.u?'<a href="'+esc(e.u)+'" target="_blank" rel="noopener">'+(L()?'details':'ver más')+'</a>':'')+
+    '</div></div></div>';
+  });
+  root.innerHTML='<div class="ev-count">'+list.length+(L()?' events':' eventos')+'</div>'+out;
+ }
+ chips();render();
+ [].forEach.call(document.querySelectorAll('.lng'),function(a){a.addEventListener('click',function(){setTimeout(function(){chips();render();},0);});});
+})();
+</script>
+</div>
+<footer class="site"><div class="cols">
+<div><span class="es">MiTehuacán — el portal libre y gratuito de Tehuacán, Puebla.</span><span class="en">MiTehuacán — the free, open portal of Tehuacán, Puebla.</span><br>
+<span class="es">Datos abiertos (ODbL) · código abierto (AGPL) · hecho con proyectos ciudadanos y OpenStreetMap.</span><span class="en">Open data (ODbL) · open source (AGPL) · built on citizen projects and OpenStreetMap.</span><br>
+<span class="es">Hecho con ♥ en Tehuacán por</span><span class="en">Built with ♥ in Tehuacán by</span> <a href="https://tylt-dev.vercel.app/" rel="noopener">Tylt</a> · <a href="https://github.com/augmentedmike/mitehuacan.mx" rel="me">GitHub</a></div>
+<div><a href="/">Combis</a> · <a href="/eventos/"><span class="es">Eventos</span><span class="en">Events</span></a> · <a href="/descubre/"><span class="es">Descubre</span><span class="en">Discover</span></a> · <a href="/roadmap/">Roadmap</a></div>
+</div></footer>
+<script src="/appsw.js" defer></script>
+</body>
+</html>

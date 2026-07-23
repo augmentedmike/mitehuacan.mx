@@ -22,7 +22,10 @@ node_modules/
 __pycache__/
 *.pyc
 dist/
-build/
+# build/ is the Vercel deploy dir (served as-is, no build step) — track build/combis,
+# ignore the rest of build/.
+build/*
+!build/combis/
 
 # large raw scrape artifacts stay reproducible via scripts, but we DO commit
 # the tehuacan dataset (source sites may die; provenance > repo size).

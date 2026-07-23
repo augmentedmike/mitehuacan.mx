@@ -1,0 +1,9 @@
+# QR stickers resolve via functions/qr/[id].js (route deep-links); no
+# static rule here — Pages _redirects would shadow the function.
+# combis moved from /combis to the site root -> keep old links alive
+/combis/* /:splat 301
+/combis / 301
+/tehuacan/rutas/* /?ruta=:splat 301
+/appa/* / 301
+/tehuacan/ / 301
+/acerca/ / 301
