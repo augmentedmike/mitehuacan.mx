@@ -182,35 +182,6 @@
             box-shadow: 0 4px 16px rgba(0,0,0,.25);
             -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); }
   #mclear:not([hidden]) { display: flex; }
-  /* sponsor-type filter: a funnel button on the map (top-right, left of #mclear's
-     slot when a route is locked) opening a popover of sponsor categories to toggle */
-  #mfilter { position: absolute; top: 62px; left: 10px; z-index: 17; width: 44px; height: 44px;
-             border-radius: 50%; border: 1px solid var(--line); background: var(--glass); color: var(--ink);
-             display: flex; align-items: center; justify-content: center; cursor: pointer;
-             box-shadow: 0 4px 16px rgba(0,0,0,.25);
-             -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); }
-  #mfilter[hidden] { display: none; }
-  #mfilter.active { color: var(--accent); border-color: var(--accent); }
-  #mfilter-pop { position: absolute; top: 114px; left: 10px; z-index: 25; width: min(260px, 78vw);
-                 background: var(--panel); color: var(--ink); border: 1px solid var(--line);
-                 border-radius: 14px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,.3);
-                 animation: panelIn .16s ease; }
-  #mfilter-pop[hidden] { display: none; }
-  #mfilter-pop h4 { margin: 0; padding: 12px 14px 10px; font-size: 13px; font-weight: 700;
-                    border-bottom: 1px solid var(--line); }
-  .mfl-row { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-             padding: 11px 14px; cursor: pointer; border-bottom: 1px solid var(--line); }
-  .mfl-row:last-child { border-bottom: 0; }
-  .mfl-row:hover { background: var(--chip); }
-  .mfl-row > span { font-size: 13.5px; font-weight: 600; color: var(--ink); min-width: 0;
-                    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .mfl-sw { flex: none; width: 38px; height: 22px; border-radius: 99px; background: var(--line);
-            position: relative; transition: background .15s ease; }
-  .mfl-sw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
-                   border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3);
-                   transition: transform .15s ease; }
-  .mfl-row.on .mfl-sw { background: var(--accent); }
-  .mfl-row.on .mfl-sw::after { transform: translateX(16px); }
   /* the app shell — one UI at every width (the old desktop sidebar is retired;
      99999px keeps the block's structure so the rules simply always apply) */
   @media (max-width: 99999px) {
@@ -220,6 +191,7 @@
     body { display: flex; }
     #app { position: relative; order: 2; }
     #mseg-row { display: flex; gap: 8px; align-items: stretch; margin-bottom: 8px; }
+    #mseg { display: none !important; }   /* Map/List toggle retired — map is the only view */
     #mseg { flex: 1; display: flex; background: var(--panel); border: 1px solid var(--line); border-radius: 11px;
             padding: 3px; gap: 4px; }
     #msrch-btn { display: none; width: 40px; border-radius: 11px; background: var(--panel);
@@ -517,7 +489,6 @@
         </div>
         <div class="filters">
           <button data-kind="all" class="on">Todas</button>
-          <button data-kind="local">Locales</button>
           <button data-kind="foránea">Foráneas</button>
         </div>
         <div id="count"></div>
@@ -557,8 +528,6 @@
     </div>
     <div id="mhint" hidden><b></b><span></span></div>
     <button id="mclear" hidden aria-label="quitar selección / clear selection"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    <button id="mfilter" hidden aria-label="filtrar patrocinadores / filter sponsors"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg></button>
-    <div id="mfilter-pop" hidden><h4></h4><div id="mfilter-list"></div></div>
   </div>
   <div id="mlist">
     <div id="ml-count"></div>
@@ -580,7 +549,6 @@
     </div>
     <div id="ml-pills">
       <button data-mk="all" class="on"></button>
-      <button data-mk="local"></button>
       <button data-mk="foránea"></button>
       <button data-mk="fav"></button>
     </div>
@@ -692,7 +660,6 @@ const I18N = {
     },
     clearSel: 'Quitar selección',
     sponsorLbl: 'Patrocinador: ',
-    spFilterTitle: 'Filtrar patrocinadores',
     stores: n => n + (n === 1 ? ' tienda' : ' tiendas') + ' en esta ruta',
     noGeom: 'No hay geometría de rutas cargada.',
     longWalk: 'Ninguna ruta mapeada pasa cerca de ambos puntos — te mostramos las combis más cercanas de todos modos. Es posible que a la ruta real le falte un tramo en nuestros datos (mapeados en 2023).',
@@ -799,7 +766,6 @@ const I18N = {
     },
     clearSel: 'Clear selection',
     sponsorLbl: 'Sponsor: ',
-    spFilterTitle: 'Filter sponsors',
     stores: n => n + (n === 1 ? ' store' : ' stores') + ' on this route',
     noGeom: 'No route geometry loaded.',
     longWalk: "No mapped route passes near both points — we're showing the nearest combis anyway. The real route may be missing a stretch in our data (mapped in 2023).",
@@ -828,7 +794,6 @@ document.title = t('title');
   document.getElementById('search').placeholder = t('searchPh');
   document.getElementById('credit').textContent = t('builtBy');
   document.querySelector('[data-kind="all"]').textContent = t('fAll');
-  document.querySelector('[data-kind="local"]').textContent = t('fLocal');
   document.querySelector('[data-kind="foránea"]').textContent = t('fForanea');
   document.getElementById('from').placeholder = t('fromPh');
   document.getElementById('to').placeholder = t('toPh');
@@ -840,7 +805,6 @@ document.title = t('title');
   mr.title = t('mreset'); mr.setAttribute('aria-label', t('mreset'));
   document.getElementById('ml-search').placeholder = t('searchPh');
   document.querySelector('#ml-pills [data-mk="all"]').textContent = t('fAll');
-  document.querySelector('#ml-pills [data-mk="local"]').textContent = t('fLocal');
   document.querySelector('#ml-pills [data-mk="foránea"]').textContent = t('fForanea');
   document.querySelector('#ml-pills [data-mk="fav"]').textContent = t('mtFav');
   document.getElementById('seg-map').textContent = t('mtMap');
@@ -1290,7 +1254,6 @@ function select(id, fit) {
   setPoiPins(id ? [id] : []);
   const mcd = document.getElementById('mclear');
   if (mcd && !isMobile()) mcd.hidden = !id;
-  if (!isMobile() && typeof syncSponsorFilterBtn === 'function') syncSponsorFilterBtn(!!id);
   if (!id) document.getElementById('sheet2').classList.remove('show');
   renderDetail();
   renderList();
@@ -1319,14 +1282,6 @@ function renderList() {
   });
 }
 
-// sponsor-type filter: types the user has hidden via the map funnel button.
-// persisted so the choice survives reloads (see the #mfilter popover wiring below).
-let SP_HIDDEN = new Set();
-try { SP_HIDDEN = new Set(JSON.parse(localStorage.mtSponsorFilter || '[]')); } catch (e) {}
-const spFilterSave = () => { try { localStorage.mtSponsorFilter = JSON.stringify([...SP_HIDDEN]); } catch (e) {} };
-// distinct sponsor categories, computed live (live-merged sponsors add types too)
-const sponsorTypes = () => [...new Set(Object.values(SPONSORS.sponsors || {})
-  .map(s => s.type).filter(Boolean))].sort();
 
 // sponsor pins: locations of seed/active sponsors near the given routes only
 // (never the whole map — see PRD-revenue.md)
@@ -1338,8 +1293,6 @@ function setSponsorPins(routeIds) {
   routeIds.forEach(rid => {
     const byS = (SPONSORS.by_route || {})[rid] || {};
     Object.entries(byS).forEach(([sid, locs]) => {
-      const sp = (SPONSORS.sponsors || {})[sid];
-      if (sp && SP_HIDDEN.has(sp.type)) return;   // type toggled off in the filter
       locs.forEach(l => {
       const key = sid + l[0] + ',' + l[1];
       if (seen.has(key)) return;
@@ -2584,7 +2537,10 @@ function mApply(fit) {
   // the map shows the search/pill-filtered set PLUS the active selection;
   // a query with zero direct matches never blanks the map (suggestions guide instead)
   const matched = feats.filter(mlVisible);
-  const base = [...new Set([...(matched.length ? matched : feats).map(f => f.properties.id), ...on])];
+  // the "Favoritas" filter shows ONLY favorites — even zero, it must never fall back
+  // to every route; a zero-match text SEARCH still falls back so the map never blanks.
+  const useAll = !matched.length && MV.kind !== 'fav';
+  const base = [...new Set([...(useAll ? feats : matched).map(f => f.properties.id), ...on])];
   // "tap a route" hint card needs no map layers — update it even before map load
   const hint = document.getElementById('mhint');
   if (hint) {
@@ -2602,7 +2558,6 @@ function mApply(fit) {
   setPoiPins(on);
   const mc = document.getElementById('mclear');
   if (mc && isMobile()) mc.hidden = !on.length;
-  if (isMobile() && typeof syncSponsorFilterBtn === 'function') syncSponsorFilterBtn(!!on.length);
   mRenderChips();
   if (typeof syncCollapse === 'function') syncCollapse();
   if (typeof saveStatus === 'function') saveStatus();
@@ -2816,8 +2771,9 @@ function mSyncUI() {
   syncCollapse();
 }
 
-function mSetView(v) {  // 'map' | 'list' ('fav' arrives via the filter pill)
-  if (v === 'fav') { MV.kind = 'fav'; v = 'list'; }
+function mSetView(v) {  // list view retired — the map is the only view now
+  if (v === 'fav') MV.kind = 'fav';   // "fav" is a filter, not a separate view
+  v = 'map';                          // always map; list kept in code, out of the UI
   document.body.dataset.mview = v;
   MV.lastRV = v;
   mSyncUI();
@@ -3033,64 +2989,6 @@ document.getElementById('msrch-btn').onclick = () => {
   document.getElementById('ml-search').focus();
 };
 document.getElementById('mclear').onclick = clearSelection;
-
-// sponsor-type filter: funnel button on the map opens a popover of categories,
-// each a toggle (all ON by default). Hiding a type re-renders the pins for the
-// current selection and persists the hidden set. Theme/lang-aware via app vars.
-function refreshSponsorFilterState() {
-  const b = document.getElementById('mfilter');
-  if (b) b.classList.toggle('active', SP_HIDDEN.size > 0);
-}
-function buildSponsorFilter() {
-  const list = document.getElementById('mfilter-list');
-  if (!list) return;
-  document.querySelector('#mfilter-pop h4').textContent = t('spFilterTitle');
-  list.innerHTML = '';
-  sponsorTypes().forEach(type => {
-    const row = document.createElement('div');
-    row.className = 'mfl-row' + (SP_HIDDEN.has(type) ? '' : ' on');
-    row.innerHTML = '<span></span><span class="mfl-sw"></span>';
-    row.firstChild.textContent = type;
-    row.onclick = () => {
-      if (SP_HIDDEN.has(type)) SP_HIDDEN.delete(type); else SP_HIDDEN.add(type);
-      spFilterSave();
-      row.classList.toggle('on');
-      refreshSponsorFilterState();
-      const on = isMobile() ? M.chips.filter(c => c.on).map(c => c.id)
-                            : (state.sel ? [state.sel] : []);
-      setSponsorPins(on);
-      track('sponsor_filter', type + ':' + (SP_HIDDEN.has(type) ? 'off' : 'on'));
-    };
-    list.appendChild(row);
-  });
-}
-function closeSponsorFilter() {
-  const p = document.getElementById('mfilter-pop');
-  if (p) p.hidden = true;
-}
-// show the funnel only while a route is selected (that's when sponsor pins exist)
-// and at least one sponsor type is known
-function syncSponsorFilterBtn(show) {
-  const b = document.getElementById('mfilter');
-  if (!b) return;
-  b.hidden = !(show && sponsorTypes().length);
-  if (b.hidden) closeSponsorFilter();
-}
-{
-  const btn = document.getElementById('mfilter');
-  const pop = document.getElementById('mfilter-pop');
-  if (btn && pop) {
-    btn.onclick = e => {
-      e.stopPropagation();
-      if (pop.hidden) { buildSponsorFilter(); pop.hidden = false; }
-      else pop.hidden = true;
-    };
-    document.addEventListener('click', e => {
-      if (!pop.hidden && !pop.contains(e.target) && !btn.contains(e.target)) pop.hidden = true;
-    });
-  }
-  refreshSponsorFilterState();
-}
 
 // user-chosen sheet height (px). explicit HEIGHT (not max-height) so a short panel
 // still honors the drag, and it persists across re-renders (tab switches).
@@ -3418,7 +3316,7 @@ document.querySelectorAll('#ml-pills button').forEach(b => b.onclick = () => {
   saveStatus();
 });
 if (isMobile()) {
-  if (BOOT && ['all', 'local', 'foránea', 'fav'].includes(BOOT.kind)) MV.kind = BOOT.kind;
+  if (BOOT && ['all', 'foránea', 'fav'].includes(BOOT.kind)) MV.kind = BOOT.kind;
   // map is ALWAYS the entry view (the map is the product); users can still
   // toggle to the list within a session. saved route/filter/destination restore.
   const v = 'map';

@@ -9,8 +9,30 @@ import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-NEAR_M = 300
+NEAR_M = 150   # a location pins on a route only within this many meters of the LINE
 MLON = 111320 * math.cos(math.radians(18.462)); MLAT = 110570
+
+
+def seg_dist(px, py, ax, ay, bx, by):
+    """meters from point (px,py) to segment a-b (all in projected meters)."""
+    dx, dy = bx - ax, by - ay
+    if dx == 0 and dy == 0:
+        return math.hypot(px - ax, py - ay)
+    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+
+
+def route_dist(px, py, parts):
+    """min distance from a point to the route line (measured to segments, not vertices)."""
+    best = float("inf")
+    for pts in parts:
+        if len(pts) == 1:
+            best = min(best, math.hypot(px - pts[0][0], py - pts[0][1]))
+        for i in range(len(pts) - 1):
+            d = seg_dist(px, py, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1])
+            if d < best:
+                best = d
+    return best
 
 SPONSORS = {
     "oxxo": {
@@ -35,10 +57,12 @@ SPONSORS = {
 def main():
     routes = json.loads((ROOT / "resources" / "map-data" / "routes.js").read_text().split("const ROUTES = ", 1)[1].rstrip().rstrip(";"))
 
+    # each route -> list of parts, each part a list of projected (x,y) vertices, so
+    # distance is measured to the SEGMENTS (the line itself), not just the vertices.
     flat = {}
     for f in routes["features"]:
-        flat[f["properties"]["id"]] = [(c[0] * MLON, c[1] * MLAT)
-                                       for part in f["geometry"]["coordinates"] for c in part]
+        flat[f["properties"]["id"]] = [[(c[0] * MLON, c[1] * MLAT) for c in part]
+                                       for part in f["geometry"]["coordinates"]]
 
     out = {"sponsors": {}, "by_route": {}}
     for sid, s in SPONSORS.items():
@@ -51,12 +75,11 @@ def main():
         out["sponsors"][sid] = {"name": s["name"], "type": s.get("type") or None,
                                 "logo": s["logo"], "logo2x": s["logo2x"], "seed": s["seed"],
                                 "locations": clean}
-        for rid, pts in flat.items():
+        for rid, parts in flat.items():
             near = []
             for idx, loc in enumerate(locs):
                 lx, ly = loc["lon"] * MLON, loc["lat"] * MLAT
-                d = min(math.hypot(px - lx, py - ly) for px, py in pts)  # meters
-                if d <= NEAR_M:
+                if route_dist(lx, ly, parts) <= NEAR_M:
                     near.append([round(loc["lon"], 6), round(loc["lat"], 6), idx])
             if near:
                 out["by_route"].setdefault(rid, {})[sid] = near
