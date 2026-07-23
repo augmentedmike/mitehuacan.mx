@@ -351,12 +351,10 @@
             box-shadow: 0 4px 14px rgba(0,0,0,.18);
             -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%); }
   #credit:hover { color: var(--ink); }
-  /* trip sheet on wide screens: options left, selected option's details right */
-  #trip-right { display: none; }
-  @media (min-width: 701px) {
-    #trip-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; align-items: start; }
-    #trip-right { display: block; border-left: 1px solid var(--line); padding-left: 20px; }
-  }
+  /* trip / boarding sheet (mobile-only app): the option list, then the selected
+     option's step-by-step directions stacked right below it. */
+  #trip-right { display: block; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+  #trip-right:empty { display: none; }
   #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 84px; z-index: 80;
            background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 12px;
            padding: 10px 16px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
@@ -436,7 +434,6 @@
     html:not([data-view="full"]) .pwa-bar { position: absolute; }
     /* keep the MOBILE layout inside the frame — undo the wide-screen adaptations */
     html:not([data-view="full"]) #trip-cols { display: block; }
-    html:not([data-view="full"]) #trip-right { display: none; }
     html:not([data-view="full"]) #topbar-seg { display: none !important; }
     html:not([data-view="full"]) #topbar nav { display: none; }   /* frame uses #mtop-btns, not the desktop nav — no duplicate controls */
     html:not([data-view="full"]) #mtop-btns { display: flex; }
@@ -1817,8 +1814,8 @@ function renderTripSheet() {
   };
 }
 
-// wide screens only (#trip-right is display:none on phones): the selected
-// option's step-by-step plus fare/schedule for each combi it rides
+// the selected option's step-by-step directions plus fare/schedule for each combi
+// it rides — stacked below the option list (mobile-only, always visible)
 function fillTripDetail(i) {
   const box = document.getElementById('trip-right');
   if (!box) return;
