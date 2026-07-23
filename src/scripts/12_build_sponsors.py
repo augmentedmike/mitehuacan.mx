@@ -22,8 +22,8 @@ SPONSORS = {
     },
     "3b": {
         "name": "3B",
-        "logo": None,      # no logo asset — the client draws a "3B" letter badge
-        "logo2x": None,
+        "logo": "patrocinadores/3b.png",      # tiendas3b.com brand mark, circular-masked
+        "logo2x": "patrocinadores/3b@2x.png",
         "seed": True,      # free destination-pin seed (Tiendas 3B), like OXXO
         "locations_file": ROOT / "resources" / "data" / "sponsors" / "3b_locations.json",
     },

@@ -999,13 +999,15 @@ function nearestRouteId(ids, lngLat) {
 const W_BASE = ['interpolate', ['linear'], ['zoom'], 11, 1.8, 15, 3.5];
 let LBL = null;   // first basemap label layer; routes sit below it
 
-// routes below labels while browsing (street names on top); above labels when a
-// route is selected so the highlighted line reads clearly.
-function routesAboveLabels(above) {
+// routes ALWAYS sit just below the street-name labels (in every state): street
+// lines render under the routes, street names render on top of them. The selected
+// route is emphasized by opacity/width (see paintCurrent), never by reordering
+// above the labels — that would bury the street names the rider needs.
+function routesBelowNames() {
   if (!LBL || !map.getLayer('routes')) return;
   try {
-    map.moveLayer('routes-casing', above ? undefined : LBL);
-    map.moveLayer('routes', above ? undefined : LBL);
+    map.moveLayer('routes-casing', LBL);
+    map.moveLayer('routes', LBL);
   } catch (e) {}
 }
 
@@ -1037,7 +1039,7 @@ function paintCurrent() {  // restore paint to whatever the selection state says
   if (typeof TRIP !== 'undefined' && TRIP) {
     map.setPaintProperty('routes', 'line-width', W_BASE);
     map.setPaintProperty('routes', 'line-opacity', 0.15);
-    routesAboveLabels(true);   // trip: the ridden legs need to read over labels
+    routesBelowNames();          // base routes stay under the street names (trip-legs draws the ridden path)
     return;
   }
   const on = isMobile() ? M.chips.filter(c => c.on).map(c => c.id)
@@ -1049,11 +1051,11 @@ function paintCurrent() {  // restore paint to whatever the selection state says
     map.setPaintProperty('routes', 'line-width', ['interpolate', ['linear'], ['zoom'],
       11, ['case', inSel, 4.5, 1.8], 15, ['case', inSel, 4.5, 3.5]]);
     map.setPaintProperty('routes', 'line-opacity', ['case', inSel, 1, 0.15]);
-    routesAboveLabels(true);    // a route is selected → lift it above the labels
+    routesBelowNames();          // selected route pops via opacity/width, not by covering street names
   } else {
     map.setPaintProperty('routes', 'line-width', W_BASE);
     map.setPaintProperty('routes', 'line-opacity', 0.85);
-    routesAboveLabels(false);   // browsing → street names on top of the routes
+    routesBelowNames();          // street names stay on top of the routes
   }
 }
 
@@ -2216,7 +2218,15 @@ map.on('load', () => {
   // put the route lines BELOW the basemap's first label layer so street names
   // render on top of the routes (and appear as you zoom in). paintCurrent lifts
   // the routes above labels while a route is selected.
-  LBL = (map.getStyle().layers.find(l => l.type === 'symbol') || {}).id;
+  // routes go ABOVE all road/street LINES but BELOW the road-NAME labels, so street
+  // lines render under the routes and street names render on top of them. Anchor
+  // directly to the first road-name label (highway_name_* / highway-name-*): every
+  // road LINE sits below it, every road NAME sits at or above it.
+  {
+    const _ls = map.getStyle().layers;
+    LBL = (_ls.find(l => l.type === 'symbol' && /(highway|road|transportation).?name/i.test(l.id))
+           || _ls.find(l => l.type === 'symbol') || {}).id;
+  }
   map.addLayer({
     id: 'routes-casing', type: 'line', source: 'routes',
     layout: {'line-cap': 'round', 'line-join': 'round'},
@@ -2316,7 +2326,7 @@ map.on('load', () => {
     const id = nearestRouteId(ids, e.lngLat);
     if (isMobile()) {
       openSheet(id);              // sheet first, so the fit accounts for its height
-      mAddRoute(id);
+      mAddRoute(id, false);       // tapping a route on the map keeps the current zoom/pan
     } else if (document.querySelector('#tabs button.on').dataset.pane === 'browse') {
       select(id, false);
     }
@@ -2443,12 +2453,12 @@ function mRenderChips() {
   });
 }
 
-function mAddRoute(id) {
+function mAddRoute(id, fit = true) {
   // one active route at a time; a fresh selection resets any trip leftovers
   if (typeof clearTrip === 'function') clearTrip();
   M.chips = [{id, on: true}];
   track('route_select', id);
-  mApply(true);
+  mApply(fit);   // fit=false for a direct map tap: keep the user's current zoom/pan
 }
 
 // towns/colonias are first-class search results: picking one toggles ON every

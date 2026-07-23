@@ -1,47 +1,89 @@
 {
- "source": "INEGI DENUE (Tiendas Tres B)",
+ "source": "tiendas3b.com store locator (Agile Store Locator)",
  "locations": [
   {
-   "lon": -97.389687,
-   "lat": 18.464828,
+   "lon": -97.428398,
+   "lat": 18.688229,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Avenida Ignacio de la Llave 50, Acultzingo"
   },
   {
-   "lon": -97.438244,
-   "lat": 18.54856,
+   "lon": -97.393067,
+   "lat": 18.470691,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Francisco Sarabia, 75730 Tehuacn, Pue., Tehuacan"
   },
   {
-   "lon": -97.384766,
-   "lat": 18.46077,
+   "lon": -97.261503,
+   "lat": 18.37805,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Av. Rafael vila Camacho Ote. 603, Coculco"
   },
   {
-   "lon": -97.403224,
-   "lat": 18.465162,
+   "lon": -97.300589,
+   "lat": 18.36758,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Insurgentes Pte. 10, Altepexi"
   },
   {
-   "lon": -97.392905,
-   "lat": 18.470403,
+   "lon": -97.405544,
+   "lat": 18.450345,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Calle 19 Poniente nm. 1400, Tehuacan"
   },
   {
-   "lon": -97.41669,
-   "lat": 18.449122,
+   "lon": -97.382841,
+   "lat": 18.447781,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Av. de la Juventud nm. 2101, Tehuacan"
   },
   {
-   "lon": -97.261289,
-   "lat": 18.377978,
+   "lon": -97.384704,
+   "lat": 18.460785,
    "name": "Tiendas 3B",
-   "addr": null
+   "addr": "Calle 3 Oriente nm. 901, Tehuacan"
+  },
+  {
+   "lon": -97.390001,
+   "lat": 18.464794,
+   "name": "Tiendas 3B",
+   "addr": "Calle 2 Oriente nm. 334, Tehuacan"
+  },
+  {
+   "lon": -97.416149,
+   "lat": 18.460413,
+   "name": "Tiendas 3B",
+   "addr": "Aldama 3607, Tehuacan"
+  },
+  {
+   "lon": -97.484973,
+   "lat": 18.54875,
+   "name": "Tiendas 3B",
+   "addr": "Divisin del Norte 13, Tehuacan"
+  },
+  {
+   "lon": -97.437902,
+   "lat": 18.548347,
+   "name": "Tiendas 3B",
+   "addr": "Av. Nacional nm. 305, Miahuatlan"
+  },
+  {
+   "lon": -97.389812,
+   "lat": 18.465426,
+   "name": "Tiendas 3B",
+   "addr": "Calle 2 Oriente 334, Tehuacan"
+  },
+  {
+   "lon": -97.405562,
+   "lat": 18.450354,
+   "name": "Tiendas 3B",
+   "addr": "Calle 19 Pte 1404, 16 de Marzo, 75763 Tehuacn, Pue., Tehuacan"
+  },
+  {
+   "lon": -97.391784,
+   "lat": 18.454374,
+   "name": "Tiendas 3B",
+   "addr": "Calle 13 Oriente Num. 305, Guadalupe"
   }
  ]
 }
