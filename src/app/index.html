@@ -2168,11 +2168,26 @@ map.on('load', () => {
   map.addSource('plan-pts', {type: 'geojson', data: {type: 'FeatureCollection', features: []}});
   map.addSource('trip-legs', {type: 'geojson', data: {type: 'FeatureCollection', features: []}});
   map.addSource('sponsor-pins', {type: 'geojson', data: {type: 'FeatureCollection', features: []}});
+  // a sponsor without a shipped logo asset (e.g. the 3B seed) gets a generated
+  // "letter" badge — up to 2 chars so "3B" reads.
+  function sponsorBadge(sid, name) {
+    if (map.hasImage('sp-' + sid)) return;
+    const cv = document.createElement('canvas'); cv.width = cv.height = 56;
+    const cx = cv.getContext('2d');
+    cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(28, 28, 27, 0, 7); cx.fill();
+    cx.fillStyle = '#4476ff'; cx.beginPath(); cx.arc(28, 28, 24, 0, 7); cx.fill();
+    cx.fillStyle = '#fff'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+    const label = ((name || sid).trim().slice(0, 2) || '?').toUpperCase();
+    cx.font = '800 ' + (label.length > 1 ? 22 : 26) + 'px system-ui';
+    cx.fillText(label, 28, 30);
+    try { map.addImage('sp-' + sid, cx.getImageData(0, 0, 56, 56), {pixelRatio: 2}); } catch (e) {}
+  }
   Object.entries(SPONSORS.sponsors || {}).forEach(async ([sid, s]) => {
+    if (!s.logo2x) { sponsorBadge(sid, s.name); return; }   // no logo asset -> letter badge
     try {
       const img = await map.loadImage(s.logo2x);
       map.addImage('sp-' + sid, img.data, {pixelRatio: 2});
-    } catch (e) { /* logo missing: pins just won't render */ }
+    } catch (e) { sponsorBadge(sid, s.name); }
   });
   // live sponsor pins: the admin's D1 (signed contract or barter = published)
   // overrides/extends the static seed within 5 min of a change — no deploy.
@@ -2192,17 +2207,7 @@ map.on('load', () => {
           }
         });
       });
-      if (!map.hasImage('sp-' + sid)) {
-        const cv = document.createElement('canvas');
-        cv.width = cv.height = 56;
-        const cx = cv.getContext('2d');
-        cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(28, 28, 27, 0, 7); cx.fill();
-        cx.fillStyle = '#4476ff'; cx.beginPath(); cx.arc(28, 28, 24, 0, 7); cx.fill();
-        cx.fillStyle = '#fff'; cx.font = '800 26px system-ui';
-        cx.textAlign = 'center'; cx.textBaseline = 'middle';
-        cx.fillText(((s.name || sid).trim()[0] || '?').toUpperCase(), 28, 30);
-        try { map.addImage('sp-' + sid, cx.getImageData(0, 0, 56, 56), {pixelRatio: 2}); } catch (e) {}
-      }
+      sponsorBadge(sid, s.name);
     });
     Object.entries(byRoute).forEach(([rid, m]) => {
       SPONSORS.by_route[rid] = Object.assign({}, SPONSORS.by_route[rid], m);

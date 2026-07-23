@@ -1,0 +1,47 @@
+{
+ "source": "INEGI DENUE (Tiendas Tres B)",
+ "locations": [
+  {
+   "lon": -97.389687,
+   "lat": 18.464828,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.438244,
+   "lat": 18.54856,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.384766,
+   "lat": 18.46077,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.403224,
+   "lat": 18.465162,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.392905,
+   "lat": 18.470403,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.41669,
+   "lat": 18.449122,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.261289,
+   "lat": 18.377978,
+   "name": "Tiendas 3B",
+   "addr": null
+  }
+ ]
+}
