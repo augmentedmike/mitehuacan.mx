@@ -80,8 +80,8 @@ header.site nav a.thm{padding:6px 8px;font-size:14px;line-height:1.3}
    so every module looks like one mobile app. The content scrolls inside the frame;
    transform makes the body the containing block so the app-switcher stays in-frame. */
 @media(min-width:701px){
- html{background:#18181b;display:flex;align-items:center;justify-content:center;min-height:100dvh}
- body{width:412px;max-width:412px;height:min(884px,96dvh);margin:0;
+ html{background:#18181b;display:flex;align-items:center;justify-content:center;height:100dvh;overflow:hidden}
+ body{width:412px;max-width:412px;height:min(884px,96dvh);min-height:0;margin:0;
   border:11px solid #0a0a0b;border-radius:46px;
   box-shadow:0 0 0 2px #3f3f46,0 40px 90px rgba(0,0,0,.6);
   overflow-y:auto;overflow-x:hidden;position:relative;transform:translateZ(0)}
@@ -114,6 +114,17 @@ a.card.live .go{display:inline-block;margin-top:14px;background:var(--accent);co
 a.card.live:hover .go{filter:brightness(1.08)}
 .card.soon{opacity:.75}
 .pitch{font-size:14px;color:var(--ink2);margin:18px 0 0}
+.fb{margin:28px 0 0;padding:18px;border:1px solid var(--line);border-radius:20px;background:var(--panel)}
+.fb-h{font-size:18px;margin:0 0 4px}
+.fb-sub{font-size:13.5px;color:var(--ink2);margin:0 0 6px}
+.fbform{display:flex;flex-direction:column;gap:8px;margin:14px 0 0}
+.fbform+.fbform{border-top:1px solid var(--line);padding-top:14px}
+.fbform textarea,.fbform input.fb-contact{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+.fbform textarea{min-height:66px;resize:vertical}
+.fbform textarea:focus,.fbform input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.fbform button{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font:inherit;font-weight:600;cursor:pointer}
+.fb-hp{display:none!important}
+.fb-thanks{color:var(--accent);font-weight:600;margin:6px 0}
 </style>
 <script>window.TITLES={"es": "Descubre Tehuacán — MiTehuacán", "en": "Discover Tehuacán — MiTehuacán"}</script>
 <script>
@@ -190,11 +201,36 @@ addEventListener('DOMContentLoaded',syncLang);
  <p class="en">Houses, apartments and storefronts for rent, listed by local people.</p>
 </div>
 </div>
-<p class="pitch es">Esto apenas empieza — MiTehuacán va a crecer sección por sección.
-¿Tienes una idea para el portal? <a href="https://github.com/augmentedmike/mitehuacan.mx">Cuéntanos</a>.</p>
-<p class="pitch en">This is only the beginning — MiTehuacán will grow section by section.
-Got an idea for the portal? <a href="https://github.com/augmentedmike/mitehuacan.mx">Tell us</a>.</p>
-
+<div class="fb">
+<h2 class="fb-h"><span class="es">Ideas y problemas</span><span class="en">Ideas &amp; problems</span></h2>
+<p class="fb-sub"><span class="es">Esto apenas empieza — MiTehuacán crece sección por sección. Cuéntanos qué te gustaría ver o repórtanos una falla. Llega directo a nosotros.</span><span class="en">This is only the beginning — MiTehuacán grows section by section. Tell us what you'd like to see, or report a problem. It comes straight to us.</span></p>
+<form class="fbform" data-kind="idea">
+<textarea required maxlength="1500" data-ph-es="Comparte una idea…" data-ph-en="Share an idea…" placeholder="Comparte una idea…"></textarea>
+<input type="text" maxlength="120" class="fb-contact" data-ph-es="WhatsApp o nombre (opcional)" data-ph-en="WhatsApp or name (optional)" placeholder="WhatsApp o nombre (opcional)">
+<input type="text" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+<button type="submit"><span class="es">Enviar idea</span><span class="en">Send idea</span></button>
+</form>
+<form class="fbform" data-kind="bug">
+<textarea required maxlength="1500" data-ph-es="Describe el problema…" data-ph-en="Describe the problem…" placeholder="Describe el problema…"></textarea>
+<input type="text" maxlength="120" class="fb-contact" data-ph-es="WhatsApp o nombre (opcional)" data-ph-en="WhatsApp or name (optional)" placeholder="WhatsApp o nombre (opcional)">
+<input type="text" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+<button type="submit"><span class="es">Reportar problema</span><span class="en">Report a problem</span></button>
+</form>
+</div>
+<script>
+document.querySelectorAll('.fbform').forEach(function(f){
+ f.addEventListener('submit',function(e){e.preventDefault();
+  var hp=f.querySelector('.fb-hp').value,msg=f.querySelector('textarea').value.trim();
+  if(!hp&&msg.length<5)return;
+  f.querySelector('button').disabled=true;
+  fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   kind:f.dataset.kind,message:msg,contact:f.querySelector('.fb-contact').value.trim(),page:location.pathname,website:hp
+  })}).then(function(){thx(f);}).catch(function(){thx(f);});
+ });
+});
+function thx(f){var en=document.documentElement.lang==='en';
+ f.innerHTML='<p class="fb-thanks">'+(en?'Thanks — we got it.':'¡Gracias! Lo recibimos.')+'</p>';}
+</script>
 </div>
 <footer class="site"><div class="cols">
 <div><span class="es">MiTehuacán — el portal libre y gratuito de Tehuacán, Puebla.</span><span class="en">MiTehuacán — the free, open portal of Tehuacán, Puebla.</span><br>

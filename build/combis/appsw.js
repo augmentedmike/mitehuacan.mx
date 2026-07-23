@@ -60,9 +60,10 @@
     '.appsw-row .dot{width:8px;height:8px;border-radius:99px;background:#0071e3;flex:none}' +
     '.appsw-soon{padding:11px 14px;font-size:12.5px;opacity:.5;display:flex;align-items:center;gap:8px}' +
     '.appsw-soon span{font-size:16px;line-height:1}' +
-    /* the switcher is the top identity everywhere — hide each page's own brand
-       (the combis app's #topbar brand and the content pages' header.site brand) */
+    /* the switcher is the top identity + section nav everywhere — hide each page's
+       own brand and its in-header section links (keep only lang/theme toggles) */
     '#topbar>.brand,header.site .brand{display:none}' +
+    'header.site nav a:not(.lng):not(.thm){display:none}' +
     dark(':root[data-theme=dark]') +
     '@media(prefers-color-scheme:dark){' + dark(':root:not([data-theme=light])') + '}';
 
