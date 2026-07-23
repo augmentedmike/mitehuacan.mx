@@ -851,6 +851,26 @@ const dLon = RADIUS_KM / KMLON, dLat = RADIUS_KM / KMLAT;
 // isn't clamped (tight bounds were cutting route tails off-screen)
 const pLon = dLon * 1.4, pLat = dLat * 1.4;
 
+// Some very old / GPU-less devices can't create a WebGL context; MapLibre would
+// throw and cascade ("map is not defined"). Detect it and show a friendly message
+// instead of a broken black page. Halting here is safe — the whole app is the map,
+// and every later reference to `map` outside this block is typeof-guarded.
+function webglOK() {
+  try {
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+  } catch (e) { return false; }
+}
+if (!webglOK()) {
+  const el = document.getElementById('map');
+  if (el) el.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;' +
+    'padding:28px;text-align:center;color:var(--ink-2);font-size:15px;line-height:1.55">' +
+    (document.documentElement.lang === 'en'
+      ? 'Your browser can’t display the map. Try updating it, or open the site in Chrome or Safari.'
+      : 'Tu navegador no puede mostrar el mapa. Actualízalo o ábrelo en Chrome o Safari.') + '</div>';
+  throw new Error('webgl-unsupported');   // halt map setup — one clean signal, no cascade
+}
+
 const map = new maplibregl.Map({
   container: 'map',
   style: dark ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron',
