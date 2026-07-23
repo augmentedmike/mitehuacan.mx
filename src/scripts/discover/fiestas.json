@@ -1,0 +1,13 @@
+{
+  "_note": "Fiestas patronales DERIVADAS del calendario litúrgico a partir del santo en el nombre del pueblo. NO son datos confirmados localmente: la fiesta suele celebrarse alrededor de la fecha del santo, pero puede moverse (fin de semana, octava, costumbre local). Cada una entra como 'candidate' con approx=true para que se confirme antes de darla por segura. Solo se incluyen pueblos cuyo nombre nombra un santo con fecha litúrgica inequívoca. Fuente: calendario litúrgico católico (hecho público), no inventado.",
+  "fiestas": [
+    {"town": "San Sebastián Zinacatepec", "name": "Fiesta patronal de San Sebastián", "day": 20, "month": 1, "approx": true},
+    {"town": "San José Miahuatlán", "name": "Fiesta patronal de San José", "day": 19, "month": 3, "approx": true},
+    {"town": "San Antonio Cañada", "name": "Fiesta patronal de San Antonio de Padua", "day": 13, "month": 6, "approx": true},
+    {"town": "Santiago Miahuatlán", "name": "Fiesta patronal de Santiago Apóstol", "day": 25, "month": 7, "approx": true},
+    {"town": "Santa Ana Teloxtoc", "name": "Fiesta patronal de Santa Ana", "day": 26, "month": 7, "approx": true},
+    {"town": "Santa María del Monte", "name": "Fiesta patronal de la Asunción de María", "day": 15, "month": 8, "approx": true},
+    {"town": "Santa María la Alta", "name": "Fiesta patronal de la Asunción de María", "day": 15, "month": 8, "approx": true},
+    {"town": "San Andrés Cacaloapan", "name": "Fiesta patronal de San Andrés Apóstol", "day": 30, "month": 11, "approx": true}
+  ]
+}
