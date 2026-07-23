@@ -77,7 +77,7 @@
   @keyframes panelIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   #topbar { display: flex; align-items: center; gap: 14px; padding: 0 14px; height: 46px; flex: none;
             border-bottom: 1px solid var(--line); background: var(--panel); }
-  #topbar .brand { color: var(--ink); text-decoration: none; font-weight: 700; font-size: 16px; }
+  #topbar .brand { color: var(--ink); text-decoration: none; font-weight: 700; font-size: 16px; white-space: nowrap; }
   #topbar .brand span { color: var(--accent); }
   #topbar nav { display: flex; gap: 4px; margin-left: auto; }
   #topbar nav a { color: var(--ink-2); text-decoration: none; font-size: 13px; padding: 5px 10px; border-radius: 8px; }
@@ -428,8 +428,12 @@
       border: 11px solid #0a0a0b; border-radius: 46px;
       box-shadow: 0 0 0 2px #3f3f46, 0 40px 90px rgba(0,0,0,.6);
       overflow: hidden; position: relative;
-      transform: translateZ(0);   /* containing block for position:fixed children */
+      transform: translateZ(0);       /* containing block for position:fixed children */
     }
+    /* in the frame, bottom-anchored overlays become absolute (relative to the frame
+       body) so overflow:hidden + border-radius clips them to the rounded corners —
+       clip-path would also clip the frame's box-shadow, so we don't use it. */
+    html:not([data-view="full"]) .pwa-bar { position: absolute; }
     /* keep the MOBILE layout inside the frame — undo the wide-screen adaptations */
     html:not([data-view="full"]) #trip-cols { display: block; }
     html:not([data-view="full"]) #trip-right { display: none; }

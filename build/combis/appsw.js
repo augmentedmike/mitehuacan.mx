@@ -31,16 +31,15 @@
   function app(k) { for (var i = 0; i < APPS.length; i++) if (APPS[i].k === k) return APPS[i]; return APPS[3]; }
 
   var CSS =
-    '#appsw-btn{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:1200;' +
-    'display:flex;align-items:center;gap:7px;padding:7px 12px 7px 11px;border-radius:99px;' +
+    '#appsw-btn{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:99px;flex:none;margin-left:8px;' +
     'font:600 14px system-ui,-apple-system,sans-serif;cursor:pointer;border:1px solid rgba(0,0,0,.10);' +
     'background:rgba(255,255,255,.82);color:#1d1d1f;-webkit-backdrop-filter:blur(18px) saturate(180%);' +
-    'backdrop-filter:blur(18px) saturate(180%);box-shadow:0 4px 18px rgba(0,0,0,.14)}' +
+    'backdrop-filter:blur(18px) saturate(180%);box-shadow:0 2px 10px rgba(0,0,0,.12)}' +
     '#appsw-btn svg{width:17px;height:17px;color:#0071e3}' +
     '#appsw-btn .chev{margin-left:1px;opacity:.5;transition:transform .2s}' +
     '#appsw-btn.open .chev{transform:rotate(180deg)}' +
     '#appsw-btn.hint{animation:appswHint 1.4s ease 3}' +
-    '@keyframes appswHint{0%,100%{transform:translateX(-50%) translateY(0)}12%{transform:translateX(-50%) translateY(-3px)}24%{transform:translateX(-50%) translateY(0)}}' +
+    '@keyframes appswHint{0%,100%{transform:translateY(0)}12%{transform:translateY(-3px)}24%{transform:translateY(0)}}' +
     '#appsw-pop{position:fixed;inset:0;z-index:1201;display:none}#appsw-pop.on{display:block}' +
     '#appsw-back{position:absolute;inset:0;background:rgba(0,0,0,.42)}' +
     '#appsw-card{position:absolute;top:calc(54px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);' +
@@ -60,11 +59,11 @@
     '.appsw-row .dot{width:8px;height:8px;border-radius:99px;background:#0071e3;flex:none}' +
     '.appsw-soon{padding:11px 14px;font-size:12.5px;opacity:.5;display:flex;align-items:center;gap:8px}' +
     '.appsw-soon span{font-size:16px;line-height:1}' +
-    /* the combis app's #topbar brand collides with the centered switcher — hide it
-       there; keep the content pages' header.site brand (mitehuacan.mx, top-left).
-       The switcher is the section nav, so hide only the in-header section links. */
-    '#topbar>.brand{display:none}' +
+    /* the switcher sits inline right after the brand, so both flow together on the
+       left; the brand stays visible everywhere. The switcher is the section nav,
+       so hide only the redundant in-header section links. */
     'header.site nav a:not(.lng):not(.thm){display:none}' +
+    '#topbar .brand .suffix{display:none}' +   /* "· Combis" — the switcher already names the section */
     dark(':root[data-theme=dark]') +
     '@media(prefers-color-scheme:dark){' + dark(':root:not([data-theme=light])') + '}';
 
@@ -81,7 +80,12 @@
   var btn = document.createElement('button');
   btn.id = 'appsw-btn'; btn.setAttribute('aria-haspopup', 'true'); btn.setAttribute('aria-expanded', 'false');
   var pop = document.createElement('div'); pop.id = 'appsw-pop';
-  document.body.appendChild(btn); document.body.appendChild(pop);
+  // place the switcher inline right after the brand so the two flow together on
+  // the left; the header's controls (gear / toggles) stay on the right.
+  var brand = document.querySelector('#topbar .brand, header.site .brand');
+  if (brand && brand.parentNode) brand.parentNode.insertBefore(btn, brand.nextSibling);
+  else document.body.appendChild(btn);
+  document.body.appendChild(pop);
 
   function renderBtn() {
     var a = app(cur());
