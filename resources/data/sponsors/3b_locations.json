@@ -1,77 +1,113 @@
 {
- "source": "tiendas3b.com store locator (Agile Store Locator)",
+ "source": "Google Maps places (tiendas 3b, Tehuacán) — retail stores only, cedis excluded",
  "locations": [
   {
-   "lon": -97.428398,
-   "lat": 18.688229,
+   "lon": -97.382725,
+   "lat": 18.447773,
    "name": "Tiendas 3B",
-   "addr": "Avenida Ignacio de la Llave 50, Acultzingo"
+   "addr": null
   },
   {
-   "lon": -97.393067,
-   "lat": 18.470691,
+   "lon": -97.38235,
+   "lat": 18.464734,
    "name": "Tiendas 3B",
-   "addr": "Francisco Sarabia, 75730 Tehuacn, Pue., Tehuacan"
+   "addr": null
   },
   {
-   "lon": -97.261503,
-   "lat": 18.37805,
+   "lon": -97.384862,
+   "lat": 18.460778,
    "name": "Tiendas 3B",
-   "addr": "Av. Rafael vila Camacho Ote. 603, Coculco"
+   "addr": null
   },
   {
-   "lon": -97.300589,
-   "lat": 18.36758,
+   "lon": -97.377199,
+   "lat": 18.462407,
    "name": "Tiendas 3B",
-   "addr": "Insurgentes Pte. 10, Altepexi"
+   "addr": null
   },
   {
-   "lon": -97.405544,
-   "lat": 18.450345,
+   "lon": -97.384735,
+   "lat": 18.458554,
    "name": "Tiendas 3B",
-   "addr": "Calle 19 Poniente nm. 1400, Tehuacan"
+   "addr": null
   },
   {
-   "lon": -97.382841,
-   "lat": 18.447781,
+   "lon": -97.392024,
+   "lat": 18.453448,
    "name": "Tiendas 3B",
-   "addr": "Av. de la Juventud nm. 2101, Tehuacan"
+   "addr": null
   },
   {
-   "lon": -97.384704,
-   "lat": 18.460785,
+   "lon": -97.410687,
+   "lat": 18.446832,
    "name": "Tiendas 3B",
-   "addr": "Calle 3 Oriente nm. 901, Tehuacan"
+   "addr": null
   },
   {
-   "lon": -97.390001,
-   "lat": 18.464794,
+   "lon": -97.378707,
+   "lat": 18.437939,
    "name": "Tiendas 3B",
-   "addr": "Calle 2 Oriente nm. 334, Tehuacan"
+   "addr": null
   },
   {
-   "lon": -97.416149,
-   "lat": 18.460413,
+   "lon": -97.384455,
+   "lat": 18.477221,
    "name": "Tiendas 3B",
-   "addr": "Aldama 3607, Tehuacan"
+   "addr": null
   },
   {
-   "lon": -97.484973,
-   "lat": 18.54875,
+   "lon": -97.391684,
+   "lat": 18.4568,
    "name": "Tiendas 3B",
-   "addr": "Divisin del Norte 13, Tehuacan"
+   "addr": null
   },
   {
-   "lon": -97.437902,
-   "lat": 18.548347,
+   "lon": -97.389902,
+   "lat": 18.464848,
    "name": "Tiendas 3B",
-   "addr": "Av. Nacional nm. 305, Miahuatlan"
+   "addr": null
   },
   {
-   "lon": -97.391784,
-   "lat": 18.454374,
+   "lon": -97.406347,
+   "lat": 18.456875,
    "name": "Tiendas 3B",
-   "addr": "Calle 13 Oriente Num. 305, Guadalupe"
+   "addr": null
+  },
+  {
+   "lon": -97.41003,
+   "lat": 18.457482,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.403354,
+   "lat": 18.472251,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.392888,
+   "lat": 18.470505,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.405534,
+   "lat": 18.450096,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.408447,
+   "lat": 18.441661,
+   "name": "Tiendas 3B",
+   "addr": null
+  },
+  {
+   "lon": -97.403052,
+   "lat": 18.46513,
+   "name": "Tiendas 3B",
+   "addr": null
   }
  ]
 }
