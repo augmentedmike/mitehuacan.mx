@@ -64,6 +64,14 @@
        so hide only the redundant in-header section links. */
     'header.site nav a:not(.lng):not(.thm){display:none}' +
     '#topbar .brand .suffix{display:none}' +   /* "· Combis" — the switcher already names the section */
+    /* phone-frame bezel drawn ON TOP: composited layers (the map) and transformed
+       bodies don't respect the rounded overflow clip, so their square corners poke
+       over the bezel. This overlay is the bezel itself, above everything, hiding
+       those corners. pointer-events:none so it never blocks the UI. */
+    '#appsw-frame{display:none}' +
+    '@media(min-width:701px){html:not([data-view="full"]) #appsw-frame{display:block;position:fixed;top:50%;left:50%;' +
+    'transform:translate(-50%,-50%);width:412px;height:min(884px,96dvh);' +
+    'border:11px solid #0a0a0b;border-radius:46px;pointer-events:none;z-index:99998}}' +
     dark(':root[data-theme=dark]') +
     '@media(prefers-color-scheme:dark){' + dark(':root:not([data-theme=light])') + '}';
 
@@ -86,6 +94,10 @@
   if (brand && brand.parentNode) brand.parentNode.insertBefore(btn, brand.nextSibling);
   else document.body.appendChild(btn);
   document.body.appendChild(pop);
+  // bezel overlay lives on <html> (outside the body's overflow clip) so it isn't
+  // clipped away; it draws the phone outline over the content's square corners.
+  var frame = document.createElement('div'); frame.id = 'appsw-frame';
+  document.documentElement.appendChild(frame);
 
   function renderBtn() {
     var a = app(cur());
