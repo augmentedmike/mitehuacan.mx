@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>Aparece gratis en MiTehuacán</title>
+<meta name="description" content="Registra tu negocio o servicio gratis en MiTehuacán: el directorio de la ciudad sobre el mapa de combis, y el conector de servicios para fiestas.">
+<link rel="stylesheet" href="/maplibre-gl.css">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<style>
+  :root {
+    --bg: #f5f5f7; --panel: #ffffff; --ink: #1d1d1f; --ink-2: #6e6e73;
+    --line: rgba(0,0,0,.10); --accent: #0071e3; --chip: #f0f0f3; --ok: #1a7f37;
+    --err: #d4351c; --field: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme=light]) {
+      --bg: #0a0b12; --panel: #111322; --ink: #f0f0f8; --ink-2: #8a8ab0;
+      --line: rgba(255,255,255,.12); --accent: #4476ff; --chip: #1a1c2e; --ok: #2ecc71;
+      --err: #ff6b5e; --field: #14162a;
+    }
+  }
+  :root[data-theme=dark] {
+    --bg: #0a0b12; --panel: #111322; --ink: #f0f0f8; --ink-2: #8a8ab0;
+    --line: rgba(255,255,255,.12); --accent: #4476ff; --chip: #1a1c2e; --ok: #2ecc71;
+    --err: #ff6b5e; --field: #14162a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body {
+    font: 16px/1.5 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--ink); background: var(--bg);
+    padding: 0 0 calc(24px + env(safe-area-inset-bottom));
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---- hero / intro ---- */
+  header.top {
+    padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+    text-align: center; border-bottom: 1px solid var(--line); background: var(--panel);
+  }
+  header.top .brand { font-weight: 800; font-size: 20px; letter-spacing: -.02em; }
+  header.top .brand span { color: var(--accent); }
+  .hero { padding: 22px 0 6px; }
+  .hero h1 { font-size: 25px; line-height: 1.2; margin: 0 0 8px; letter-spacing: -.02em; }
+  .hero h1 b { color: var(--ok); }
+  .hero p.lead { color: var(--ink-2); margin: 0 0 16px; font-size: 15.5px; }
+  .cards { display: grid; gap: 10px; margin: 0 0 6px; }
+  .card {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px;
+  }
+  .card .ic { font-size: 22px; line-height: 1.2; flex: none; }
+  .card b { display: block; font-size: 15px; margin-bottom: 2px; }
+  .card small { color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
+  .free {
+    display: inline-flex; align-items: center; gap: 6px; margin: 14px 0 2px;
+    background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok);
+    font-weight: 700; font-size: 13.5px; padding: 6px 12px; border-radius: 999px;
+  }
+
+  /* ---- form ---- */
+  form { padding: 8px 0 0; }
+  .field { margin: 16px 0; }
+  label.lab { display: block; font-weight: 600; font-size: 14.5px; margin: 0 0 6px; }
+  label.lab .opt { color: var(--ink-2); font-weight: 400; font-size: 13px; }
+  .req { color: var(--err); }
+  .help { color: var(--ink-2); font-size: 13px; margin: 5px 0 0; }
+  input, select, textarea {
+    width: 100%; font: inherit; font-size: 16px; color: var(--ink);
+    background: var(--field); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 13px; appearance: none; -webkit-appearance: none;
+  }
+  textarea { min-height: 78px; resize: vertical; }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%238a8ab0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 40px; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+  input.bad, select.bad, textarea.bad { border-color: var(--err); }
+  .err-msg { color: var(--err); font-size: 13px; margin: 5px 0 0; display: none; }
+  .err-msg.show { display: block; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 400px) { .row2 { grid-template-columns: 1fr; } }
+
+  /* ---- category chips ---- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
+  .chips:empty { display: none; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: 999px; padding: 7px 8px 7px 13px; font-size: 14px; font-weight: 600;
+  }
+  .chip button { all: unset; cursor: pointer; width: 20px; height: 20px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 15px; line-height: 1;
+    background: color-mix(in srgb, var(--accent) 22%, transparent); }
+
+  /* ---- location ---- */
+  .toggle-row { display: flex; gap: 12px; align-items: center; justify-content: space-between;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .toggle-row .t-lab b { font-size: 14.5px; } .toggle-row .t-lab small { display:block; color: var(--ink-2); font-size: 12.5px; }
+  .switch { position: relative; width: 52px; height: 30px; flex: none; }
+  .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .switch .sl { position: absolute; inset: 0; background: var(--chip); border: 1px solid var(--line);
+    border-radius: 999px; transition: .18s; }
+  .switch .sl::before { content: ""; position: absolute; width: 24px; height: 24px; left: 2px; top: 2px;
+    background: #fff; border-radius: 50%; transition: .18s; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+  .switch input:checked + .sl { background: var(--ok); border-color: var(--ok); }
+  .switch input:checked + .sl::before { transform: translateX(22px); }
+  #locbox { margin-top: 12px; display: none; }
+  #map { width: 100%; height: 260px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+  .pinhint { text-align: center; color: var(--ink-2); font-size: 12.5px; margin: 8px 0 10px; }
+  #useloc { width: 100%; margin-top: 10px; background: var(--chip); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-weight: 600; cursor: pointer; }
+
+  /* ---- more options collapsible ---- */
+  details.more { margin: 16px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  details.more > summary { list-style: none; cursor: pointer; padding: 13px 14px; font-weight: 600; font-size: 14.5px;
+    display: flex; align-items: center; justify-content: space-between; }
+  details.more > summary::-webkit-details-marker { display: none; }
+  details.more > summary::after { content: "+"; color: var(--ink-2); }
+  details.more[open] > summary::after { content: "\2212"; }
+  details.more .inner { padding: 0 14px 8px; }
+
+  .check { display: flex; gap: 11px; align-items: flex-start; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; margin: 16px 0; cursor: pointer; }
+  .check input { width: 22px; height: 22px; flex: none; margin: 1px 0 0; accent-color: var(--ok); }
+  .check .c-lab b { font-size: 14.5px; } .check .c-lab small { display: block; color: var(--ink-2); font-size: 12.5px; }
+
+  /* honeypot */
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  button.submit { width: 100%; margin: 8px 0 4px; background: var(--accent); color: #fff; border: 0;
+    border-radius: 14px; padding: 16px; font-size: 17px; font-weight: 700; cursor: pointer; }
+  button.submit:disabled { opacity: .55; cursor: default; }
+  .formnote { text-align: center; color: var(--ink-2); font-size: 12.5px; margin: 10px 0 0; }
+  .toperr { display: none; background: color-mix(in srgb, var(--err) 12%, transparent); color: var(--err);
+    border: 1px solid color-mix(in srgb, var(--err) 35%, transparent); border-radius: 12px; padding: 12px 14px;
+    font-size: 14px; margin: 4px 0 12px; }
+  .toperr.show { display: block; }
+
+  /* ---- success ---- */
+  #done { display: none; text-align: center; padding: 40px 0; }
+  #done .big { font-size: 54px; }
+  #done h2 { font-size: 24px; margin: 10px 0 6px; }
+  #done p { color: var(--ink-2); margin: 0 auto 18px; max-width: 380px; }
+  #done .again { background: var(--chip); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 12px; padding: 13px 22px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">Mi<span>Tehuacán</span></div></header>
+
+<div class="wrap">
+
+  <!-- INTRO: what we're building -->
+  <section class="hero" id="intro">
+    <h1>Aparece <b>gratis</b> para todo Tehuacán</h1>
+    <p class="lead">Estamos construyendo dos cosas para la ciudad — y tu negocio puede estar en las dos, sin costo:</p>
+    <div class="cards">
+      <div class="card">
+        <div><b>El directorio de la ciudad</b>
+          <small>Todos los negocios y servicios de Tehuacán, sobre el mapa de rutas de combi que ya usan miles de personas. Cuando alguien busque lo que tú ofreces, te encuentra.</small></div>
+      </div>
+      <div class="card">
+        <div><b>El conector de fiestas</b>
+          <small>Las familias que organizan su fiesta dicen qué necesitan —taquiza, pastel, DJ, sillas, decoración— y les mostramos a los negocios que lo dan. Tú recibes clientes en su momento de decidir.</small></div>
+      </div>
+    </div>
+    <div class="free">Aparecer es 100% gratis · toma 2 minutos</div>
+  </section>
+
+  <!-- FORM -->
+  <form id="f" novalidate autocomplete="on">
+    <div class="toperr" id="toperr"></div>
+
+    <!-- honeypot -->
+    <div class="hp" aria-hidden="true"><label>No llenar<input type="text" name="fax" id="fax" tabindex="-1" autocomplete="off"></label></div>
+
+    <div class="field">
+      <label class="lab" for="name">Nombre del negocio <span class="req">*</span></label>
+      <input type="text" id="name" name="name" maxlength="80" placeholder="Ej. Taquizas Doña Mari" autocomplete="organization">
+      <div class="err-msg" id="e-name">Escribe el nombre de tu negocio.</div>
+    </div>
+
+    <div class="field">
+      <label class="lab" for="catpick">¿A qué se dedica? <span class="req">*</span> <span class="opt">— elige hasta 2</span></label>
+      <select id="catpick" aria-label="Elegir categoría">
+        <option value="">Elige una categoría…</option>
+        <optgroup label="Fiestas y eventos">
+          <option value="taquiza">Taquiza / Catering / Banquetes</option>
+          <option value="pastel">Pastel y repostería</option>
+          <option value="dj">DJ y sonido</option>
+          <option value="mariachi">Mariachi / música en vivo</option>
+          <option value="foto-video">Foto y video</option>
+          <option value="decoracion">Decoración y globos</option>
+          <option value="mobiliario">Mobiliario, carpas y sillas</option>
+          <option value="salon">Salón de eventos / jardín</option>
+          <option value="meseros">Meseros y staff</option>
+          <option value="flores">Flores y arreglos</option>
+          <option value="brincolines">Brincolines e inflables</option>
+          <option value="pinatas">Piñatas y dulces</option>
+          <option value="vajilla">Renta de vajilla / menaje</option>
+          <option value="bar-movil">Bar móvil / cocteles</option>
+          <option value="animacion">Animación / payasos / botargas</option>
+          <option value="seguridad-eventos">Seguridad para eventos</option>
+          <option value="invitaciones">Invitaciones y papelería</option>
+        </optgroup>
+        <optgroup label="Comida">
+          <option value="restaurante">Restaurante</option>
+          <option value="fonda">Fonda / cocina económica</option>
+          <option value="antojitos">Antojitos / garnachas</option>
+          <option value="cafeteria">Cafetería</option>
+          <option value="panaderia">Panadería</option>
+          <option value="tortilleria">Tortillería</option>
+          <option value="marisqueria">Marisquería</option>
+          <option value="pizzeria">Pizzería</option>
+          <option value="foodtruck">Food truck</option>
+          <option value="dulceria">Dulcería</option>
+        </optgroup>
+        <optgroup label="Salud y belleza">
+          <option value="medico">Médico / consultorio</option>
+          <option value="dentista">Dentista</option>
+          <option value="farmacia">Farmacia</option>
+          <option value="optica">Óptica</option>
+          <option value="veterinaria">Veterinaria</option>
+          <option value="estetica">Estética / salón de belleza</option>
+          <option value="barberia">Barbería</option>
+          <option value="unas">Uñas</option>
+          <option value="spa">Spa / masajes</option>
+          <option value="gimnasio">Gimnasio</option>
+        </optgroup>
+        <optgroup label="Servicios para el hogar">
+          <option value="plomero">Plomero</option>
+          <option value="electricista">Electricista</option>
+          <option value="albanil">Albañil / construcción</option>
+          <option value="carpintero">Carpintero</option>
+          <option value="herrero">Herrero</option>
+          <option value="pintor">Pintor</option>
+          <option value="jardineria">Jardinería</option>
+          <option value="limpieza">Limpieza / servicio doméstico</option>
+          <option value="fumigacion">Fumigación</option>
+          <option value="clima">Aire acondicionado / refrigeración</option>
+          <option value="cerrajero">Cerrajero</option>
+        </optgroup>
+        <optgroup label="Autos y transporte">
+          <option value="taller">Taller mecánico</option>
+          <option value="refaccionaria">Refaccionaria</option>
+          <option value="vulcanizadora">Vulcanizadora</option>
+          <option value="autolavado">Autolavado</option>
+          <option value="hojalateria">Hojalatería y pintura</option>
+          <option value="grua">Grúa</option>
+          <option value="fletes">Mudanzas / fletes</option>
+          <option value="renta-autos">Renta de autos</option>
+        </optgroup>
+        <optgroup label="Tiendas y comercio">
+          <option value="abarrotes">Abarrotes / tienda</option>
+          <option value="ferreteria">Ferretería</option>
+          <option value="papeleria">Papelería</option>
+          <option value="ropa">Ropa y boutique</option>
+          <option value="zapateria">Zapatería</option>
+          <option value="muebleria">Mueblería</option>
+          <option value="electronica">Electrónica / celulares</option>
+          <option value="regalos">Regalos y novedades</option>
+          <option value="florateria">Florería</option>
+          <option value="licores">Vinos y licores</option>
+        </optgroup>
+        <optgroup label="Profesionales">
+          <option value="abogado">Abogado</option>
+          <option value="contador">Contador</option>
+          <option value="arquitecto">Arquitecto / ingeniero</option>
+          <option value="inmobiliaria">Inmobiliaria / bienes raíces</option>
+          <option value="notaria">Notaría</option>
+          <option value="viajes">Agencia de viajes</option>
+          <option value="imprenta">Diseño / publicidad / imprenta</option>
+          <option value="clases">Clases / tutorías</option>
+          <option value="escuela">Escuela / academia</option>
+          <option value="seguros">Seguros</option>
+        </optgroup>
+        <optgroup label="Otros servicios">
+          <option value="hotel">Hotel / hospedaje</option>
+          <option value="lavanderia">Lavandería / tintorería</option>
+          <option value="estudio-foto">Estudio fotográfico</option>
+          <option value="funeraria">Funeraria</option>
+          <option value="otro">Otro (escribir)</option>
+        </optgroup>
+      </select>
+      <div class="chips" id="chips"></div>
+      <div class="err-msg" id="e-cat">Elige al menos una categoría.</div>
+      <div class="field" id="otherbox" style="display:none;margin-top:12px">
+        <input type="text" id="category_other" maxlength="60" placeholder="Escribe a qué se dedica tu negocio">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lab" for="description">¿Qué ofreces? <span class="opt">— opcional</span></label>
+      <textarea id="description" maxlength="600" placeholder="Cuéntale a la gente qué haces, tus especialidades, paquetes…"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="lab" for="whatsapp">WhatsApp <span class="req">*</span></label>
+      <input type="tel" id="whatsapp" inputmode="numeric" maxlength="14" placeholder="10 dígitos — así te contactan" autocomplete="tel">
+      <div class="help">Es como te van a escribir los clientes. No pedimos RFC, factura ni cuenta de banco.</div>
+      <div class="err-msg" id="e-whatsapp">Deja un WhatsApp o teléfono de 10 dígitos.</div>
+    </div>
+    <div class="field">
+      <label class="lab" for="phone">Teléfono <span class="opt">— opcional</span></label>
+      <input type="tel" id="phone" inputmode="numeric" maxlength="14" placeholder="Otro número de contacto" autocomplete="tel">
+    </div>
+
+    <!-- location -->
+    <div class="field">
+      <div class="toggle-row">
+        <div class="t-lab"><b>¿Tienes un local físico?</b><small>Para ponerte en el mapa. Si vas a domicilio, déjalo apagado.</small></div>
+        <label class="switch"><input type="checkbox" id="haploc"><span class="sl"></span></label>
+      </div>
+      <div id="locbox">
+        <div id="map"></div>
+        <div class="pinhint">Arrastra el pin al lugar exacto de tu negocio</div>
+        <button type="button" id="useloc">Usar mi ubicación</button>
+        <div class="row2" style="margin-top:12px">
+          <div><input type="text" id="address" maxlength="160" placeholder="Calle y número"></div>
+          <div><input type="text" id="colonia" maxlength="80" placeholder="Colonia"></div>
+        </div>
+      </div>
+      <div class="field" id="areabox" style="margin-top:12px">
+        <label class="lab" for="service_area">¿Qué zonas atiendes? <span class="opt">— opcional</span></label>
+        <input type="text" id="service_area" maxlength="200" placeholder="Ej. Todo Tehuacán, Centro, San Lorenzo…">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lab" for="hours">Horario <span class="opt">— opcional</span></label>
+      <input type="text" id="hours" maxlength="120" placeholder="Ej. Lun a Sáb 9:00–19:00">
+    </div>
+
+    <div class="field">
+      <label class="lab">Precio desde <span class="opt">— opcional</span></label>
+      <div class="row2">
+        <div><input type="number" id="price_from" inputmode="numeric" min="0" max="9999999" placeholder="$ desde"></div>
+        <div>
+          <select id="price_note">
+            <option value="">por…</option>
+            <option value="por persona">por persona</option>
+            <option value="por evento">por evento</option>
+            <option value="por servicio">por servicio</option>
+            <option value="por hora">por hora</option>
+            <option value="por día">por día</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <label class="check">
+      <input type="checkbox" id="fiesta">
+      <div class="c-lab"><b>Ofrezco servicios para fiestas y eventos</b><small>Aparecerás también en el conector de fiestas.</small></div>
+    </label>
+
+    <details class="more">
+      <summary>Más información (opcional)</summary>
+      <div class="inner">
+        <div class="field">
+          <label class="lab" for="owner_name">Tu nombre</label>
+          <input type="text" id="owner_name" maxlength="80" placeholder="¿Con quién contactan?" autocomplete="name">
+        </div>
+        <div class="field">
+          <label class="lab" for="email">Correo</label>
+          <input type="email" id="email" maxlength="120" placeholder="tucorreo@ejemplo.com" autocomplete="email">
+          <div class="err-msg" id="e-email">El correo no es válido.</div>
+        </div>
+        <div class="field">
+          <label class="lab" for="facebook">Facebook</label>
+          <input type="text" id="facebook" maxlength="200" placeholder="Tu página o usuario de Facebook">
+        </div>
+        <div class="field">
+          <label class="lab" for="instagram">Instagram</label>
+          <input type="text" id="instagram" maxlength="200" placeholder="@tunegocio">
+        </div>
+        <div class="field">
+          <label class="lab" for="website">Sitio web</label>
+          <input type="text" id="website" maxlength="200" placeholder="www…">
+        </div>
+      </div>
+    </details>
+
+    <button type="submit" class="submit" id="submit">Aparecer gratis en MiTehuacán</button>
+    <p class="formnote">Al enviar aceptas aparecer en el directorio público de MiTehuacán.</p>
+  </form>
+
+  <!-- SUCCESS -->
+  <section id="done">
+    <h2>¡Listo! Ya apareces</h2>
+    <p>Tu negocio está registrado en MiTehuacán. Cuando la gente busque lo que ofreces —o arme una fiesta— podrá encontrarte.</p>
+    <button class="again" id="again">Registrar otro negocio</button>
+  </section>
+</div>
+
+<script src="/maplibre-gl.js"></script>
+<script>
+(function () {
+  // ---- theme (match the app) ----
+  try {
+    var s = localStorage.mtTheme;
+    var t = (s === 'light' || s === 'dark') ? s
+      : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+  var DARK = document.documentElement.getAttribute('data-theme') === 'dark';
+
+  var qs = new URLSearchParams(location.search);
+  var QR_BATCH = (qs.get('b') || qs.get('qr') || '').slice(0, 40);
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---- category multi-select (max 2) ----
+  var picked = [];   // [{value,label}]
+  var sel = $('catpick'), chips = $('chips');
+  function labelFor(v) {
+    var o = sel.querySelector('option[value="' + v + '"]');
+    return o ? o.textContent : v;
+  }
+  function renderChips() {
+    chips.innerHTML = '';
+    picked.forEach(function (p) {
+      var c = document.createElement('span'); c.className = 'chip';
+      c.appendChild(document.createTextNode(p.label));
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = '×';
+      b.setAttribute('aria-label', 'Quitar ' + p.label);
+      b.onclick = function () { picked = picked.filter(function (x) { return x.value !== p.value; }); afterCat(); };
+      c.appendChild(b); chips.appendChild(c);
+    });
+    // enable/disable options already picked; cap at 2
+    Array.prototype.forEach.call(sel.options, function (o) {
+      if (!o.value) return;
+      o.disabled = picked.some(function (x) { return x.value === o.value; });
+    });
+    sel.disabled = picked.length >= 2;
+    sel.selectedIndex = 0;
+    if (sel.disabled) { sel.options[0].textContent = 'Máximo 2 categorías'; }
+    else { sel.options[0].textContent = picked.length ? 'Agregar otra categoría…' : 'Elige una categoría…'; }
+  }
+  function afterCat() {
+    renderChips();
+    $('otherbox').style.display = picked.some(function (x) { return x.value === 'otro'; }) ? 'block' : 'none';
+    if (picked.length) clearErr('cat');
+  }
+  sel.addEventListener('change', function () {
+    var v = sel.value; if (!v || picked.length >= 2) return;
+    if (!picked.some(function (x) { return x.value === v; })) picked.push({ value: v, label: labelFor(v) });
+    afterCat();
+  });
+  // pre-select from ?c=
+  var pc = qs.get('c'); if (pc && labelFor(pc) !== pc) { picked.push({ value: pc, label: labelFor(pc) }); afterCat(); }
+
+  // ---- location toggle + map ----
+  var MAP = null, PIN = null, WATCH = null, TEH = [-97.396, 18.462];
+  function initMap() {
+    if (MAP) { MAP.resize(); return; }
+    MAP = new maplibregl.Map({
+      container: 'map',
+      style: DARK ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron',
+      center: TEH, zoom: 14, attributionControl: false
+    });
+    MAP.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    PIN = new maplibregl.Marker({ draggable: true, color: '#e05252' }).setLngLat(TEH).addTo(MAP);
+  }
+  $('haploc').addEventListener('change', function () {
+    var on = this.checked;
+    $('locbox').style.display = on ? 'block' : 'none';
+    $('areabox').style.display = on ? 'none' : 'block';
+    if (on) setTimeout(initMap, 30);
+  });
+  $('useloc').addEventListener('click', function () {
+    if (!navigator.geolocation) return;
+    var btn = this; btn.textContent = 'Buscando tu ubicación…';
+    if (WATCH) navigator.geolocation.clearWatch(WATCH);
+    WATCH = navigator.geolocation.watchPosition(function (p) {
+      var c = [p.coords.longitude, p.coords.latitude];
+      if (PIN) PIN.setLngLat(c); if (MAP) MAP.flyTo({ center: c, zoom: 17, duration: 500 });
+      if (p.coords.accuracy <= 20) { navigator.geolocation.clearWatch(WATCH); WATCH = null; btn.textContent = 'Ubicación fijada'; }
+    }, function () { btn.textContent = 'Usar mi ubicación'; }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    setTimeout(function () { if (WATCH) { navigator.geolocation.clearWatch(WATCH); WATCH = null; btn.textContent = 'Usar mi ubicación'; } }, 18000);
+  });
+
+  // ---- validation helpers ----
+  function digits(v) { return (v || '').replace(/\D/g, ''); }
+  function showErr(k) { var e = $('e-' + k), i = $(k); if (e) e.classList.add('show'); if (i) i.classList.add('bad'); }
+  function clearErr(k) { var e = $('e-' + k), i = $(k); if (e) e.classList.remove('show'); if (i) i.classList.remove('bad'); }
+  ['name', 'whatsapp', 'email'].forEach(function (k) { var el = $(k); if (el) el.addEventListener('input', function () { clearErr(k); }); });
+
+  // ---- submit ----
+  var f = $('f'), toperr = $('toperr');
+  f.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    toperr.classList.remove('show');
+    var ok = true, firstBad = null;
+
+    var name = $('name').value.trim();
+    if (name.length < 3) { showErr('name'); ok = false; firstBad = firstBad || $('name'); }
+
+    if (!picked.length) { $('e-cat').classList.add('show'); ok = false; firstBad = firstBad || sel; }
+
+    var wa = digits($('whatsapp').value), ph = digits($('phone').value);
+    if (wa.length < 10 && ph.length < 10) { showErr('whatsapp'); ok = false; firstBad = firstBad || $('whatsapp'); }
+
+    var email = $('email').value.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('email'); ok = false; firstBad = firstBad || $('email'); }
+
+    var hasLoc = $('haploc').checked, lat = null, lon = null;
+    if (hasLoc && PIN) { var c = PIN.getLngLat(); lat = c.lat; lon = c.lng; }
+
+    if (!ok) {
+      toperr.textContent = 'Revisa los campos marcados en rojo.';
+      toperr.classList.add('show');
+      if (firstBad && firstBad.scrollIntoView) firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    var body = {
+      name: name,
+      category: picked[0] ? picked[0].value : '',
+      category2: picked[1] ? picked[1].value : '',
+      category_other: $('category_other').value.trim(),
+      description: $('description').value.trim(),
+      owner_name: $('owner_name').value.trim(),
+      whatsapp: wa, phone: ph,
+      email: email,
+      facebook: $('facebook').value.trim(),
+      instagram: $('instagram').value.trim(),
+      website: $('website').value.trim(),
+      has_location: hasLoc ? 1 : 0, lat: lat, lon: lon,
+      address: $('address').value.trim(), colonia: $('colonia').value.trim(),
+      service_area: $('service_area').value.trim(),
+      hours: $('hours').value.trim(),
+      price_from: $('price_from').value, price_note: $('price_note').value,
+      fiesta: $('fiesta').checked ? 1 : 0,
+      qr_batch: QR_BATCH,
+      fax: $('fax').value   // honeypot
+    };
+
+    var btn = $('submit'); btn.disabled = true; var orig = btn.textContent; btn.textContent = 'Enviando…';
+    fetch('/api/negocios', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d && d.ok) {
+        $('intro').style.display = 'none'; f.style.display = 'none';
+        $('done').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        btn.disabled = false; btn.textContent = orig;
+        toperr.textContent = (d && d.error) || 'No se pudo enviar. Inténtalo de nuevo.';
+        toperr.classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }).catch(function () {
+      btn.disabled = false; btn.textContent = orig;
+      toperr.textContent = 'Sin conexión. Revisa tu internet e inténtalo de nuevo.';
+      toperr.classList.add('show');
+    });
+  });
+
+  $('again').addEventListener('click', function () { location.href = location.pathname; });
+})();
+</script>
+</body>
+</html>

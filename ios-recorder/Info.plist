@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Shown when the app first asks to use location (foreground). -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Graba el recorrido del combi mientras usas la app.</string>
+
+	<!-- Shown when asking for Always — required to keep recording with the screen locked. -->
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Permite seguir grabando el recorrido aunque el teléfono esté bloqueado o la app en segundo plano.</string>
+
+	<!-- Legacy key some iOS versions still read. -->
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Permite seguir grabando el recorrido aunque el teléfono esté bloqueado.</string>
+
+	<!-- THE critical one: lets Core Location deliver fixes while backgrounded. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+</dict>
+</plist>

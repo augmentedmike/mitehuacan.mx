@@ -26,9 +26,10 @@ from gmaps import GoogleAgent          # noqa: E402
 from instagram import InstagramAgent    # noqa: E402
 from facebook import FacebookAgent      # noqa: E402
 from fb_events import FacebookEventsAgent  # noqa: E402
+from gov_events import GovEventsAgent      # noqa: E402
 
 AGENTS = {"google": GoogleAgent, "instagram": InstagramAgent, "facebook": FacebookAgent,
-          "fb_events": FacebookEventsAgent}
+          "fb_events": FacebookEventsAgent, "gov_events": GovEventsAgent}
 
 
 def opt(name, default=None):
