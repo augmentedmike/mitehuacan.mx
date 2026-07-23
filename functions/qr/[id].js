@@ -13,11 +13,6 @@ export async function onRequestGet({ request, env, params }) {
   const proxied = fwd && !fwd.endsWith("pages.dev");
   const origin = proxied ? "https://" + fwd : new URL(request.url).origin;
   const base = proxied ? "/" : "/combis/";
-  // business self-registration stickers land on the alta form, not the map.
-  // one non-unique code (NEGOCIO) across the whole sheet; ?b= tags the batch.
-  if (id === "NEGOCIO") {
-    return Response.redirect(origin + base + "directorio/alta.html?b=" + encodeURIComponent(id), 302);
-  }
   let route = null;
   try {
     const row = await env.DB.prepare(
