@@ -861,8 +861,8 @@ const map = new maplibregl.Map({
   attributionControl: false
 });
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
-// DEV ONLY: browser geolocation is unreliable locally; stub to a fixed San Isidro
-// point (near San Diego, Tehuacán) so the locate button + board-here flow are
+// DEV ONLY: browser geolocation is unreliable locally; stub to a fixed San Diego
+// Chalma, Tehuacán point so the locate button + board-here flow are
 // testable at http://localhost:8799/. Every path (locate control, saveLoc, walk
 // connector, boarding options) runs through navigator.geolocation, so overriding
 // it here feeds them all one honest fix. Production (any non-localhost) is untouched.
@@ -1866,37 +1866,13 @@ function mSelectTripOption(i) {
 }
 
 /* ---------- board-here: connect the rider to the SELECTED route ----------
-   Tapping locate with a route already selected answers "where do I catch this
-   combi?" — the nearest point(s) on the route polyline become boarding options,
-   each with its walk distance, drawn on the same plan-walk / plan-pts layers the
-   trip planner uses. It never disturbs the route selection (M.chips stay put). */
-let BOARD = null;   // {loc, routeId, cands:[{d,at,lnglat}], sel}
-
-// boarding candidates: the closest projection on each segment, then a greedy
-// pick that keeps only points separated along the route — so an out-and-back
-// route whose two stretches both pass nearby offers both, not two of the same.
-function boardingCandidates(ptM, r, max) {
-  const samples = [];
-  for (let i = 0; i < r.pts.length - 1; i++) {
-    if (r.brk.has(i)) continue;
-    const a = r.pts[i], b = r.pts[i + 1];
-    const abx = b[0] - a[0], aby = b[1] - a[1];
-    const len2 = abx * abx + aby * aby;
-    let tt = len2 ? ((ptM[0] - a[0]) * abx + (ptM[1] - a[1]) * aby) / len2 : 0;
-    tt = Math.max(0, Math.min(1, tt));
-    const proj = [a[0] + tt * abx, a[1] + tt * aby];
-    samples.push({d: distM(ptM, proj), at: r.cum[i] + tt * (r.cum[i + 1] - r.cum[i]),
-                  lnglat: [proj[0] / MLON, proj[1] / MLAT]});
-  }
-  samples.sort((x, y) => x.d - y.d);
-  const picked = [], SEP = 450;   // min along-route gap between distinct options (m)
-  for (const s of samples) {
-    if (picked.length >= (max || 3)) break;
-    if (picked.some(p => Math.abs(p.at - s.at) < SEP)) continue;
-    picked.push(s);
-  }
-  return picked;   // already ascending by walk distance; [0] is the nearest
-}
+   Tapping locate with a route already selected answers "how do I catch this
+   combi?" — but the answer isn't always "walk to it". If a NEARER route connects
+   to the selected one, the better answer is "board that route here, transfer to
+   yours". So this plans the reach: a direct board, plus transfer options via a
+   closer connecting route, ranked by total walk. Drawn on the same trip-legs /
+   plan-walk / plan-pts layers the trip planner uses; the selection stays put. */
+let BOARD = null;   // {loc, target: routeId, opts:[{type,route,...}], sel}
 
 // entry point from the locate control's first fix
 function planBoarding(loc) {
@@ -1905,42 +1881,64 @@ function planBoarding(loc) {
                         : (state.sel ? [state.sel] : []);
   if (!on.length) return false;
   const ptM = mx(loc);
-  // when more than one route is selected, board the one that runs nearest
-  let routeId = null, rBest = null, bd = Infinity;
-  on.forEach(id => {
-    const r = flat.find(x => x.id === id);
-    if (!r || !r.pts.length) return;
-    const d = nearest(ptM, r).d;
-    if (d < bd) { bd = d; routeId = id; rBest = r; }
+  // several routes selected -> target the one that runs nearest to the rider
+  let T = null, td = Infinity;
+  on.forEach(id => { const r = flat.find(x => x.id === id);
+    if (r && r.pts.length) { const d = nearest(ptM, r).d; if (d < td) { td = d; T = r; } } });
+  if (!T) return false;
+
+  const opts = [];
+  const nT = nearest(ptM, T);   // direct: walk straight to the selected route
+  opts.push({type: 'direct', route: T.id, board: nT.lnglat, boardAt: nT.at, walk: nT.d, total: nT.d});
+  // transfers: a nearby route (closer to board than walking to T) that MEETS T
+  flat.map(r => ({r, n: nearest(ptM, r)})).sort((a, b) => a.n.d - b.n.d).slice(0, 8).forEach(({r, n}) => {
+    if (r.id === T.id || n.d >= nT.d) return;       // only worth it if you board something nearer
+    const x = routePairMinDist(r, T);
+    if (!x || x.d > TRANSFER_MAX) return;           // it must actually connect to T
+    if (Math.abs(x.p1.at - n.at) < 200) return;     // you have to actually RIDE it, not walk over
+    opts.push({type: 'transfer', route: r.id, board: n.lnglat, boardAt: n.at,
+               offAt: x.p1.at, off: x.p1.lnglat, on: x.p2.lnglat,
+               walk: n.d, transfer: x.d, total: n.d + x.d + 250});   // small transfer penalty
   });
-  if (!rBest) return false;
-  const cands = boardingCandidates(ptM, rBest, 3);
-  if (!cands.length) return false;
-  BOARD = {loc, routeId, cands, sel: 0};
+  opts.sort((a, b) => a.total - b.total);
+  const seen = new Set(), kept = [];
+  for (const o of opts) { const k = o.type + ':' + o.route;
+    if (seen.has(k)) continue; seen.add(k); kept.push(o); if (kept.length >= 3) break; }
+
+  BOARD = {loc, target: T.id, opts: kept, sel: 0};
   drawBoarding();
   renderBoardSheet();
-  track('board_here', routeId);
+  track('board_here', T.id);
   return true;
 }
 
 function drawBoarding() {
   if (!BOARD) return;
-  const sel = BOARD.cands[BOARD.sel] || BOARD.cands[0];
-  const walkFeats = [{type: 'Feature', properties: {},
-    geometry: {type: 'LineString', coordinates: [BOARD.loc, sel.lnglat]}}];
-  const ptFeats = BOARD.cands.map(c => ({type: 'Feature', properties: {},
-    geometry: {type: 'Point', coordinates: c.lnglat}}));
+  const o = BOARD.opts[BOARD.sel] || BOARD.opts[0];
+  const walkFeats = [{type: 'Feature', properties: {}, geometry: {type: 'LineString', coordinates: [BOARD.loc, o.board]}}];
+  const ptFeats = [{type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: o.board}}];
+  let legFeats = [];
+  if (o.type === 'transfer') {
+    // colour the stretch actually ridden on the boarding route, then the transfer walk onto T
+    legFeats = [{type: 'Feature', properties: {color: routeById(o.route).color},
+      geometry: {type: 'LineString', coordinates: routeSegment(o.route, o.boardAt, o.offAt)}}];
+    ptFeats.push({type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: o.off}});
+    ptFeats.push({type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: o.on}});
+    walkFeats.push({type: 'Feature', properties: {}, geometry: {type: 'LineString', coordinates: [o.off, o.on]}});
+  }
+  if (map.getSource('trip-legs'))
+    map.getSource('trip-legs').setData({type: 'FeatureCollection', features: legFeats.filter(f => f.geometry.coordinates.length > 1)});
   if (map.getSource('plan-walk')) {
     map.getSource('plan-walk').setData({type: 'FeatureCollection', features: walkFeats});
     map.getSource('plan-pts').setData({type: 'FeatureCollection', features: ptFeats});
   }
-  fitToSelection([], [BOARD.loc, sel.lnglat]);   // frame the rider + chosen boarding point
+  fitToSelection([], [BOARD.loc, o.type === 'transfer' ? o.on : o.board]);
 }
 
 function clearBoarding() {
   if (!BOARD) return;
   BOARD = null;
-  ['plan-walk', 'plan-pts'].forEach(s => {
+  ['plan-walk', 'plan-pts', 'trip-legs'].forEach(s => {
     if (map.getSource(s)) map.getSource(s).setData({type: 'FeatureCollection', features: []});
   });
 }
@@ -1948,35 +1946,63 @@ function clearBoarding() {
 function renderBoardSheet() {
   if (!BOARD) return;
   const el = document.getElementById('sheet');
-  const p = routeById(BOARD.routeId);
+  const T = routeById(BOARD.target);
   const EN = document.documentElement.lang === 'en';
   const esc = s => String(s == null ? '' : s).replace(/</g, '&lt;');
-  const rows = BOARD.cands.map((c, i) => {
-    const label = i === 0 ? (EN ? 'Board here' : 'Súbete aquí')
-                          : (EN ? 'Another boarding point' : 'Otro punto de abordaje');
-    const dist = (EN ? 'Walk ' : 'Camina ') + fmt(c.d);
+  const rows = BOARD.opts.map((o, i) => {
+    const rp = routeById(o.route);
+    const head = o.type === 'transfer'
+      ? '<span class="swatch" style="background:' + rp.color + '"></span>' + esc(rp.name) +
+        ' <span style="opacity:.55">' + (EN ? '→ transfer to ' : '→ transborda a ') + esc(T.name) + '</span>'
+      : '<span class="swatch" style="background:' + T.color + '"></span>' + esc(T.name) +
+        ' <span style="opacity:.55">' + (EN ? 'direct' : 'directo') + '</span>';
+    const meta = (EN ? 'Walk ' : 'Camina ') + fmt(o.walk) + (o.type === 'transfer' ? ' + ' + fmt(o.transfer) : '');
     return '<div class="opt' + (i === BOARD.sel ? ' sel' : '') + '" data-i="' + i + '">' +
-      '<div class="legs"><span class="swatch" style="background:' + p.color + '"></span>' + esc(label) + '</div>' +
-      '<div class="meta">' + dist + '</div></div>';
+      '<div class="legs">' + head + '</div><div class="meta">' + meta + '</div></div>';
   }).join('');
   SHEET = null;   // boarding content, not a plain route sheet
   el.innerHTML = '<div class="grabwrap"><div class="grab"></div></div>' +
-    '<div class="sh-head"><span class="tile" style="' + tileStyle(p.color) + '">' + S_PIN2 + '</span>' +
+    '<div class="sh-head"><span class="tile" style="' + tileStyle(T.color) + '">' + S_PIN2 + '</span>' +
     '<span class="sh-name" id="board-back" style="cursor:pointer"><b>' +
-    (EN ? 'Catch ' : 'Aborda ') + esc(p.name) + '</b>' +
+    (EN ? 'Get to ' : 'Cómo llegar a ') + esc(T.name) + '</b>' +
     '<div class="dt-note" style="margin-top:2px">' +
-    (BOARD.cands.length > 1 ? (EN ? 'Pick where to board' : 'Elige dónde subir')
-                            : (EN ? 'Tap the route name to go back' : 'Toca el nombre para volver')) +
+    (EN ? 'Pick how to board · tap the name to go back' : 'Elige cómo subir · toca el nombre para volver') +
     '</div></span></div>' +
     '<div id="trip-cols"><div id="trip-left">' + rows + '</div><div id="trip-right"></div></div>';
   el.classList.remove('min');
   el.classList.add('show');
   applySheetHeight(el);
   el.querySelectorAll('.opt').forEach(d => d.onclick = () => {
-    BOARD.sel = +d.dataset.i; drawBoarding(); renderBoardSheet();
+    BOARD.sel = +d.dataset.i; drawBoarding(); fillBoardDetail(BOARD.sel);
+    el.querySelectorAll('.opt').forEach((x, j) => x.classList.toggle('sel', j === BOARD.sel));
   });
+  fillBoardDetail(BOARD.sel);
   const back = document.getElementById('board-back');
-  if (back) back.onclick = () => { clearBoarding(); openSheet(p.id, SHEET_MODE || 'compact'); };
+  if (back) back.onclick = () => { clearBoarding(); openSheet(T.id, SHEET_MODE || 'compact'); };
+}
+
+// step-by-step directions for the chosen boarding option (feature: where to get
+// off one combi and onto the next)
+function fillBoardDetail(i) {
+  const box = document.getElementById('trip-right');
+  if (!box || !BOARD) return;
+  const o = BOARD.opts[i];
+  if (!o) { box.innerHTML = ''; return; }
+  const EN = document.documentElement.lang === 'en';
+  const esc = s => String(s == null ? '' : s).replace(/</g, '&lt;');
+  const T = routeById(BOARD.target), R = routeById(o.route);
+  const legRow = p => { const s = SCHEDULES[p.id], fr = fareParts(s);
+    return '<div class="sh-row"><span class="swatch" style="background:' + p.color + '"></span><div><b>' +
+      esc(p.name) + '</b><span class="v">' + (s ? t('schedRange')(s) : t('schedNone')) + '<br>' +
+      t('fareLine')(fr.base, fr.max, fr.approx) + '</span></div></div>'; };
+  const steps = o.type === 'direct'
+    ? shRow(S_PIN2, (EN ? 'Walk ' : 'Camina ') + fmt(o.walk) + (EN ? ' to ' : ' a ') + esc(T.name), '') + legRow(T)
+    : shRow(S_PIN2, (EN ? 'Walk ' : 'Camina ') + fmt(o.walk) + (EN ? ' · board ' : ' · súbete a ') + esc(R.name), '') +
+      legRow(R) +
+      shRow(S_ROUTE, (EN ? 'Get off & transfer — walk ' : 'Bájate y transborda — camina ') + fmt(o.transfer) +
+            (EN ? ' to ' : ' a ') + esc(T.name), '') +
+      legRow(T);
+  box.innerHTML = '<div class="dt-note" style="margin-bottom:4px"><b>' + (EN ? 'Directions' : 'Cómo llegar') + '</b></div>' + steps;
 }
 
 const S_NAV = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 19-8-8 19-2.5-8.5L3 11Z"/></svg>';
@@ -2533,7 +2559,7 @@ function fuzzyScore(q, hay) {
 function mApply(fit) {
   const on = M.chips.filter(c => c.on).map(c => c.id);
   // the board-here overlay only makes sense while its route stays selected
-  if (typeof BOARD !== 'undefined' && BOARD && !on.includes(BOARD.routeId)) clearBoarding();
+  if (typeof BOARD !== 'undefined' && BOARD && !on.includes(BOARD.target)) clearBoarding();
   // the map shows the search/pill-filtered set PLUS the active selection;
   // a query with zero direct matches never blanks the map (suggestions guide instead)
   const matched = feats.filter(mlVisible);
