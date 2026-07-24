@@ -29,17 +29,17 @@ CSS = """
 :root{--bg:#f5f5f7;--panel:rgba(255,255,255,.62);--ink:#1d1d1f;--ink2:#6e6e73;--line:rgba(0,0,0,.08);
  --accent:#0071e3;--chip:rgba(255,255,255,.8);--glass:rgba(255,255,255,.55);--hl:rgba(255,255,255,.75);
  --shadow:0 8px 32px rgba(0,0,0,.08);--g1:rgba(0,113,227,.10);--g2:rgba(255,150,70,.08);
- --livebg:rgba(255,255,255,.72);--livebrd:rgba(0,113,227,.35);--accsh:rgba(0,113,227,.30)}
+ --livebg:rgba(255,255,255,.72);--livebrd:rgba(0,113,227,.35);--ok:#1a7f37;--accsh:rgba(0,113,227,.30)}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e0e12;--panel:rgba(28,28,34,.6);
  --ink:#f5f5f7;--ink2:#98989d;--line:rgba(255,255,255,.10);--accent:#0a84ff;--chip:rgba(66,66,74,.5);
  --glass:rgba(24,24,30,.55);--hl:rgba(255,255,255,.08);--shadow:0 8px 32px rgba(0,0,0,.5);
  --g1:rgba(10,132,255,.14);--g2:rgba(255,140,60,.05);--livebg:rgba(16,42,74,.45);
- --livebrd:rgba(10,132,255,.45);--accsh:rgba(10,132,255,.35)}}
+ --livebrd:rgba(10,132,255,.45);--ok:#2ecc71;--accsh:rgba(10,132,255,.35)}}
 :root[data-theme=dark]{--bg:#0e0e12;--panel:rgba(28,28,34,.6);
  --ink:#f5f5f7;--ink2:#98989d;--line:rgba(255,255,255,.10);--accent:#0a84ff;--chip:rgba(66,66,74,.5);
  --glass:rgba(24,24,30,.55);--hl:rgba(255,255,255,.08);--shadow:0 8px 32px rgba(0,0,0,.5);
  --g1:rgba(10,132,255,.14);--g2:rgba(255,140,60,.05);--livebg:rgba(16,42,74,.45);
- --livebrd:rgba(10,132,255,.45);--accsh:rgba(10,132,255,.35)}
+ --livebrd:rgba(10,132,255,.45);--ok:#2ecc71;--accsh:rgba(10,132,255,.35)}
 *{box-sizing:border-box}
 body{margin:0;font:16px/1.55 system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg)}
 body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
@@ -162,6 +162,17 @@ def page(title, desc, body, canonical, active="", crumb_items=None, title_en=Non
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(desc)}">
 <link rel="canonical" href="{canonical}">
+<meta property="og:title" content="{html.escape(title)}">
+<meta property="og:description" content="{html.escape(desc)}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{canonical}">
+<meta property="og:site_name" content="MiTehuacán">
+<meta property="og:locale" content="es_MX">
+<meta property="og:image" content="{DOMAIN}/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{DOMAIN}/og-image.png">
 <meta name="apple-mobile-web-app-title" content="MiTehuacán">
 <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -343,6 +354,14 @@ function thx(f){var en=document.documentElement.lang==='en';
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MiTehuacán — el portal de Tehuacán, Puebla</title>
 <meta name="description" content="El portal de Tehuacán, Puebla: mapa y rutas de combis, y pronto tianguis en línea, empleos y rentas. Libre y gratuito.">
+<meta property="og:title" content="MiTehuacán — el portal de Tehuacán">
+<meta property="og:description" content="Mapa y rutas de combi de Tehuacán, gratis. Y el directorio de negocios de la ciudad.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{DOMAIN}/descubre/">
+<meta property="og:site_name" content="MiTehuacán">
+<meta property="og:image" content="{DOMAIN}/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{DOMAIN}/og-image.png">
 <meta name="theme-color" content="#0a0b12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -547,9 +566,13 @@ function thx(f){var en=document.documentElement.lang==='en';
 .neg-card .mrow{font-size:12.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:4px 8px}
 .neg-badge{align-self:flex-start;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;
  background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
-.neg-card .wa{margin-top:2px;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;
+.neg-card .neg-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.neg-card .wa{display:inline-flex;align-items:center;gap:6px;
  padding:9px 14px;border-radius:99px;background:#25d366;color:#05341a;font-weight:700;font-size:13.5px;
  text-decoration:none}
+.neg-card .neg-map{display:inline-flex;align-items:center;padding:9px 14px;border-radius:99px;
+ background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-weight:700;
+ font-size:13.5px;text-decoration:none}
 /* --- sponsor profile page --- */
 .pf-head{display:flex;gap:14px;align-items:center;margin:8px 0 2px}
 .pf-logo{width:78px;height:78px;border-radius:18px;object-fit:contain;background:#fff;
@@ -618,12 +641,15 @@ function thx(f){var en=document.documentElement.lang==='en';
         'var cat=L(b.category)+(b.category2?" · "+L(b.category2):"");'
         'var w=String(b.whatsapp||b.phone||"").replace(/\\D/g,"");'
         'var wa=w?\'<a class="wa" href="https://wa.me/52\'+w+\'" rel="nofollow noopener">WhatsApp</a>\':"";'
-        'var meta=[b.colonia,b.hours].filter(Boolean).map(E).join(" · ");'
+        # located businesses get a "Ver en el mapa" link via the ?to= deep link
+        # (combi map shows the spot AND which combis reach it — no map-code change)
+        'var mp=(b.has_location&&b.lat&&b.lon)?\'<a class="neg-map" href="/?to=\'+b.lon+\',\'+b.lat+\'&n=\'+encodeURIComponent(b.name)+\'">Ver en el mapa</a>\':"";'
+        'var meta=[b.address,b.colonia,b.hours].filter(Boolean).map(E).join(" · ");'
         'return \'<div class="neg-card">\'+(b.verified?\'<span class="neg-badge">Verificado</span>\':"")+'
         '\'<div class="nm">\'+E(b.name)+\'</div>\'+'
         '(cat?\'<span class="dir-cat">\'+E(cat)+\'</span>\':"")+'
         '(b.description?\'<div class="desc">\'+E(String(b.description).slice(0,240))+\'</div>\':"")+'
-        '(meta?\'<div class="mrow">\'+meta+\'</div>\':"")+wa+\'</div>\''
+        '(meta?\'<div class="mrow">\'+meta+\'</div>\':"")+\'<div class="neg-actions">\'+wa+mp+\'</div></div>\''
         '}).join("")'
         '}).catch(function(){})})();</script>')
     dir_body = (dir_style +

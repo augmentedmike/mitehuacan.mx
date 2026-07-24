@@ -11,6 +11,11 @@
 <meta property="og:url" content="https://mitehuacan.mx/">
 <meta property="og:site_name" content="MiTehuacán">
 <meta property="og:locale" content="es_MX">
+<meta property="og:image" content="https://mitehuacan.mx/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mitehuacan.mx/og-image.png">
 <meta name="theme-color" content="#0a0b12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -909,6 +914,22 @@ const map = new maplibregl.Map({
   attributionControl: false
 });
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
+// failsafe: if the basemap style never loads (OpenFreeMap down/slow on a first
+// visit with no cache), show a retry instead of a silent blank map with dead
+// deep links. Cleared in __onMapLoad. var (not const) so __onMapLoad — which may
+// run synchronously — can reach it without a temporal-dead-zone error.
+var __mapOK = false;
+var __mapFailTimer = setTimeout(function () {
+  if (__mapOK || document.getElementById('map-fail')) return;
+  var el = document.createElement('div');
+  el.id = 'map-fail';
+  el.style.cssText = 'position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;background:#0a0b12';
+  el.innerHTML = '<div><p style="color:#fff;margin:0 0 8px;font-weight:600">No se pudo cargar el mapa</p>' +
+    '<p style="color:#9aa;margin:0 0 16px;font-size:14px">Revisa tu conexión e inténtalo de nuevo.</p>' +
+    '<button style="background:#4476ff;color:#fff;border:0;border-radius:10px;padding:12px 22px;font-weight:600" onclick="location.reload()">Reintentar</button></div>';
+  document.getElementById('map').appendChild(el);
+}, 20000);
+map.on('error', function (e) { try { console.warn('[map]', e && e.error && e.error.message); } catch (_) {} });
 // DEV ONLY: browser geolocation is unreliable locally; stub to a fixed San Diego
 // Chalma, Tehuacán point so the locate button + board-here flow are
 // testable at http://localhost:8799/. Every path (locate control, saveLoc, walk
@@ -1408,8 +1429,8 @@ function sponsorRow(routeId) {
   track('sponsor_view', sid + ':' + routeId);
   const near = ((SPONSORS.by_route || {})[routeId] || {})[sid];
   return '<div class="meta" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line)">' + t('sponsorLbl') +
-    '<img src="' + s.logo + '" srcset="' + s.logo2x + ' 2x" alt="' + s.name + '" ' +
-    'style="height:16px;vertical-align:-3px;margin:0 2px"> ' + s.name +
+    (s.logo ? '<img src="' + s.logo + '" srcset="' + (s.logo2x || s.logo) + ' 2x" alt="' + s.name + '" ' +
+    'style="height:16px;vertical-align:-3px;margin:0 2px"> ' : ' ') + s.name +
     (near ? ' · ' + t('stores')(near.length) : '') + '</div>';
 }
 
@@ -2465,6 +2486,8 @@ const M = {chips: []};  // [{id, on}]
 const isMobile = () => true;  // the app shell is the only UI now, every width
 
 const __onMapLoad = () => {
+  __mapOK = true; clearTimeout(__mapFailTimer);
+  var __mf = document.getElementById('map-fail'); if (__mf) __mf.remove();
   brightenBasemap();
   map.addSource('boundary', {type: 'geojson', data: boundaryCircle});
   map.addLayer({
@@ -3711,11 +3734,14 @@ document.querySelectorAll('.filters button').forEach(b => {
 let installPrompt = null;
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function() {});
-  // when a new service worker takes over (a deploy), reload once so the fresh
-  // build shows immediately instead of the old cached one sticking around
+  // when a NEW service worker takes over (a deploy), reload once so the fresh
+  // build shows. But on the FIRST-EVER visit there's no prior controller, and
+  // clients.claim() fires controllerchange too — reloading then would needlessly
+  // re-run the slow map init. Only reload if a controller already existed.
+  var hadController = !!navigator.serviceWorker.controller;
   var swRefreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', function() {
-    if (swRefreshing) return; swRefreshing = true; location.reload();
+    if (!hadController || swRefreshing) return; swRefreshing = true; location.reload();
   });
   window.addEventListener('beforeinstallprompt', function(e) {
     e.preventDefault();
