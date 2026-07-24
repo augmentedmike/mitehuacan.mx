@@ -559,20 +559,35 @@ function thx(f){var en=document.documentElement.lang==='en';
 .dir-h2{font-size:17px;font-weight:800;margin:28px 0 2px}
 #negocios:empty{display:none}
 .neg-empty{color:var(--ink2);font-size:14px;padding:12px 0 2px}
-.neg-card{display:flex;flex-direction:column;gap:7px;padding:14px;border:1px solid var(--line);
- border-radius:16px;background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl)}
+.neg-card{position:relative;display:flex;flex-direction:column;gap:7px;padding:14px 30px 14px 14px;
+ border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl);
+ text-align:left;width:100%;cursor:pointer;color:inherit;font:inherit}
+.neg-card:active{transform:translateY(1px)}
 .neg-card .nm{font-weight:700;font-size:15.5px;line-height:1.25}
 .neg-card .desc{font-size:13px;color:var(--ink2);line-height:1.4}
 .neg-card .mrow{font-size:12.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:4px 8px}
+.neg-card .neg-go{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--ink2);font-size:22px;line-height:1}
 .neg-badge{align-self:flex-start;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;
  background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
-.neg-card .neg-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
-.neg-card .wa{display:inline-flex;align-items:center;gap:6px;
- padding:9px 14px;border-radius:99px;background:#25d366;color:#05341a;font-weight:700;font-size:13.5px;
- text-decoration:none}
-.neg-card .neg-map{display:inline-flex;align-items:center;padding:9px 14px;border-radius:99px;
- background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-weight:700;
- font-size:13.5px;text-decoration:none}
+/* --- slide-in business detail panel (slug = ?n=<slug>) --- */
+#neg-panel{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;
+ transform:translateX(100%);transition:transform .28s ease;visibility:hidden}
+#neg-panel.show{transform:translateX(0);visibility:visible}
+.np-head{position:sticky;top:0;background:var(--bg);padding:10px 14px;border-bottom:1px solid var(--line);z-index:1}
+.np-back{background:var(--chip);border:1px solid var(--line);border-radius:99px;width:42px;height:42px;
+ font-size:22px;line-height:1;color:var(--ink);cursor:pointer}
+#neg-panel-body{padding:18px 16px 40px;max-width:560px;margin:0 auto}
+.np-name{font-size:22px;font-weight:800;line-height:1.2;margin:0 0 4px}
+.np-cat{color:var(--ink2);font-size:14px;margin:6px 0 12px}
+.np-desc{font-size:15px;line-height:1.5;margin:0 0 8px}
+.np-row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px}
+.np-row span{color:var(--ink2);flex:none}.np-row b{text-align:right}
+.np-soc{margin:14px 0 0;font-size:14px;display:flex;gap:12px;flex-wrap:wrap}
+.np-actions{display:flex;gap:12px;align-items:center;margin-top:22px}
+.np-wa{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:99px;
+ background:#25d366;color:#fff;text-decoration:none}
+.np-map{display:inline-flex;align-items:center;padding:14px 18px;border-radius:99px;font-weight:700;
+ background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);text-decoration:none}
 /* --- sponsor profile page --- */
 .pf-head{display:flex;gap:14px;align-items:center;margin:8px 0 2px}
 .pf-logo{width:78px;height:78px;border-radius:18px;object-fit:contain;background:#fff;
@@ -623,6 +638,9 @@ function thx(f){var en=document.documentElement.lang==='en';
     # itself (single source of truth), so a new category never needs a 2nd edit.
     alta_html = (ROOT / "src" / "app" / "directorio" / "alta.html").read_text(encoding="utf-8")
     cat_labels = {v: t for v, t in re.findall(r'<option value="([^"]+)">([^<]+)</option>', alta_html) if v}
+    # list + slide-in detail panel. rendering/logic live in /directorio/negocios.js
+    # (a real file, not an escaped string); the category label map is passed in via a
+    # global built from the alta form so it never drifts.
     neg_section = (
         '<h2 class="dir-h2"><span class="es">Negocios de Tehuacán</span>'
         '<span class="en">Tehuacán businesses</span></h2>'
@@ -630,28 +648,11 @@ function thx(f){var en=document.documentElement.lang==='en';
         '<div id="neg-empty" class="neg-empty" hidden>'
         '<span class="es">Aún no hay negocios registrados. ¡Sé el primero!</span>'
         '<span class="en">No businesses registered yet. Be the first!</span></div>'
-        '<script>(function(){'
-        'var CATS=' + json.dumps(cat_labels, ensure_ascii=False) + ';'
-        'var L=function(c){return CATS[c]||(c?c.replace(/-/g," ").replace(/\\b\\w/g,function(m){return m.toUpperCase()}):"")};'
-        'var E=function(s){var d=document.createElement("div");d.textContent=s==null?"":String(s);return d.innerHTML};'
-        'fetch("/api/negocios").then(function(r){return r.json()}).then(function(d){'
-        'var a=(d&&d.businesses)||[],box=document.getElementById("negocios");'
-        'if(!a.length){document.getElementById("neg-empty").hidden=false;return}'
-        'box.innerHTML=a.map(function(b){'
-        'var cat=L(b.category)+(b.category2?" · "+L(b.category2):"");'
-        'var w=String(b.whatsapp||b.phone||"").replace(/\\D/g,"");'
-        'var wa=w?\'<a class="wa" href="https://wa.me/52\'+w+\'" rel="nofollow noopener">WhatsApp</a>\':"";'
-        # located businesses get a "Ver en el mapa" link via the ?to= deep link
-        # (combi map shows the spot AND which combis reach it — no map-code change)
-        'var mp=(b.has_location&&b.lat&&b.lon)?\'<a class="neg-map" href="/?to=\'+b.lon+\',\'+b.lat+\'&n=\'+encodeURIComponent(b.name)+\'">Ver en el mapa</a>\':"";'
-        'var meta=[b.address,b.colonia,b.hours].filter(Boolean).map(E).join(" · ");'
-        'return \'<div class="neg-card">\'+(b.verified?\'<span class="neg-badge">Verificado</span>\':"")+'
-        '\'<div class="nm">\'+E(b.name)+\'</div>\'+'
-        '(cat?\'<span class="dir-cat">\'+E(cat)+\'</span>\':"")+'
-        '(b.description?\'<div class="desc">\'+E(String(b.description).slice(0,240))+\'</div>\':"")+'
-        '(meta?\'<div class="mrow">\'+meta+\'</div>\':"")+\'<div class="neg-actions">\'+wa+mp+\'</div></div>\''
-        '}).join("")'
-        '}).catch(function(){})})();</script>')
+        '<div id="neg-panel" role="dialog" aria-modal="true">'
+        '<div class="np-head"><button class="np-back" type="button" onclick="__negClose()" aria-label="Volver">←</button></div>'
+        '<div id="neg-panel-body"></div></div>'
+        '<script>window.NEG_CATS=' + json.dumps(cat_labels, ensure_ascii=False) + ';</script>'
+        '<script src="/directorio/negocios.js" defer></script>')
     dir_body = (dir_style +
         '<h1><span class="es">Directorio</span><span class="en">Directory</span></h1>'
         '<p class="dir-intro"><span class="es">Negocios y servicios de Tehuacán. Cada negocio tiene su '
