@@ -86,10 +86,18 @@ If the push adds a migration, the pre-push hook forces you to apply it to prod f
 ## The backup follows schema automatically
 
 `mitehuacan-backup` is rebuilt nightly by the `mitehuacan-db-backup` Worker
-(`backup/src/index.js`): it drops and recreates every table from the SOURCE's live
-`sqlite_master` schema, so it mirrors whatever prod is within ≤24h — including new
-tables/columns and the `d1_migrations` table. There is no separate migration path
-for the backup, and it cannot drift. D1 Time Travel covers the sub-24h point-in-time gap.
+(`backup/src/index.js`, cron `0 9 * * *`, deploy with `cd backup && bunx wrangler deploy`):
+it drops and recreates every table from the SOURCE's live `sqlite_master` schema, so it
+mirrors whatever prod is within ≤24h — including new tables/columns and the
+`d1_migrations` table. There is no separate migration path for the backup, and it cannot
+drift. D1 Time Travel covers the sub-24h point-in-time gap.
+
+Each run also writes a **gzipped point-in-time archive** into the backup DB
+(`_snapshots`, chunked BLOB rows — free, no R2), keeps ~10 days, and purges older.
+Token-gated endpoints on the Worker (`?token=$BACKUP_TOKEN`): `&list` enumerates
+archives, `&download=latest|<ts>` returns the `.json.gz` (a full JSON dump of every
+table, recoverable). BACKUP_TOKEN is a Worker secret (`cd backup && bunx wrangler
+secret put BACKUP_TOKEN`); it is NOT stored in the repo or memory.
 
 ## The MapLibre testing gotcha (unrelated but costly)
 
