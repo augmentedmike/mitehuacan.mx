@@ -424,6 +424,29 @@ function thx(f){var en=document.documentElement.lang==='en';
 :root[data-theme=dark] .confirm{color:#f5b756}
 .ev-empty{color:var(--ink2);padding:30px 0}
 .ev-count{font-size:13px;color:var(--ink2);margin-top:4px}
+.ev{cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.ev:hover{border-color:var(--accent)}
+.ev-more{margin-left:auto;color:var(--accent);font-weight:600;white-space:nowrap}
+/* details bottom-sheet, mirrors the combi map's #sheet2 */
+.evsheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:none;opacity:0;transition:opacity .2s}
+.evsheet-backdrop.show{display:flex;align-items:flex-end;justify-content:center;opacity:1}
+.evsheet{background:var(--bg);color:var(--ink);width:100%;max-width:520px;border-radius:20px 20px 0 0;
+ padding:8px 20px 24px;box-shadow:0 -8px 40px rgba(0,0,0,.3);position:relative;max-height:88dvh;overflow:auto}
+.evsheet-backdrop.show .evsheet{animation:evPanelIn .28s cubic-bezier(.32,.72,0,1) both}
+@keyframes evPanelIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(min-width:560px){.evsheet-backdrop.show{align-items:center}.evsheet{border-radius:20px}}
+.evs-handle{width:38px;height:5px;border-radius:99px;background:var(--line);margin:6px auto 14px}
+.evs-x{position:absolute;top:12px;right:14px;background:none;border:none;font-size:26px;line-height:1;color:var(--ink2);cursor:pointer}
+.evs-date{font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.03em}
+.evs-t{font-size:20px;font-weight:700;line-height:1.3;margin:4px 40px 10px 0}
+.evs-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.evs-rows{display:flex;flex-direction:column;gap:9px;font-size:14.5px;margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.evs-row{display:flex;gap:10px;align-items:flex-start}
+.evs-ic{flex:none;opacity:.85}
+.evs-acts{display:flex;flex-direction:column;gap:9px;margin-top:18px}
+.evs-btn{display:block;text-align:center;padding:12px;border-radius:12px;font-weight:600;font-size:14.5px;
+ border:1px solid var(--line);color:var(--ink);text-decoration:none}
+.evs-btn.primary{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 3px 12px var(--accsh)}
 </style>"""
     ev_script = """<script src="/events.js"></script>
 <script>
@@ -450,24 +473,66 @@ function thx(f){var en=document.documentElement.lang==='en';
    return '<button data-c="'+c+'"'+(c===filter?' class="on"':'')+'>'+lbl+'</button>';}).join('');
   [].forEach.call(bar.children,function(b){b.onclick=function(){filter=b.dataset.c;chips();render();};});
  }
+ var shown=[];   // the currently rendered list, indexed by the card's data-i
  function render(){
   var list=data.filter(function(e){return filter==='all'||e.k===filter;});
+  shown=list;
   if(!list.length){root.innerHTML='<p class="ev-empty">'+(L()?'No upcoming events.':'No hay eventos próximos.')+'</p>';return;}
   var out='',cur='';
-  list.forEach(function(e){
+  list.forEach(function(e,i){
    var f=fmt(e.d),mk=f.y+'-'+f.m,MN=(L()?EN:MES);
    if(mk!==cur){cur=mk;out+='<div class="month">'+MN[f.m]+' '+f.y+'</div>';}
    var cat=CAT[e.k]||CAT.otro;
-   out+='<div class="ev"><div class="date"><div class="d">'+f.d+'</div><div class="m">'+MN[f.m].slice(0,3)+'</div></div>'+
+   out+='<div class="ev" data-i="'+i+'" role="button" tabindex="0">'+
+    '<div class="date"><div class="d">'+f.d+'</div><div class="m">'+MN[f.m].slice(0,3)+'</div></div>'+
     '<div class="body"><div class="t">'+esc(e.t)+'</div><div class="meta">'+
     '<span class="cat '+e.k+'">'+cat[L()]+'</span>'+
     '<span>'+esc(e.v)+'</span>'+
     (e.tm?'<span>'+e.tm+'</span>':'')+
     (e.x?'<span class="confirm">'+(L()?'date to confirm':'fecha por confirmar')+'</span>':'')+
-    (e.u?'<a href="'+esc(e.u)+'" target="_blank" rel="noopener">'+(L()?'details':'ver más')+'</a>':'')+
+    '<span class="ev-more">'+(L()?'details':'ver más')+' ›</span>'+
     '</div></div></div>';
   });
   root.innerHTML='<div class="ev-count">'+list.length+(L()?' events':' eventos')+'</div>'+out;
+  [].forEach.call(root.querySelectorAll('.ev'),function(c){
+   var e=shown[+c.dataset.i];
+   c.onclick=function(){openEv(e);};
+   c.onkeydown=function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();openEv(e);}};
+  });
+ }
+ // ---- details sheet: an in-page panel, like the combi map's, instead of jumping offsite
+ var backdrop,sheet;
+ function buildSheet(){
+  backdrop=document.createElement('div');backdrop.className='evsheet-backdrop';
+  sheet=document.createElement('div');sheet.className='evsheet';
+  sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');
+  backdrop.appendChild(sheet);document.body.appendChild(backdrop);
+  backdrop.addEventListener('click',function(ev){if(ev.target===backdrop)closeEv();});
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape')closeEv();});
+ }
+ function closeEv(){if(backdrop){backdrop.classList.remove('show');document.body.style.overflow='';}}
+ function openEv(e){
+  if(!backdrop)buildSheet();
+  var f=fmt(e.d),MN=(L()?EN:MES),cat=CAT[e.k]||CAT.otro;
+  var lon=e.c&&e.c[0],lat=e.c&&e.c[1],hasLoc=isFinite(lon)&&isFinite(lat);
+  var h='<div class="evs-handle"></div><button class="evs-x" aria-label="'+(L()?'Close':'Cerrar')+'">&times;</button>'+
+   '<div class="evs-date">'+f.d+' '+MN[f.m]+' '+f.y+'</div>'+
+   '<h2 class="evs-t">'+esc(e.t)+'</h2>'+
+   '<div class="evs-tags"><span class="cat '+e.k+'">'+cat[L()]+'</span>'+
+   (e.x?'<span class="confirm">'+(L()?'date to confirm':'fecha por confirmar')+'</span>':'')+'</div>';
+  var rows='';
+  if(e.v)rows+='<div class="evs-row"><span class="evs-ic">📍</span><span>'+esc(e.v)+'</span></div>';
+  if(e.tm)rows+='<div class="evs-row"><span class="evs-ic">🕒</span><span>'+esc(e.tm)+'</span></div>';
+  if(rows)h+='<div class="evs-rows">'+rows+'</div>';
+  var acts='';
+  if(hasLoc)acts+='<a class="evs-btn primary" href="/?to='+(+lon).toFixed(5)+','+(+lat).toFixed(5)+
+   '&n='+encodeURIComponent(e.t)+'">'+(L()?'Get there by combi':'Cómo llegar en combi')+'</a>';
+  if(e.u)acts+='<a class="evs-btn" href="'+esc(e.u)+'" target="_blank" rel="noopener">'+
+   (L()?'Original post':'Ver publicación original')+'</a>';
+  if(acts)h+='<div class="evs-acts">'+acts+'</div>';
+  sheet.innerHTML=h;
+  sheet.querySelector('.evs-x').onclick=closeEv;
+  backdrop.classList.add('show');document.body.style.overflow='hidden';
  }
  chips();render();
  [].forEach.call(document.querySelectorAll('.lng'),function(a){a.addEventListener('click',function(){setTimeout(function(){chips();render();},0);});});
