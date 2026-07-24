@@ -1,10 +1,12 @@
-const CACHE = "mitehuacan-v5";
+const CACHE = "mitehuacan-v6";
 const SHELL = [
   "./",
   "./index.html",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png",
+  "./site.webmanifest",
+  "./favicon.svg",
+  "./apple-touch-icon.png",
+  "./web-app-manifest-192x192.png",
+  "./web-app-manifest-512x512.png",
   "./maplibre-gl.js",     // self-hosted so a CDN outage can't blank the app
   "./maplibre-gl.css",
   "./routes.js",

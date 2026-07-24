@@ -6,6 +6,12 @@
 <title>3B — Directorio MiTehuacán</title>
 <meta name="description" content="3B: Abarrotes en Tehuacán, Puebla. Sucursales, horarios y teléfono.">
 <link rel="canonical" href="https://mitehuacan.mx/directorio/3b/">
+<meta name="apple-mobile-web-app-title" content="MiTehuacán">
+<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <style>
 :root{--bg:#f5f5f7;--panel:rgba(255,255,255,.62);--ink:#1d1d1f;--ink2:#6e6e73;--line:rgba(0,0,0,.08);
  --accent:#0071e3;--chip:rgba(255,255,255,.8);--glass:rgba(255,255,255,.55);--hl:rgba(255,255,255,.75);
@@ -136,6 +142,20 @@ addEventListener('DOMContentLoaded',syncLang);
 .dir-cta .cta-tx small{display:block;font-size:13px;opacity:.92;margin-top:2px}
 .dir-cta .cta-go{flex:none;font-weight:800;font-size:14px;background:#fff;color:var(--accent);
  padding:9px 15px;border-radius:99px;white-space:nowrap}
+/* --- self-registered businesses (from /api/negocios) --- */
+.dir-h2{font-size:17px;font-weight:800;margin:28px 0 2px}
+#negocios:empty{display:none}
+.neg-empty{color:var(--ink2);font-size:14px;padding:12px 0 2px}
+.neg-card{display:flex;flex-direction:column;gap:7px;padding:14px;border:1px solid var(--line);
+ border-radius:16px;background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl)}
+.neg-card .nm{font-weight:700;font-size:15.5px;line-height:1.25}
+.neg-card .desc{font-size:13px;color:var(--ink2);line-height:1.4}
+.neg-card .mrow{font-size:12.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:4px 8px}
+.neg-badge{align-self:flex-start;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;
+ background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.neg-card .wa{margin-top:2px;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;
+ padding:9px 14px;border-radius:99px;background:#25d366;color:#05341a;font-weight:700;font-size:13.5px;
+ text-decoration:none}
 /* --- sponsor profile page --- */
 .pf-head{display:flex;gap:14px;align-items:center;margin:8px 0 2px}
 .pf-logo{width:78px;height:78px;border-radius:18px;object-fit:contain;background:#fff;
