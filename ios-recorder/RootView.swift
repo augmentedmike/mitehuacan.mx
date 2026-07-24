@@ -7,6 +7,7 @@ enum AppSection: String, CaseIterable, Identifiable {
     case rutas = "Rutas"
     case patrocinadores = "Patrocinadores"
     case calcomanias = "Calcomanías"
+    case negocios = "Negocios"
 
     var id: String { rawValue }
     var icon: String {
@@ -14,6 +15,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .rutas:          return "bus.fill"
         case .patrocinadores: return "storefront.fill"
         case .calcomanias:    return "qrcode.viewfinder"
+        case .negocios:       return "checklist"
         }
     }
 }
@@ -35,6 +37,7 @@ struct RootView: View {
             case .rutas:          RouteListView()
             case .patrocinadores: SponsorListView()
             case .calcomanias:    StickerAdminView()
+            case .negocios:       NegocioListView()
             }
         }
         .environmentObject(router)
