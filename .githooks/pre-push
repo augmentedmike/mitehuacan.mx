@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Guard: never advance `main` while prod DB is missing migrations.
+#
+# main drives the Vercel production static AND is the promote source; letting it
+# move ahead of the schema is how functions ship without their tables (the
+# negocios-table outage). This checks only pushes that update main; other
+# branches are unaffected. Bypass intentionally with `git push --no-verify`.
+#
+# Enabled via: git config core.hooksPath .githooks
+set -uo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$remote_ref" = "refs/heads/main" ] || continue
+  echo "pre-push: verifying prod schema is in sync before main…"
+  if ! python3 "$ROOT/src/scripts/check_migrations.py" production; then
+    echo ""
+    echo "🛑 Push to main blocked — prod DB is missing migrations."
+    echo "   Apply them first, THEN push:"
+    echo "     bunx wrangler d1 migrations apply mitehuacan --remote"
+    echo "   (or, if you really mean to: git push --no-verify)"
+    exit 1
+  fi
+done
+exit 0

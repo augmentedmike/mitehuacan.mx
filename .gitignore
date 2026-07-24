@@ -45,3 +45,7 @@ resources/discovery/
 # generated sticker sheets (regeneratable via 22_sticker_sheet.py)
 resources/stickers/*.pdf
 resources/stickers/*-preview.png
+
+# local Claude Code state — keep committed skills, ignore transient worktrees/settings
+.claude/worktrees/
+.claude/settings.local.json
