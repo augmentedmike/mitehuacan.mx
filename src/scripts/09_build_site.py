@@ -13,6 +13,7 @@ their way back.)
 """
 import html
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -526,6 +527,20 @@ function thx(f){var en=document.documentElement.lang==='en';
 .dir-cta .cta-tx small{display:block;font-size:13px;opacity:.92;margin-top:2px}
 .dir-cta .cta-go{flex:none;font-weight:800;font-size:14px;background:#fff;color:var(--accent);
  padding:9px 15px;border-radius:99px;white-space:nowrap}
+/* --- self-registered businesses (from /api/negocios) --- */
+.dir-h2{font-size:17px;font-weight:800;margin:28px 0 2px}
+#negocios:empty{display:none}
+.neg-empty{color:var(--ink2);font-size:14px;padding:12px 0 2px}
+.neg-card{display:flex;flex-direction:column;gap:7px;padding:14px;border:1px solid var(--line);
+ border-radius:16px;background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl)}
+.neg-card .nm{font-weight:700;font-size:15.5px;line-height:1.25}
+.neg-card .desc{font-size:13px;color:var(--ink2);line-height:1.4}
+.neg-card .mrow{font-size:12.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:4px 8px}
+.neg-badge{align-self:flex-start;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;
+ background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.neg-card .wa{margin-top:2px;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;
+ padding:9px 14px;border-radius:99px;background:#25d366;color:#05341a;font-weight:700;font-size:13.5px;
+ text-decoration:none}
 /* --- sponsor profile page --- */
 .pf-head{display:flex;gap:14px;align-items:center;margin:8px 0 2px}
 .pf-logo{width:78px;height:78px;border-radius:18px;object-fit:contain;background:#fff;
@@ -571,6 +586,37 @@ function thx(f){var en=document.documentElement.lang==='en';
             f'<a class="dir-card" href="/directorio/{sid}/">'
             f'<img class="dir-logo" src="/{sp["logo"]}" alt="{html.escape(sp["name"])}" loading="lazy">'
             f'<div class="nm">{html.escape(sp["name"])}</div>{_cat(sp["type"])}{_branches(n)}</a>')
+    # self-registered businesses render below the sponsors, fetched live from
+    # /api/negocios. category slug -> Spanish label comes from the alta form
+    # itself (single source of truth), so a new category never needs a 2nd edit.
+    alta_html = (ROOT / "src" / "app" / "directorio" / "alta.html").read_text(encoding="utf-8")
+    cat_labels = {v: t for v, t in re.findall(r'<option value="([^"]+)">([^<]+)</option>', alta_html) if v}
+    neg_section = (
+        '<h2 class="dir-h2"><span class="es">Negocios de Tehuacán</span>'
+        '<span class="en">Tehuacán businesses</span></h2>'
+        '<div id="negocios" class="dir-grid"></div>'
+        '<div id="neg-empty" class="neg-empty" hidden>'
+        '<span class="es">Aún no hay negocios registrados. ¡Sé el primero!</span>'
+        '<span class="en">No businesses registered yet. Be the first!</span></div>'
+        '<script>(function(){'
+        'var CATS=' + json.dumps(cat_labels, ensure_ascii=False) + ';'
+        'var L=function(c){return CATS[c]||(c?c.replace(/-/g," ").replace(/\\b\\w/g,function(m){return m.toUpperCase()}):"")};'
+        'var E=function(s){var d=document.createElement("div");d.textContent=s==null?"":String(s);return d.innerHTML};'
+        'fetch("/api/negocios").then(function(r){return r.json()}).then(function(d){'
+        'var a=(d&&d.businesses)||[],box=document.getElementById("negocios");'
+        'if(!a.length){document.getElementById("neg-empty").hidden=false;return}'
+        'box.innerHTML=a.map(function(b){'
+        'var cat=L(b.category)+(b.category2?" · "+L(b.category2):"");'
+        'var w=String(b.whatsapp||b.phone||"").replace(/\\D/g,"");'
+        'var wa=w?\'<a class="wa" href="https://wa.me/52\'+w+\'" rel="nofollow noopener">WhatsApp</a>\':"";'
+        'var meta=[b.colonia,b.hours].filter(Boolean).map(E).join(" · ");'
+        'return \'<div class="neg-card">\'+(b.verified?\'<span class="neg-badge">Verificado</span>\':"")+'
+        '\'<div class="nm">\'+E(b.name)+\'</div>\'+'
+        '(cat?\'<span class="dir-cat">\'+E(cat)+\'</span>\':"")+'
+        '(b.description?\'<div class="desc">\'+E(String(b.description).slice(0,240))+\'</div>\':"")+'
+        '(meta?\'<div class="mrow">\'+meta+\'</div>\':"")+wa+\'</div>\''
+        '}).join("")'
+        '}).catch(function(){})})();</script>')
     dir_body = (dir_style +
         '<h1><span class="es">Directorio</span><span class="en">Directory</span></h1>'
         '<p class="dir-intro"><span class="es">Negocios y servicios de Tehuacán. Cada negocio tiene su '
@@ -586,7 +632,7 @@ function thx(f){var en=document.documentElement.lang==='en';
         '<small><span class="es">Aparece gratis en el directorio · 2 minutos, sin costo</span>'
         '<span class="en">Get listed free · 2 minutes, no cost</span></small></span>'
         '<span class="cta-go"><span class="es">Aparecer</span><span class="en">List it</span></span></a>'
-        '<div class="dir-grid">' + "".join(cards) + '</div>')
+        '<div class="dir-grid">' + "".join(cards) + '</div>' + neg_section)
     (APPROOT / "directorio").mkdir(parents=True, exist_ok=True)
     (APPROOT / "directorio" / "index.html").write_text(
         page("Directorio de negocios — MiTehuacán",

@@ -23,6 +23,25 @@ const FIESTA_CATS = new Set([
   "vajilla", "seguridad-eventos", "animacion", "bar-movil", "invitaciones",
 ]);
 
+// GET /api/negocios — public directory read: active businesses, only the fields
+// a customer needs (no email/owner_name/edit_token/qr_batch/ip). Edge-cached 60s.
+export async function onRequestGet({ env }) {
+  const { results } = await env.DB.prepare(
+    `SELECT id, name, category, category2, category_other, description,
+            whatsapp, phone, facebook, instagram, website,
+            colonia, service_area, hours, price_from, price_note, fiesta,
+            has_location, lat, lon, verified
+       FROM negocios WHERE active = 1
+       ORDER BY verified DESC, id DESC LIMIT 500`).all().catch(() => ({ results: [] }));
+  return new Response(JSON.stringify({ businesses: results }), {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=60",
+      "X-Robots-Tag": "noindex",
+    },
+  });
+}
+
 export async function onRequestPost({ request, env }) {
   let b;
   try { b = await request.json(); } catch { return json({ error: "Datos inválidos." }, 400); }
