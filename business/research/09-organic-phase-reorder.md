@@ -139,6 +139,17 @@ The two hardest open problems, both being researched now:
 
 ---
 
+## 4b. Follow-up (added 2026-07-24)
+
+This reorder established *what order* and *why* under the no-sales constraint.
+[`10-network-effects-and-organic-growth.md`](10-network-effects-and-organic-growth.md)
+audits it under a network-effects lens and confirms the order holds — while
+naming the mechanism the earlier docs left implicit: **the fiesta invitation is
+the viral loop**, and it is the keystone. That loop is now speced in
+[`PRD-phase3-fiestas.md`](../../PRD-phase3-fiestas.md). Fiestas (Phase 3) is not
+just "demand for the directory" — it is the only compounding growth engine on the
+roadmap.
+
 ## 5. One-line summary
 
 > Old plan: hire a salesperson to close sponsorships, then add features.

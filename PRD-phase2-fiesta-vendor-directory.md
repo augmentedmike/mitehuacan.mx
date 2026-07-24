@@ -61,7 +61,8 @@ side of the Fiestas marketplace and the data moat for everything after it.
 
 ### Non-goals (Phase 2)
 
-- The consumer Fiestas planning UI itself (Phase 3 — this PRD only supplies it).
+- The consumer Fiestas planning UI itself (Phase 3 — this PRD only supplies it;
+  now speced in `PRD-phase3-fiestas.md`, which is the viral loop this supply feeds).
 - Charging anyone. The directory is **free**; the boost (Phase 4) is designed here but
   not the launch focus.
 - Reviews/ratings (later — trust layer is its own phase).
