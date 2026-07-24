@@ -29,19 +29,76 @@ final class AppRouter: ObservableObject {
 /// App shell: shows one section at a time. The switcher is the screen title itself —
 /// tap "Rutas ⌄" to drop down and jump to Patrocinadores or Calcomanías.
 struct RootView: View {
+    @EnvironmentObject var auth: AdminAuth
     @StateObject private var router = AppRouter()
 
     var body: some View {
         Group {
-            switch router.section {
-            case .rutas:          RouteListView()
-            case .patrocinadores: SponsorListView()
-            case .calcomanias:    StickerAdminView()
-            case .negocios:       NegocioListView()
+            if auth.unlocked {
+                switch router.section {
+                case .rutas:          RouteListView()
+                case .patrocinadores: SponsorListView()
+                case .calcomanias:    StickerAdminView()
+                case .negocios:       NegocioListView()
+                }
+            } else {
+                LoginGateView()     // gate the whole app: user + PIN before any section
             }
         }
         .environmentObject(router)
     }
+}
+
+/// The entry screen: nobody sees a section until they sign in. Reuses AdminAuth
+/// (user "michael" + PIN validated by /api/admin/login). If a token is already in
+/// the Keychain from a prior sign-in, `auth.unlocked` is true at launch and this
+/// screen is skipped.
+struct LoginGateView: View {
+    @EnvironmentObject var auth: AdminAuth
+    @State private var pin = ""
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            Image("LaunchLogo").resizable().scaledToFit()
+                .frame(width: 132, height: 132)
+                .padding(16)
+                .background(Color.white, in: RoundedRectangle(cornerRadius: 24))  // dancer always on white (readable in dark mode too)
+            Text("MiTehuacán").font(.title2.weight(.bold))
+            Text("Panel de administración").font(.subheadline).foregroundStyle(.secondary)
+
+            VStack(spacing: 12) {
+                HStack {
+                    Image(systemName: "person.fill").foregroundStyle(.secondary)
+                    Text(AdminAuth.user); Spacer()
+                }
+                .padding(12)
+                .background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
+
+                SecureField("PIN", text: $pin)
+                    .keyboardType(.numberPad).textContentType(.password)
+                    .submitLabel(.go).onSubmit(submit)
+                    .padding(12)
+                    .background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
+
+                if !auth.error.isEmpty {
+                    Text(auth.error).foregroundStyle(.red).font(.footnote)
+                }
+                Button(action: submit) {
+                    HStack { if auth.busy { ProgressView() }; Text("Entrar").fontWeight(.semibold) }
+                        .frame(maxWidth: .infinity).padding(.vertical, 12)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(pin.isEmpty || auth.busy)
+            }
+            .frame(maxWidth: 340)
+
+            Spacer(); Spacer()
+        }
+        .padding()
+    }
+
+    private func submit() { Task { _ = await auth.unlock(pin: pin) } }
 }
 
 /// The tappable navigation title used by every section (in the `.principal` toolbar
