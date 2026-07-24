@@ -49,3 +49,8 @@ resources/stickers/*-preview.png
 # local Claude Code state — keep committed skills, ignore transient worktrees/settings
 .claude/worktrees/
 .claude/settings.local.json
+
+# Xcode per-user state
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+**/.DS_Store
