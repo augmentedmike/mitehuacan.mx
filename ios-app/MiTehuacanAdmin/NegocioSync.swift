@@ -44,5 +44,28 @@ enum NegocioSync {
         guard code == 200 else { throw code == 401 ? SyncError.unauthorized : SyncError.badResponse }
     }
 
+    /// Admin-create a business (PUT). Lands live + pre-approved; returns its new id.
+    static func create(_ draft: NegocioDraft, token: String) async throws -> Int? {
+        var req = URLRequest(url: endpoint)
+        req.httpMethod = "PUT"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.timeoutInterval = 15
+        req.httpBody = try JSONSerialization.data(withJSONObject: draft.payload)
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
+        guard code != 401 else { throw SyncError.unauthorized }
+        guard code == 200 else {
+            // surface the server's validation message when present
+            if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let msg = obj["error"] as? String {
+                throw NSError(domain: "Negocio", code: code, userInfo: [NSLocalizedDescriptionKey: msg])
+            }
+            throw SyncError.badResponse
+        }
+        let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        return (obj?["id"] as? Int)
+    }
+
     struct Wire: Decodable { let pending: [Negocio] }
 }

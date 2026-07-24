@@ -11,6 +11,20 @@ final class NegocioStore: ObservableObject {
     @Published var error = ""
 
     var count: Int { pending.count }
+    @Published var saving = false
+
+    /// Admin adds a business by hand. It publishes live and pre-approved, so it does
+    /// NOT enter the review queue. Returns an error string (nil on success).
+    func create(_ draft: NegocioDraft, token: String) async -> String? {
+        saving = true; defer { saving = false }
+        do {
+            _ = try await NegocioSync.create(draft, token: token)
+            return nil
+        } catch {
+            if case NegocioSync.SyncError.unauthorized = error { return "unauthorized" }
+            return error.localizedDescription
+        }
+    }
 
     func load(token: String) async {
         loading = true; error = ""
