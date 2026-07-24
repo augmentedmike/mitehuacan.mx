@@ -1,0 +1,42 @@
+{"id":"30934845","kind":"departamento","price":5000,"beds":1,"baths":1,"m2":225,"colonia":"La Purísima","cp":"75784","slug":"departamento-en-renta-calle-oriente-9-924-la-purisima-puebla-30934845"}
+{"id":"27879009","kind":"casa","price":250000,"beds":5,"baths":7,"m2":745,"colonia":"Tehuacán Centro","cp":"75700","slug":"casa-en-renta-1-poniente-114-tehuacan-centro-puebla-27879009"}
+{"id":"30789567","kind":"casa","price":55000,"beds":3,"baths":2,"m2":350,"colonia":"La Paz","cp":"75790","slug":"casa-en-renta-la-paz-101-la-paz-puebla-30789567"}
+{"id":"31554018","kind":"casa","price":40000,"beds":2,"baths":2,"m2":295,"colonia":"Plaza","cp":"75758","slug":"casa-en-renta-el-lucero-plaza-puebla-31554018"}
+{"id":"31352872","kind":"casa","price":80000,"beds":13,"baths":4,"m2":431,"colonia":"Villa Granadas","cp":"75732","slug":"casa-en-renta-rotonda-villa-granadas-puebla-31352872"}
+{"id":"29171229","kind":"local","price":40000,"beds":null,"baths":null,"m2":340,"colonia":"Tehuacán Centro","cp":"75700","slug":"local-en-renta-calzada-adolfo-lopez-mateos-3000-tehuacan-centro-puebla-29171229"}
+{"id":"30137911","kind":"local","price":45000,"beds":null,"baths":2,"m2":200,"colonia":"Tehuacán Centro","cp":"75700","slug":"local-en-renta-reforma-norte-800-tehuacan-centro-puebla-30137911"}
+{"id":"31470959","kind":"local","price":38000,"beds":null,"baths":2,"m2":152,"colonia":"Aquiles Serdán","cp":"75750","slug":"local-en-renta-adolfo-lopez-mateos-sn-aquiles-serdan-puebla-31470959"}
+{"id":"27897471","kind":"local","price":24000,"beds":null,"baths":null,"m2":200,"colonia":"San Lorenzo Teotipilco","cp":"75855","slug":"local-en-renta-carretera-federal-tehuacan-puebla-sn-san-lorenzo-teotipilco-puebla-27897471"}
+{"id":"23109069","kind":"local","price":75000,"beds":null,"baths":4,"m2":250,"colonia":"La Arcadia","cp":"75760","slug":"local-en-renta-independencia-poniente-625-la-arcadia-puebla-23109069"}
+{"id":"29171242","kind":"local","price":60000,"beds":null,"baths":2,"m2":200,"colonia":"Tehuacán Centro","cp":"75700","slug":"local-en-renta-1-sur-0000-tehuacan-centro-puebla-29171242"}
+{"id":"29131141","kind":"local","price":70000,"beds":null,"baths":null,"m2":220,"colonia":"Aquiles Serdán","cp":"75750","slug":"local-en-renta-2-poniente-1811-aquiles-serdan-puebla-29131141"}
+{"id":"11122579","kind":"local","price":37500,"beds":null,"baths":null,"m2":250,"colonia":"San Lorenzo Teotipilco","cp":"75855","slug":"local-en-renta-calzada-adolfo-lopez-mateos-4217-san-lorenzo-teotipilco-puebla-11122579"}
+{"id":"30638838","kind":"oficina","price":7000,"beds":null,"baths":1,"m2":28,"colonia":"Zona Alta","cp":"75750","slug":"oficina-en-renta-independencia-poniente-1600-zona-alta-puebla-30638838"}
+{"id":"29223372","kind":"oficina","price":30000,"beds":null,"baths":null,"m2":260,"colonia":"Venustiano Carranza","cp":"75760","slug":"oficina-en-renta-30-sur-528-venustiano-carranza-puebla-29223372"}
+{"id":"29171228","kind":"oficina","price":22000,"beds":null,"baths":6,"m2":183,"colonia":"Tehuacán Centro","cp":"75700","slug":"oficina-en-renta-reforma-sur-300-tehuacan-centro-puebla-29171228"}
+{"id":"29171231","kind":"oficina","price":14000,"beds":null,"baths":2,"m2":62,"colonia":"Tehuacán Centro","cp":"75700","slug":"oficina-en-renta-1-sur-tehuacan-centro-puebla-29171231"}
+{"id":"29171237","kind":"oficina","price":52000,"beds":null,"baths":2,"m2":325,"colonia":"Tehuacán Centro","cp":"75700","slug":"oficina-en-renta-1-sur-000-tehuacan-centro-puebla-29171237"}
+{"id":"31505447","kind":"edificio","price":55000,"beds":null,"baths":null,"m2":302,"colonia":"Ignacio Zaragoza","cp":"75770","slug":"edificio-en-renta-4-norte-400-ignacio-zaragoza-puebla-31505447"}
+{"id":"17698697","kind":"edificio","price":85000,"beds":null,"baths":1,"m2":350,"colonia":"La Arcadia","cp":"75760","slug":"edificio-en-renta-independencia-poniente-625-la-arcadia-puebla-17698697"}
+{"id":"31341926","kind":"edificio","price":325000,"beds":null,"baths":null,"m2":1600,"colonia":"Tehuacán Centro","cp":"75700","slug":"edificio-en-renta-av-independencia-tehuacan-centro-puebla-31341926"}
+{"id":"27784676","kind":"bodega","price":25000,"beds":null,"baths":null,"m2":442,"colonia":"3 de Mayo","cp":"75765","slug":"bodega-en-renta-jael-2511-3-de-mayo-puebla-27784676"}
+{"id":"31122496","kind":"bodega","price":95000,"beds":null,"baths":2,"m2":650,"colonia":"Cerritos","cp":"75731","slug":"bodega-en-renta-cerritos-tehuacan-puebla-31122496"}
+{"id":"25158486","kind":"bodega","price":300000,"beds":null,"baths":2,"m2":4000,"colonia":"Paseo de San Pedro","cp":"75740","slug":"bodega-en-renta-8-sur-308-paseo-de-san-pedro-puebla-25158486"}
+{"id":"29223371","kind":"bodega","price":30000,"beds":null,"baths":null,"m2":260,"colonia":"Venustiano Carranza","cp":"75760","slug":"bodega-en-renta-30-sur-528-venustiano-carranza-puebla-29223371"}
+{"id":"25496628","kind":"bodega","price":263250,"beds":null,"baths":8,"m2":2925,"colonia":"San Lorenzo Teotipilco","cp":"75855","slug":"bodega-en-renta-bulevard-cuauhtemoc-432-san-lorenzo-teotipilco-puebla-25496628"}
+{"id":"4924584","kind":"nave","price":65000,"beds":null,"baths":2,"m2":800,"colonia":"El Riego","cp":"75760","slug":"nave-industrial-en-renta-12-sur-1111-el-riego-puebla-4924584"}
+{"id":"5119548","kind":"terreno","price":40000,"beds":null,"baths":null,"m2":1000,"colonia":"San Lorenzo Teotipilco","cp":"75855","slug":"terreno-comercial-en-renta-bulevard-socorro-romero-sn-san-lorenzo-teotipilco-puebla-5119548"}
+{"id":"28320440","kind":"terreno","price":4500,"beds":null,"baths":null,"m2":14432,"colonia":"Tepeyac","cp":"75726","slug":"terreno-habitacional-en-renta-avenida-jose-garcicrespo-196-tepeyac-puebla-28320440"}
+{"id":"29171213","kind":"terreno","price":45000,"beds":null,"baths":null,"m2":1800,"colonia":"San Nicolás Tetitzintla","cp":"75710","slug":"terreno-comercial-en-renta-via-puebla-000-san-nicolas-tetitzintla-puebla-29171213"}
+{"id":"29171219","kind":"terreno","price":60000,"beds":null,"baths":null,"m2":8900,"colonia":"San Lorenzo Teotipilco","cp":"75855","slug":"terreno-comercial-en-renta-9-norte-00-san-lorenzo-teotipilco-puebla-29171219"}
+{"id":"29171215","kind":"terreno","price":40000,"beds":null,"baths":null,"m2":2400,"colonia":"San Nicolás Tetitzintla","cp":"75710","slug":"terreno-comercial-en-renta-calzada-de-las-palmas-000-san-nicolas-tetitzintla-puebla-29171215"}
+{"id":"30119983","kind":"terreno","price":15000,"beds":null,"baths":null,"m2":320,"colonia":"Tehuacán Centro","cp":"75700","slug":"terreno-comercial-en-renta-sin-nombre-de-calle-tehuacan-centro-puebla-30119983"}
+{"id":"29293835","kind":"terreno","price":85800,"beds":null,"baths":null,"m2":780,"colonia":"Zona Alta","cp":"75750","slug":"terreno-comercial-en-renta-adolfo-lopez-mateos-2404-zona-alta-puebla-29293835"}
+{"id":"31149468","kind":"terreno","price":775000,"beds":null,"baths":null,"m2":7752,"colonia":"Francisco Villa","cp":"75750","slug":"terreno-habitacional-en-renta-francisco-villa-puebla-31149468"}
+{"id":"27821019","kind":"terreno","price":96000,"beds":null,"baths":null,"m2":1373,"colonia":"San Lorenzo Teotipilco","cp":"75855","slug":"terreno-habitacional-en-renta-calzada-adolfo-lopez-mateos-5202-san-lorenzo-teotipilco-puebla-27821019"}
+{"id":"29171202","kind":"terreno","price":55000,"beds":null,"baths":null,"m2":5000,"colonia":"San Lorenzo","cp":"75855","slug":"terreno-comercial-en-renta-carretera-federal-000-san-lorenzo-puebla-29171202"}
+{"id":"2806508","kind":"terreno","price":150001,"beds":null,"baths":null,"m2":5000,"colonia":"San Lorenzo Teotipilco","cp":"75855","slug":"terreno-comercial-en-renta-calzada-adolfo-lopez-mateos-5014-san-lorenzo-teotipilco-puebla-2806508"}
+{"id":"29171225","kind":"terreno","price":45000,"beds":null,"baths":null,"m2":1900,"colonia":"La Purísima","cp":"75784","slug":"terreno-comercial-en-renta-9-norte-00-la-purisima-puebla-29171225"}
+{"id":"27821018","kind":"terreno","price":225000,"beds":null,"baths":null,"m2":4500,"colonia":"San Lorenzo Teotipilco","cp":"75855","slug":"terreno-habitacional-en-renta-carretera-federal-tehuacanpuebla-sn-san-lorenzo-teotipilco-puebla-27821018"}
+{"id":"29171221","kind":"terreno","price":45000,"beds":null,"baths":null,"m2":5000,"colonia":"San Lorenzo Teotipilco","cp":"75855","slug":"terreno-comercial-en-renta-carretera-federal-00-san-lorenzo-teotipilco-puebla-29171221"}
+{"id":"29171200","kind":"terreno","price":35000,"beds":null,"baths":null,"m2":400,"colonia":"San Lorenzo","cp":"75855","slug":"terreno-comercial-en-renta-adolfo-lopz-mateos-san-lorenzo-puebla-29171200"}

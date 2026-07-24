@@ -305,13 +305,13 @@ a.card.live:hover .go{filter:brightness(1.08)}
  <p class="es">Chamba local: vacantes de la región y un lugar para ofrecer tu talento.</p>
  <p class="en">Local work: openings around the region and a place to offer your skills.</p>
 </div>
-<div class="card soon">
- <span class="badge">{bi('Próximamente', 'Coming soon')}</span>
+<a class="card" href="/rentas/">
+ <span class="badge">{bi('Nuevo', 'New')}</span>
  {ICO_HOME}
  <h2>{bi('Rentas', 'Rentals')}</h2>
- <p class="es">Casas, departamentos y locales en renta, publicados por gente de aquí.</p>
- <p class="en">Houses, apartments and storefronts for rent, listed by local people.</p>
-</div>
+ <p class="es">Casas, departamentos, locales y terrenos en renta en Tehuacán y su región.</p>
+ <p class="en">Houses, apartments, storefronts and land for rent in Tehuacán and its region.</p>
+</a>
 </div>
 """
     # feedback + bug forms -> D1 (no email, no github). Defined apart from the
@@ -384,6 +384,7 @@ function thx(f){var en=document.documentElement.lang==='en';
 <nav>
 <a href="/">Combis</a>
 <a href="/eventos/"><span class="es">Eventos</span><span class="en">Events</span></a>
+<a href="/rentas/"><span class="es">Rentas</span><span class="en">Rentals</span></a>
 {LANG_LINKS}
 </nav>
 </header>
@@ -564,6 +565,169 @@ function thx(f){var en=document.documentElement.lang==='en';
              eventos_body, f"{DOMAIN}/eventos/",
              crumb_items=[(bi("Inicio", "Home"), "/"), (bi("Eventos", "Events"), None)],
              title_en="Events & fiestas in Tehuacán"),
+        encoding="utf-8")
+
+    # ---- /rentas : rental listings feed (reads the generated /rentas.js).
+    # Data seeded from public sources, geo-gated to Tehuacán + service-area towns
+    # (business/discover-geo-scope.md). One cover photo per listing, served from
+    # our own domain (never a hotlinked portal image); each card links back to the
+    # original post for the real photos. See PRD-descubre-rentas.md.
+    rt_style = """<style>
+.rt-intro{color:var(--ink2);font-size:14.5px;max-width:44em}
+.rt-filters{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 4px}
+.rt-filters button{font:inherit;font-size:13px;cursor:pointer;padding:6px 12px;border-radius:99px;
+ border:1px solid var(--line);background:var(--panel);color:var(--ink2)}
+.rt-filters button.on{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 3px 12px var(--accsh)}
+.rt-count{font-size:13px;color:var(--ink2);margin:12px 0 8px}
+.rt-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:520px){.rt-grid{grid-template-columns:1fr 1fr}}
+.rt{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel);
+ box-shadow:var(--shadow),inset 0 1px 0 var(--hl);cursor:pointer;transition:border-color .15s,transform .15s}
+.rt:hover{border-color:var(--accent);transform:translateY(-2px)}
+.rt-ph{width:100%;aspect-ratio:3/2;object-fit:cover;display:block;background:var(--chip)}
+.rt-kind{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;
+ background:rgba(0,0,0,.55);color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.rt-b{padding:11px 13px 13px}
+.rt-price{font-size:18px;font-weight:800;color:var(--ink);line-height:1}
+.rt-price .mo{font-size:11.5px;font-weight:600;color:var(--ink2);margin-left:4px}
+.rt-t{font-size:13.5px;font-weight:600;margin:5px 0 0;line-height:1.3}
+.rt-meta{font-size:12.5px;color:var(--ink2);margin-top:7px;display:flex;gap:9px;flex-wrap:wrap}
+.rt-empty{color:var(--ink2);padding:30px 0}
+/* detail bottom-sheet, mirrors the events sheet */
+.rtsheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:none;opacity:0;transition:opacity .2s}
+.rtsheet-backdrop.show{display:flex;align-items:flex-end;justify-content:center;opacity:1}
+.rtsheet{background:var(--bg);color:var(--ink);width:100%;max-width:520px;border-radius:20px 20px 0 0;
+ padding:8px 20px 24px;box-shadow:0 -8px 40px rgba(0,0,0,.3);position:relative;max-height:88dvh;overflow:auto}
+.rtsheet-backdrop.show .rtsheet{animation:rtIn .28s cubic-bezier(.32,.72,0,1) both}
+@keyframes rtIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(min-width:560px){.rtsheet-backdrop.show{align-items:center}.rtsheet{border-radius:20px}}
+.rts-handle{width:38px;height:5px;border-radius:99px;background:var(--line);margin:6px auto 14px}
+.rts-x{position:absolute;top:12px;right:14px;background:none;border:none;font-size:26px;line-height:1;color:var(--ink2);cursor:pointer}
+.rts-img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:14px;margin:2px 0 6px;display:block;background:var(--chip)}
+.rts-cap{font-size:11.5px;color:var(--ink2);margin:0 0 12px;text-align:center}
+.rts-price{font-size:26px;font-weight:800;margin:6px 40px 2px 0}
+.rts-price .mo{font-size:13px;font-weight:600;color:var(--ink2);margin-left:6px}
+.rts-t{font-size:16px;font-weight:600;line-height:1.3;margin:2px 0 4px}
+.rts-rows{display:flex;flex-direction:column;gap:9px;font-size:14.5px;margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.rts-row{display:flex;gap:10px;align-items:flex-start}
+.rts-ic{flex:none;opacity:.85}
+.rts-acts{display:flex;flex-direction:column;gap:9px;margin-top:18px}
+.rts-btn{display:block;text-align:center;padding:12px;border-radius:12px;font-weight:600;font-size:14.5px;
+ border:1px solid var(--line);color:var(--ink);text-decoration:none}
+.rts-btn.primary{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 3px 12px var(--accsh)}
+</style>"""
+    rt_script = """<script src="/rentas.js"></script>
+<script>
+(function(){
+ var root=document.getElementById('rtroot'),bar=document.getElementById('rtfilters');
+ var data=(typeof RENTAS!=='undefined'&&RENTAS.rentas)||[];
+ var KIND={casa:['Casa','House'],departamento:['Departamento','Apartment'],local:['Local','Retail space'],
+  oficina:['Oficina','Office'],edificio:['Edificio','Building'],bodega:['Bodega','Warehouse'],
+  nave:['Nave industrial','Industrial'],terreno:['Terreno','Land']};
+ var filter='all';
+ function L(){return document.documentElement.lang==='en'?1:0;}
+ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+ function money(n){return '$'+String(n).replace(/\\B(?=(\\d{3})+(?!\\d))/g,',');}
+ function klabel(k){return (KIND[k]||[k,k])[L()];}
+ function chips(){
+  var order=[],cnt={};
+  data.forEach(function(e){if(cnt[e.k]==null){cnt[e.k]=0;order.push(e.k);}cnt[e.k]++;});
+  order.sort(function(a,b){return cnt[b]-cnt[a];});
+  var cats=['all'].concat(order);
+  bar.innerHTML=cats.map(function(c){
+   var lbl=c==='all'?(L()?'All':'Todos'):klabel(c);
+   return '<button data-c="'+c+'"'+(c===filter?' class="on"':'')+'>'+lbl+'</button>';}).join('');
+  [].forEach.call(bar.children,function(b){b.onclick=function(){filter=b.dataset.c;chips();render();};});
+ }
+ var shown=[];
+ function render(){
+  var list=data.filter(function(e){return filter==='all'||e.k===filter;});
+  shown=list;
+  if(!list.length){root.innerHTML='<p class="rt-empty">'+(L()?'Nothing here yet.':'Aún no hay nada aquí.')+'</p>';return;}
+  var out='<div class="rt-count">'+list.length+(L()?' listings':' propiedades')+'</div><div class="rt-grid">';
+  list.forEach(function(e,i){
+   var meta=[klabel(e.k)];
+   if(e.m2)meta.push(e.m2+' m²');
+   if(e.br)meta.push(e.br+(L()?' bd':' rec'));
+   if(e.ba)meta.push(e.ba+(L()?(e.ba>1?' ba':' ba'):(e.ba>1?' baños':' baño')));
+   out+='<div class="rt" data-i="'+i+'" role="button" tabindex="0">'+
+    '<img class="rt-ph" src="'+esc(e.ph)+'" alt="">'+
+    '<span class="rt-kind">'+esc(klabel(e.k))+'</span>'+
+    '<div class="rt-b"><div class="rt-price">'+money(e.p)+'<span class="mo">MXN/'+(L()?'mo':'mes')+'</span></div>'+
+    '<div class="rt-t">'+esc(e.t)+'</div>'+
+    '<div class="rt-meta">'+meta.slice(1).map(function(m){return '<span>'+esc(m)+'</span>';}).join('')+'</div>'+
+    '</div></div>';
+  });
+  out+='</div>';
+  root.innerHTML=out;
+  [].forEach.call(root.querySelectorAll('.rt'),function(c){
+   var e=shown[+c.dataset.i];
+   c.onclick=function(){openRt(e);};
+   c.onkeydown=function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();openRt(e);}};
+  });
+ }
+ var backdrop,sheet;
+ function build(){
+  backdrop=document.createElement('div');backdrop.className='rtsheet-backdrop';
+  sheet=document.createElement('div');sheet.className='rtsheet';
+  sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');
+  backdrop.appendChild(sheet);document.body.appendChild(backdrop);
+  backdrop.addEventListener('click',function(ev){if(ev.target===backdrop)close();});
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape')close();});
+ }
+ function close(){if(backdrop){backdrop.classList.remove('show');document.body.style.overflow='';}}
+ function openRt(e){
+  if(!backdrop)build();
+  var h='<div class="rts-handle"></div><button class="rts-x" aria-label="'+(L()?'Close':'Cerrar')+'">&times;</button>';
+  h+='<img class="rts-img" src="'+esc(e.ph)+'" alt="">';
+  h+='<p class="rts-cap">'+(L()?'Reference photo by property type — see the original post for real photos.'
+     :'Foto de referencia por tipo — ve la publicación original para las fotos reales.')+'</p>';
+  h+='<div class="rts-price">'+money(e.p)+'<span class="mo">MXN/'+(L()?'month':'mes')+'</span></div>';
+  h+='<div class="rts-t">'+esc(e.t)+'</div>';
+  var rows='';
+  rows+='<div class="rts-row"><span class="rts-ic">🏷️</span><span>'+esc(klabel(e.k))+'</span></div>';
+  var loc=(e.col?e.col+', ':'')+(e.town||'Tehuacán');
+  rows+='<div class="rts-row"><span class="rts-ic">📍</span><span>'+esc(loc)+
+   (e.x?' · <span style="color:var(--ink2)">'+(L()?'approx.':'aprox.')+'</span>':'')+'</span></div>';
+  if(e.m2)rows+='<div class="rts-row"><span class="rts-ic">📐</span><span>'+e.m2+' m²</span></div>';
+  if(e.br)rows+='<div class="rts-row"><span class="rts-ic">🛏️</span><span>'+e.br+(L()?(e.br>1?' bedrooms':' bedroom'):(e.br>1?' recámaras':' recámara'))+'</span></div>';
+  if(e.ba)rows+='<div class="rts-row"><span class="rts-ic">🚿</span><span>'+e.ba+(L()?(e.ba>1?' bathrooms':' bathroom'):(e.ba>1?' baños':' baño'))+'</span></div>';
+  h+='<div class="rts-rows">'+rows+'</div>';
+  var acts='';
+  if(e.u)acts+='<a class="rts-btn primary" href="'+esc(e.u)+'" target="_blank" rel="noopener nofollow">'+
+   (L()?'View original post':'Ver publicación original')+'</a>';
+  if(acts)h+='<div class="rts-acts">'+acts+'</div>';
+  sheet.innerHTML=h;
+  sheet.querySelector('.rts-x').onclick=close;
+  backdrop.classList.add('show');document.body.style.overflow='hidden';
+ }
+ chips();render();
+ [].forEach.call(document.querySelectorAll('.lng'),function(a){a.addEventListener('click',function(){setTimeout(function(){chips();render();},0);});});
+})();
+</script>"""
+    rentas_body = (rt_style +
+        '<h1><span class="es">Rentas en Tehuacán</span><span class="en">Rentals in Tehuacán</span></h1>'
+        '<p class="rt-intro"><span class="es">Casas, departamentos, locales, oficinas y terrenos en renta en '
+        'Tehuacán y su región. Listado inicial a partir de fuentes públicas; toca una tarjeta para ver los '
+        'detalles y abrir la publicación original. Las fotos son de referencia por tipo de propiedad.</span>'
+        '<span class="en">Houses, apartments, storefronts, offices and land for rent in Tehuacán and its region. '
+        'This first listing draws on public sources; tap a card for the details and to open the original post. '
+        'Photos are reference covers by property type.</span></p>'
+        '<div id="rtfilters" class="rt-filters"></div>'
+        '<div id="rtroot"></div>'
+        '<p class="muted" style="margin-top:22px;font-size:13px;color:var(--ink2)">'
+        '<span class="es">Datos de propiedades.com. ¿Rentas algo? Pronto podrás publicarlo aquí gratis.</span>'
+        '<span class="en">Data from propiedades.com. Renting something out? Soon you\'ll list it here free.</span></p>'
+        '<p class="muted" style="margin-top:10px"><a href="/">'
+        '<span class="es">← Volver al mapa de combis</span><span class="en">← Back to the combi map</span></a></p>'
+        + rt_script)
+    (APPROOT / "rentas").mkdir(parents=True, exist_ok=True)
+    (APPROOT / "rentas" / "index.html").write_text(
+        page("Rentas en Tehuacán, Puebla",
+             "Casas, departamentos, locales y terrenos en renta en Tehuacán y su región.",
+             rentas_body, f"{DOMAIN}/rentas/",
+             crumb_items=[(bi("Inicio", "Home"), "/"), (bi("Rentas", "Rentals"), None)],
+             title_en="Rentals in Tehuacán"),
         encoding="utf-8")
 
     # ---- /directorio : the service & store directory (app-of-apps module).
