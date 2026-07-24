@@ -31,21 +31,45 @@ final class AppRouter: ObservableObject {
 struct RootView: View {
     @EnvironmentObject var auth: AdminAuth
     @StateObject private var router = AppRouter()
+    @State private var showSplash = true
 
     var body: some View {
-        Group {
-            if auth.unlocked {
-                switch router.section {
-                case .rutas:          RouteListView()
-                case .patrocinadores: SponsorListView()
-                case .calcomanias:    StickerAdminView()
-                case .negocios:       NegocioListView()
+        ZStack {
+            if showSplash {
+                SplashView().transition(.opacity)
+            } else if auth.unlocked {
+                Group {
+                    switch router.section {
+                    case .rutas:          RouteListView()
+                    case .patrocinadores: SponsorListView()
+                    case .calcomanias:    StickerAdminView()
+                    case .negocios:       NegocioListView()
+                    }
                 }
             } else {
                 LoginGateView()     // gate the whole app: user + PIN before any section
             }
         }
         .environmentObject(router)
+        .task {
+            // Hold the dancer splash for at least 3s. The native LaunchScreen is
+            // instant once cached, so this SwiftUI splash (identical: dancer on
+            // white) continues it seamlessly, then reveals login/app.
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            withAnimation(.easeInOut(duration: 0.35)) { showSplash = false }
+        }
+    }
+}
+
+/// Full-screen dancer splash — matches LaunchScreen.storyboard so the native
+/// launch flows into it without a seam. Shown for a guaranteed minimum time.
+struct SplashView: View {
+    var body: some View {
+        ZStack {
+            Color.white.ignoresSafeArea()
+            Image("LaunchLogo").resizable().scaledToFit()
+                .frame(width: 200, height: 200)
+        }
     }
 }
 
@@ -58,14 +82,10 @@ struct LoginGateView: View {
     @State private var pin = ""
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             Spacer()
-            Image("LaunchLogo").resizable().scaledToFit()
-                .frame(width: 132, height: 132)
-                .padding(16)
-                .background(Color.white, in: RoundedRectangle(cornerRadius: 24))  // dancer always on white (readable in dark mode too)
-            Text("MiTehuacán").font(.title2.weight(.bold))
-            Text("Panel de administración").font(.subheadline).foregroundStyle(.secondary)
+            Text("MiTehuacán Admin").font(.title2.weight(.bold))
+            Text("Inicia sesión").font(.subheadline).foregroundStyle(.secondary)
 
             VStack(spacing: 12) {
                 HStack {
