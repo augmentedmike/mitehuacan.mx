@@ -1,0 +1,7 @@
+{
+  "_readme": "Facebook Pages to scrape for events (used by fb_pages.py). Each 'handle' is the part after facebook.com/ — a page username (e.g. 'MunicipioDeTehuacan') or its numeric id. 'town' is the default town for that page's events. REPLACE the placeholders below with the real official pages; the two here are UNVERIFIED guesses and likely wrong.",
+  "pages": [
+    { "handle": "AyuntamientoTehuacan", "town": "Tehuacán", "note": "UNVERIFIED — confirm the real municipal page handle" },
+    { "handle": "CasaCulturaTehuacan", "town": "Tehuacán", "note": "UNVERIFIED — confirm the real Casa de Cultura handle" }
+  ]
+}

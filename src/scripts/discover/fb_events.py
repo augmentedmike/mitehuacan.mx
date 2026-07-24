@@ -36,6 +36,13 @@ class FacebookEventsAgent(DiscoveryAgent):
         page.wait_for_timeout(6000)
         if (w := self.walled(page)):
             self.attention(page, w)
+        out = self._collect_grid(page, it["town"])
+        return self._enrich(page, out)
+
+    def _collect_grid(self, page, default_town):
+        """Scroll the current events grid (search results OR a page's events tab)
+        and pull one record per event card. Shared by the search agent and the
+        pages agent — both land the same fbev:<id> key so they dedupe at publish."""
         for _ in range(4):
             page.mouse.wheel(0, 2200)
             page.wait_for_timeout(1500)
@@ -59,13 +66,16 @@ class FacebookEventsAgent(DiscoveryAgent):
             # line 0 is usually the date; the title is the first longer non-date line
             date = lines[0]
             title = next((ln for ln in lines[1:] if len(ln) > 4 and not re.match(r"^\d+ (going|interested|personas)", ln, re.I)), lines[0])
-            loc = next((ln for ln in lines if any(t["name"].split()[0].lower() in ln.lower() for t in TOWNS)), it["town"])
+            loc = next((ln for ln in lines if any(t["name"].split()[0].lower() in ln.lower() for t in TOWNS)), default_town)
             seen.add(eid)
-            out.append({"key": "fbev:" + eid, "name": title[:90], "source": "fb_events",
+            out.append({"key": "fbev:" + eid, "name": title[:90], "source": self.NAME,
                         "category": "evento", "subcat": date[:40], "where": loc[:60],
                         "handle": None, "url": f"https://www.facebook.com/events/{eid}/",
                         "lat": None, "lon": None})
-        # deep-scrape each event page for the detail the search card doesn't carry
+        return out
+
+    def _enrich(self, page, out):
+        """Deep-scrape each event page for detail the card doesn't carry."""
         for rec in out[:self.DETAIL_CAP]:
             rec.update(self._details(page, rec["url"]))
             page.wait_for_timeout(700)
