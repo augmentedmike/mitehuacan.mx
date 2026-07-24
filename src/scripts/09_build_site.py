@@ -76,6 +76,7 @@ footer.site{margin-top:36px;padding:18px 16px calc(18px + env(safe-area-inset-bo
  border-top:1px solid var(--line);font-size:13px;color:var(--ink2)}
 footer.site .cols{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 footer.site a{color:var(--ink2)}
+footer.site .ft2{font-size:12.5px;opacity:.9}
 /* no desktop layout — mobile everywhere; on large screens the mobile column is
    wrapped in a phone frame (see the min-width:701px block at the end). */
 html[lang=en] .es{display:none!important}
@@ -134,6 +135,7 @@ NAV = f"""<header class="site">
 
 FOOTER = f"""<footer class="site"><div class="cols">
 <div><a href="/">Combis</a> · <a href="/eventos/"><span class="es">Eventos</span><span class="en">Events</span></a> · <a href="/descubre/"><span class="es">Descubre</span><span class="en">Discover</span></a> · <a href="/directorio/"><span class="es">Directorio</span><span class="en">Directory</span></a> · <a href="/roadmap/">Roadmap</a></div>
+<div class="ft2"><a href="/nosotros/"><span class="es">Nosotros</span><span class="en">About</span></a> · <a href="/nosotros/#unete"><span class="es">Únete al equipo</span><span class="en">Join the team</span></a> · <a href="/patrocinar/"><span class="es">Patrocina</span><span class="en">Sponsor</span></a> · <a href="/legal/privacidad/"><span class="es">Privacidad</span><span class="en">Privacy</span></a> · <a href="/legal/terminos/"><span class="es">Términos</span><span class="en">Terms</span></a></div>
 </div></footer>"""
 
 
@@ -916,6 +918,364 @@ render();
              roadmap_body, f"{DOMAIN}/roadmap/",
              crumb_items=[(bi("Inicio", "Home"), "/"), ("Roadmap", None)],
              title_en="Roadmap — MiTehuacán"),
+        encoding="utf-8")
+
+    # ---- /nosotros (company presence + join the team) and /patrocinar (sponsors),
+    # plus /legal/*. Copy grounded in what the code actually does — no fabricated
+    # contact info or metrics. Leads land in the existing feedback table (/api/feedback),
+    # tagged in the message so the founder can tell them apart in the review queue.
+    co_style = """<style>
+.co-hero{padding:8px 0 2px}
+.co-hero h1{font-size:30px;margin:0;letter-spacing:-.4px}
+.co-hero h1 span{color:var(--accent)}
+.lead{font-size:16.5px;color:var(--ink2);line-height:1.6;margin:12px 0 0;max-width:40em}
+.co-sec{margin:30px 0 0}
+.co-sec>h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin:0 0 12px;font-weight:700}
+.co-p{font-size:15px;color:var(--ink);line-height:1.65;margin:0 0 12px;max-width:40em}
+.co-p.mut{color:var(--ink2)}
+.co-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.co-card{padding:16px 17px;border:1px solid var(--line);border-radius:16px;background:var(--panel);
+ box-shadow:var(--shadow),inset 0 1px 0 var(--hl)}
+.co-card .k{font-weight:700;font-size:16px;margin:0 0 5px}
+.co-card p{font-size:14px;color:var(--ink2);line-height:1.58;margin:0}
+.tier{position:relative;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel);
+ box-shadow:var(--shadow),inset 0 1px 0 var(--hl);margin:0 0 14px}
+.tier .lvl{font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em}
+.tier h3{font-size:19px;margin:2px 0 1px}
+.tier .price{font-size:13.5px;color:var(--ink2);font-weight:600;margin:0 0 11px}
+.tier ul{margin:0;padding-left:19px;font-size:14.5px;line-height:1.65;color:var(--ink)}
+.tier ul li{margin:2px 0}
+.tier ul li::marker{color:var(--accent)}
+.tier.top{border-color:var(--livebrd);background:var(--livebg)}
+.tier .ribbon{position:absolute;top:15px;right:16px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent);color:#fff;box-shadow:0 2px 10px var(--accsh)}
+.ldwrap{margin:26px 0 0;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl)}
+.ldwrap h2{font-size:18px;margin:0 0 4px}
+.ldwrap .sub{font-size:13.5px;color:var(--ink2);margin:0 0 12px;line-height:1.55}
+.ldform{display:flex;flex-direction:column;gap:9px}
+.ldform textarea,.ldform input.fb-contact,.ldform select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+.ldform textarea{min-height:76px;resize:vertical}
+.ldform textarea:focus,.ldform input:focus,.ldform select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.ldform button{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px;font:inherit;font-weight:600;cursor:pointer}
+.fb-hp{display:none!important}
+.fb-thanks{color:var(--accent);font-weight:600;margin:6px 0}
+.note{margin:20px 0 0;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--chip);font-size:13px;color:var(--ink2);line-height:1.55}
+.co-legal{margin:24px 0 0;font-size:13px;color:var(--ink2);line-height:1.6}
+.co-legal a{color:var(--accent);text-decoration:none}
+.lg{max-width:42em}
+.lg h1{font-size:27px;margin:0 0 4px}
+.lg .upd{font-size:13px;color:var(--ink2);margin:0 0 20px}
+.lg h2{font-size:17px;margin:24px 0 8px}
+.lg p{font-size:14.5px;line-height:1.65;color:var(--ink);margin:0 0 10px}
+.lg ul{padding-left:20px;margin:0 0 10px}
+.lg li{font-size:14.5px;line-height:1.6;color:var(--ink);margin:3px 0}
+.lg a{color:var(--accent)}
+</style>"""
+    LEAD_JS = """<script>
+document.querySelectorAll('.ldform').forEach(function(f){
+ f.addEventListener('submit',function(e){e.preventDefault();
+  var hp=f.querySelector('.fb-hp').value;
+  var msg=f.querySelector('textarea').value.trim();
+  if(!hp&&msg.length<5)return;
+  var sel=f.querySelector('select');var role=sel&&sel.value?sel.value:'';
+  var tag=f.dataset.tag||'';
+  var full=(tag?'['+tag+(role?' · '+role:'')+'] ':'')+msg;
+  f.querySelector('button').disabled=true;
+  fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   kind:'idea',message:full,contact:f.querySelector('.fb-contact').value.trim(),page:location.pathname,website:hp
+  })}).then(function(){ldthx(f);}).catch(function(){ldthx(f);});
+ });
+});
+function ldthx(f){var en=document.documentElement.lang==='en';
+ f.innerHTML='<p class="fb-thanks">'+(en?'Thanks — we\\'ll be in touch soon.':'¡Gracias! Te contactamos pronto.')+'</p>';}
+</script>"""
+
+    def lead_form(tag, anchor, title_es, title_en, sub_es, sub_en, ph_es, ph_en, options):
+        opts = ''.join('<option>' + html.escape(o) + '</option>' for o in options)
+        select = ('<select aria-label="' + html.escape(title_es) + '">'
+                  '<option value="" selected>' + html.escape('Elige una opción / Choose one') + '</option>'
+                  + opts + '</select>') if options else ''
+        return ('<div class="ldwrap" id="' + anchor + '">'
+                '<h2>' + bi(title_es, title_en) + '</h2>'
+                '<p class="sub">' + bi(sub_es, sub_en) + '</p>'
+                '<form class="ldform" data-tag="' + tag + '">'
+                + select +
+                '<textarea required maxlength="1500" data-ph-es="' + html.escape(ph_es) + '" '
+                'data-ph-en="' + html.escape(ph_en) + '" placeholder="' + html.escape(ph_es) + '"></textarea>'
+                '<input type="text" maxlength="120" class="fb-contact" '
+                'data-ph-es="WhatsApp (así te contactamos)" data-ph-en="WhatsApp (so we can reach you)" '
+                'placeholder="WhatsApp (así te contactamos)">'
+                '<input type="text" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">'
+                '<button type="submit">' + bi('Enviar', 'Send') + '</button>'
+                '</form></div>')
+
+    def co_card(t_es, t_en, d_es, d_en):
+        return ('<div class="co-card"><div class="k">' + bi(t_es, t_en) + '</div>'
+                '<p>' + bi(d_es, d_en) + '</p></div>')
+
+    def tier(lvl, name_es, name_en, price_es, price_en, feats, top=False, ribbon=None):
+        lis = ''.join('<li>' + bi(a, b) + '</li>' for a, b in feats)
+        rib = ('<span class="ribbon">' + bi(ribbon[0], ribbon[1]) + '</span>') if ribbon else ''
+        cls = 'tier top' if top else 'tier'
+        return ('<div class="' + cls + '">' + rib
+                + '<div class="lvl">' + bi('Nivel ' + lvl, 'Level ' + lvl) + '</div>'
+                '<h3>' + bi(name_es, name_en) + '</h3>'
+                '<p class="price">' + bi(price_es, price_en) + '</p>'
+                '<ul>' + lis + '</ul></div>')
+
+    # ---- /nosotros
+    nosotros_body = co_style + (
+        '<div class="co-hero"><h1>' + bi('Nosotros', 'About us') + '</h1>'
+        '<p class="lead">' + bi(
+            'MiTehuacán es un proyecto local, sin financiamiento externo, hecho por y para tehuacaneros. '
+            'Estamos construyendo el portal digital de la ciudad —empezando por las combis— y buscamos '
+            'gente de aquí para llevarlo al siguiente nivel.',
+            'MiTehuacán is a local project, with no outside funding, built by and for the people of Tehuacán. '
+            'We are building the city\'s digital portal —starting with the combis— and we\'re looking for '
+            'local people to take it to the next level.') + '</p></div>'
+        '<div class="co-sec"><h2>' + bi('Qué estamos construyendo', 'What we\'re building') + '</h2>'
+        '<p class="co-p">' + bi(
+            'Hoy: un mapa con más de 80 rutas de combi y un planificador de viajes, gratis y sin cuenta. '
+            'Sigue: eventos de la ciudad, un directorio de negocios y una herramienta para planear fiestas. '
+            'La meta a largo plazo es simple: ser el primer lugar donde buscas cuando necesitas algo en Tehuacán.',
+            'Today: a map with 80+ combi routes and a trip planner, free and with no account. '
+            'Next: city events, a business directory, and a party-planning tool. '
+            'The long-term goal is simple: to be the first place you look when you need anything in Tehuacán.')
+        + '</p>'
+        '<p class="co-p mut">' + bi(
+            'Todo lo que hace un vecino es gratis. El mapa y sus datos son abiertos (ODbL). '
+            'Crecemos de forma orgánica, por los códigos QR pegados en los combis —no con presupuesto de publicidad.',
+            'Everything a resident does is free. The map and its data are open (ODbL). '
+            'We grow organically, through the QR codes stuck inside the combis —not with an ad budget.')
+        + '</p></div>'
+        '<div class="co-sec"><h2>' + bi('Únete al equipo', 'Join the team') + '</h2>'
+        '<p class="co-p">' + bi(
+            'Somos pocos y apenas empezamos. Si eres de Tehuacán y quieres construir algo que use toda la ciudad, '
+            'hay lugar para ti en uno de estos tres frentes:',
+            'We\'re a small team and just getting started. If you\'re from Tehuacán and want to build something the '
+            'whole city uses, there\'s a place for you on one of these three fronts:') + '</p>'
+        '<div class="co-grid">'
+        + co_card('Estudiantes', 'Students',
+            'Servicio social, prácticas profesionales o un portafolio real: programación, diseño, mapas y GIS, '
+            'mercadotecnia y contenido. Trabaja en un producto vivo y llévate experiencia que sí cuenta.',
+            'Social service, internships, or a real portfolio: programming, design, maps and GIS, marketing and '
+            'content. Work on a live product and walk away with experience that actually counts.')
+        + co_card('Ventas y promotores', 'Sales & promoters',
+            'Da de alta negocios y patrocinadores, corredor por corredor. Pago por resultados. '
+            'Si sabes tocar puertas y te mueves por las calles de Tehuacán, esto es para ti.',
+            'Sign up businesses and sponsors, corridor by corridor. Pay for results. '
+            'If you know how to knock on doors and move around the streets of Tehuacán, this is for you.')
+        + co_card('Socios de negocio', 'Business partners',
+            'Imprenta, publicidad, alianzas con líneas de combi o capital semilla local. '
+            '¿Tienes un negocio o un recurso que embona con esto? Hablemos.',
+            'Printing, advertising, partnerships with combi lines, or local seed capital. '
+            'Do you have a business or a resource that fits with this? Let\'s talk.')
+        + '</div></div>'
+        + lead_form('EQUIPO', 'unete', 'Quiero unirme', 'I want to join',
+            'Cuéntanos quién eres y cómo quieres sumarte. Te contactamos por WhatsApp.',
+            'Tell us who you are and how you\'d like to help. We\'ll reach you on WhatsApp.',
+            'Ej: soy estudiante de sistemas y me interesa el servicio social…',
+            'e.g. I\'m a CS student interested in doing social service…',
+            ['Estudiante / servicio social', 'Ventas / promotor', 'Socio de negocio', 'Otro'])
+        + '<p class="co-legal">' + bi('Al colaborar con nosotros aceptas nuestros ',
+            'By collaborating with us you accept our ')
+        + '<a href="/legal/terminos/">' + bi('Términos', 'Terms') + '</a>'
+        + bi(' y el ', ' and our ')
+        + '<a href="/legal/privacidad/">' + bi('Aviso de Privacidad', 'Privacy Notice') + '</a>.</p>'
+        + LEAD_JS)
+    (APPROOT / "nosotros").mkdir(parents=True, exist_ok=True)
+    (APPROOT / "nosotros" / "index.html").write_text(
+        page("Nosotros — MiTehuacán",
+             "MiTehuacán es un proyecto local sin financiamiento, hecho por y para tehuacaneros. "
+             "Buscamos estudiantes, promotores de ventas y socios de negocio para llevarlo al siguiente nivel.",
+             nosotros_body, f"{DOMAIN}/nosotros/",
+             crumb_items=[(bi("Inicio", "Home"), "/"), (bi("Nosotros", "About"), None)],
+             title_en="About — MiTehuacán"),
+        encoding="utf-8")
+
+    # ---- /patrocinar
+    patrocinar_body = co_style + (
+        '<div class="co-hero"><h1>' + bi('Patrocina MiTehuacán', 'Sponsor MiTehuacán') + '</h1>'
+        '<p class="lead">' + bi(
+            'Cada día, miles de personas se suben a un combi en Tehuacán. Tu marca puede viajar con ellas: '
+            'en el sticker con código QR que abre el mapa, y en el mapa mismo.',
+            'Every day, thousands of people board a combi in Tehuacán. Your brand can ride with them: '
+            'on the QR sticker that opens the map, and on the map itself.') + '</p></div>'
+        '<div class="co-sec"><h2>' + bi('Por qué funciona', 'Why it works') + '</h2>'
+        '<div class="co-grid">'
+        + co_card('El QR es la puerta', 'The QR is the doorway',
+            'Cada combi lleva un sticker con QR que abre el mapa. Tu logo va justo en esa puerta, la que la gente escanea.',
+            'Every combi carries a QR sticker that opens the map. Your logo sits right on that doorway —the one people scan.')
+        + co_card('Presencia diaria', 'Daily presence',
+            'El combi es el medio más visto de la ciudad. Tu marca se ve en cada viaje, todos los días.',
+            'The combi is the most-seen medium in the city. Your brand shows on every trip, every day.')
+        + co_card('Local y medible', 'Local and measurable',
+            'Pines en el mapa por ruta y por zona, cerca de donde de verdad están tus clientes.',
+            'Pins on the map by route and area, close to where your customers actually are.')
+        + co_card('Apoyas algo de aquí', 'You back something local',
+            'Patrocinar mantiene gratis un servicio para toda la ciudad. Tu marca queda del lado bueno.',
+            'Sponsoring keeps a citywide service free. Your brand ends up on the right side of it.')
+        + '</div></div>'
+        '<div class="co-sec"><h2>' + bi('Niveles de patrocinio', 'Sponsorship levels') + '</h2>'
+        + tier('1', 'Aliado', 'Ally', 'desde $199 MXN / mes · una ruta', 'from $199 MXN / mo · one route', [
+            ('Tu logo en los stickers con QR dentro de los combis de una ruta.',
+             'Your logo on the QR stickers inside one route\'s combis.'),
+            ('Mención como aliado en esta página.', 'Listed as an ally on this page.')])
+        + tier('2', 'Presencia', 'Presence', 'desde $399 MXN / mes', 'from $399 MXN / mo', [
+            ('Todo lo del Nivel 1.', 'Everything in Level 1.'),
+            ('Un mini-mapa de tus sucursales impreso en el sticker.', 'A mini-map of your locations printed on the sticker.'),
+            ('Pin de tu negocio en el mapa en vivo, como destino.', 'A pin for your business on the live map, as a destination.')])
+        + tier('3', 'Destacado', 'Featured', 'desde $799 MXN / mes · varias rutas', 'from $799 MXN / mo · several routes', [
+            ('Todo lo del Nivel 2, en varias rutas o un corredor completo.', 'Everything in Level 2, across several routes or a whole corridor.'),
+            ('Logo y pin destacado en la app para las rutas que pasan cerca de ti.', 'Featured logo and pin in the app for routes that pass near you.'),
+            ('Apareces como "Recomendado" en tu categoría y zona.', 'You appear as "Recommended" in your category and area.')],
+            top=True, ribbon=('Más popular', 'Most popular'))
+        + tier('4', 'Socio de temporada', 'Season partner', 'a convenir · prepago por temporada', 'let\'s talk · prepaid by season', [
+            ('Presencia en toda la ciudad, no solo una ruta.', 'Presence across the whole city, not just one route.'),
+            ('Colocación prioritaria y co-branding en materiales impresos.', 'Priority placement and co-branding on printed materials.'),
+            ('Sé el patrocinador ancla de tu categoría.', 'Be the anchor sponsor for your category.')])
+        + '<p class="note">' + bi(
+            'Precios de lanzamiento, indicativos. Se ajustan por ruta, zona y temporada, y hay opción de trueque '
+            '(imprenta, publicidad, servicios). El acuerdo final siempre se firma por escrito.',
+            'Indicative launch prices. They adjust by route, area and season, and barter is possible '
+            '(printing, advertising, services). The final agreement is always put in writing.') + '</p></div>'
+        + lead_form('PATROCINIO', 'contacto', 'Quiero patrocinar', 'I want to sponsor',
+            'Dinos qué nivel te interesa y de qué es tu negocio. Te mandamos los detalles por WhatsApp.',
+            'Tell us which level interests you and what your business is. We\'ll send details on WhatsApp.',
+            'Ej: tengo una farmacia en El Paseo, me interesa el Nivel 2…',
+            'e.g. I run a pharmacy on El Paseo, I\'m interested in Level 2…',
+            ['Nivel 1 · Logo en sticker', 'Nivel 2 · Logo + mini-mapa', 'Nivel 3 · Destacado en el mapa',
+             'Nivel 4 · Socio de temporada', 'Trueque / otro'])
+        + '<p class="co-legal">' + bi('Consulta nuestros ', 'See our ')
+        + '<a href="/legal/terminos/">' + bi('Términos', 'Terms') + '</a>'
+        + bi(' y ', ' and ')
+        + '<a href="/legal/privacidad/">' + bi('Aviso de Privacidad', 'Privacy Notice') + '</a>.</p>'
+        + LEAD_JS)
+    (APPROOT / "patrocinar").mkdir(parents=True, exist_ok=True)
+    (APPROOT / "patrocinar" / "index.html").write_text(
+        page("Patrocina — MiTehuacán",
+             "Pon tu marca donde se mueve la ciudad: en los stickers con QR de los combis y en el mapa en vivo. "
+             "Cuatro niveles de patrocinio, desde tu logo en el sticker hasta socio de temporada.",
+             patrocinar_body, f"{DOMAIN}/patrocinar/",
+             crumb_items=[(bi("Inicio", "Home"), "/"), (bi("Patrocina", "Sponsor"), None)],
+             title_en="Sponsor — MiTehuacán"),
+        encoding="utf-8")
+
+    # ---- /legal/privacidad + /legal/terminos. Grounded in the actual code:
+    # no login, no ad networks, no third-party trackers; IPs are one-way hashed
+    # for rate-limiting (see functions/api/feedback.js, reportes.js); form contact
+    # and self-listed businesses are the only personal data stored.
+    priv_es = (
+        '<h1>Aviso de Privacidad</h1><p class="upd">Última actualización: julio 2026</p>'
+        '<p>MiTehuacán es un proyecto local en Tehuacán, Puebla. Este aviso explica qué datos tratamos y cómo. '
+        'En resumen: pedimos lo mínimo, no vendemos nada y no te rastreamos con publicidad.</p>'
+        '<h2>Qué NO hacemos</h2><ul>'
+        '<li>No necesitas cuenta ni contraseña para usar el mapa.</li>'
+        '<li>No usamos redes de publicidad ni rastreadores de terceros.</li>'
+        '<li>No vendemos ni compartimos tus datos con terceros para publicidad.</li>'
+        '<li>No enviamos correo no deseado.</li></ul>'
+        '<h2>Qué datos tratamos</h2><ul>'
+        '<li><b>Uso del mapa:</b> conteos anónimos y agregados. Tu dirección IP se convierte en un identificador '
+        'irreversible (hash) solo para evitar spam; no la guardamos en claro.</li>'
+        '<li><b>Formularios (ideas, unirte al equipo, patrocinar):</b> guardamos tu mensaje y el contacto que nos '
+        'dejes (por ejemplo tu WhatsApp o nombre) para responderte.</li>'
+        '<li><b>Alta de negocios:</b> los datos que publicas de tu negocio (nombre, categoría, contacto) se muestran '
+        'de forma pública en el directorio, porque ese es su propósito.</li></ul>'
+        '<h2>Para qué los usamos</h2>'
+        '<p>Únicamente para operar el servicio: mostrar el directorio, responderte, moderar contenido y evitar abuso. '
+        'Nada más.</p>'
+        '<h2>Tus derechos</h2>'
+        '<p>Puedes acceder, rectificar, cancelar u oponerte al tratamiento de tus datos (derechos ARCO, conforme a la '
+        'ley mexicana). Escríbenos desde el formulario de <a href="/nosotros/#unete">Nosotros</a> y atenderemos tu '
+        'solicitud.</p>'
+        '<h2>Cambios</h2>'
+        '<p>Si este aviso cambia, actualizaremos la fecha de arriba. El uso continuo del servicio implica la '
+        'aceptación de la versión vigente.</p>')
+    priv_en = (
+        '<h1>Privacy Notice</h1><p class="upd">Last updated: July 2026</p>'
+        '<p>MiTehuacán is a local project in Tehuacán, Puebla. This notice explains what data we handle and how. '
+        'In short: we ask for the minimum, we sell nothing, and we don\'t track you with advertising.</p>'
+        '<h2>What we do NOT do</h2><ul>'
+        '<li>You don\'t need an account or password to use the map.</li>'
+        '<li>We use no ad networks and no third-party trackers.</li>'
+        '<li>We don\'t sell or share your data with third parties for advertising.</li>'
+        '<li>We don\'t send spam.</li></ul>'
+        '<h2>What data we handle</h2><ul>'
+        '<li><b>Map usage:</b> anonymous, aggregate counts. Your IP address is turned into an irreversible identifier '
+        '(a hash) only to prevent spam; we don\'t store it in the clear.</li>'
+        '<li><b>Forms (ideas, joining the team, sponsoring):</b> we store your message and any contact you leave '
+        '(such as your WhatsApp or name) so we can reply.</li>'
+        '<li><b>Business listings:</b> the business data you publish (name, category, contact) is shown publicly in '
+        'the directory, because that is its purpose.</li></ul>'
+        '<h2>What we use it for</h2>'
+        '<p>Only to run the service: show the directory, reply to you, moderate content, and prevent abuse. '
+        'Nothing else.</p>'
+        '<h2>Your rights</h2>'
+        '<p>You may access, rectify, cancel, or object to the handling of your data (ARCO rights, under Mexican law). '
+        'Write to us from the form on <a href="/nosotros/#unete">About</a> and we\'ll handle your request.</p>'
+        '<h2>Changes</h2>'
+        '<p>If this notice changes, we\'ll update the date above. Continued use of the service means you accept the '
+        'current version.</p>')
+    terms_es = (
+        '<h1>Términos de Uso</h1><p class="upd">Última actualización: julio 2026</p>'
+        '<p>Al usar MiTehuacán aceptas estos términos. Están escritos en lenguaje sencillo a propósito.</p>'
+        '<h2>El servicio</h2>'
+        '<p>MiTehuacán es un servicio gratuito e informativo para Tehuacán y su región. Hacemos nuestro mejor '
+        'esfuerzo para que la información sea correcta, pero las rutas, horarios y tarifas de los combis cambian; '
+        'no somos una autoridad de transporte y no garantizamos exactitud. Verifica antes de viajar.</p>'
+        '<h2>Contenido que aportas</h2>'
+        '<p>Si das de alta un negocio, envías una idea o reportas algo, confirmas que la información es tuya o tienes '
+        'derecho a compartirla, y que es veraz. Podemos moderar, editar o quitar contenido que sea falso, spam o '
+        'inapropiado.</p>'
+        '<h2>Datos abiertos</h2>'
+        '<p>Los datos del mapa (rutas y trazos) se comparten bajo la Open Database License (ODbL) 1.0, con '
+        'atribución a OpenStreetMap y a los proyectos ciudadanos de mapeo de la región.</p>'
+        '<h2>Patrocinadores y colaboradores</h2>'
+        '<p>Los patrocinios y las colaboraciones pagadas se rigen por un acuerdo por escrito aparte. Los precios '
+        'publicados en <a href="/patrocinar/">Patrocina</a> son indicativos y de lanzamiento.</p>'
+        '<h2>Sin garantía</h2>'
+        '<p>El servicio se ofrece "tal cual". No nos hacemos responsables de decisiones tomadas con base en la '
+        'información del sitio. Úsalo con criterio.</p>'
+        '<h2>Contacto</h2>'
+        '<p>¿Dudas? Escríbenos desde el formulario de <a href="/nosotros/#unete">Nosotros</a>.</p>')
+    terms_en = (
+        '<h1>Terms of Use</h1><p class="upd">Last updated: July 2026</p>'
+        '<p>By using MiTehuacán you accept these terms. They\'re written in plain language on purpose.</p>'
+        '<h2>The service</h2>'
+        '<p>MiTehuacán is a free, informational service for Tehuacán and its region. We do our best to keep the '
+        'information correct, but combi routes, schedules, and fares change; we\'re not a transit authority and we '
+        'don\'t guarantee accuracy. Check before you travel.</p>'
+        '<h2>Content you contribute</h2>'
+        '<p>If you list a business, send an idea, or report something, you confirm the information is yours or you '
+        'have the right to share it, and that it\'s truthful. We may moderate, edit, or remove content that is false, '
+        'spam, or inappropriate.</p>'
+        '<h2>Open data</h2>'
+        '<p>The map data (routes and traces) is shared under the Open Database License (ODbL) 1.0, with attribution '
+        'to OpenStreetMap and to the region\'s citizen mapping projects.</p>'
+        '<h2>Sponsors and collaborators</h2>'
+        '<p>Sponsorships and paid collaborations are governed by a separate written agreement. Prices published on '
+        '<a href="/patrocinar/">Sponsor</a> are indicative and introductory.</p>'
+        '<h2>No warranty</h2>'
+        '<p>The service is provided "as is." We\'re not responsible for decisions made based on the information on '
+        'the site. Use good judgment.</p>'
+        '<h2>Contact</h2>'
+        '<p>Questions? Write to us from the form on <a href="/nosotros/#unete">About</a>.</p>')
+    priv_body = co_style + '<div class="lg"><div class="es">' + priv_es + '</div><div class="en">' + priv_en + '</div></div>'
+    terms_body = co_style + '<div class="lg"><div class="es">' + terms_es + '</div><div class="en">' + terms_en + '</div></div>'
+    (APPROOT / "legal" / "privacidad").mkdir(parents=True, exist_ok=True)
+    (APPROOT / "legal" / "privacidad" / "index.html").write_text(
+        page("Aviso de Privacidad — MiTehuacán",
+             "Cómo trata MiTehuacán tus datos: lo mínimo, sin publicidad ni rastreadores de terceros.",
+             priv_body, f"{DOMAIN}/legal/privacidad/",
+             crumb_items=[(bi("Inicio", "Home"), "/"), (bi("Privacidad", "Privacy"), None)],
+             title_en="Privacy Notice — MiTehuacán"),
+        encoding="utf-8")
+    (APPROOT / "legal" / "terminos").mkdir(parents=True, exist_ok=True)
+    (APPROOT / "legal" / "terminos" / "index.html").write_text(
+        page("Términos de Uso — MiTehuacán",
+             "Los términos de uso de MiTehuacán, en lenguaje sencillo: servicio gratuito, datos abiertos ODbL.",
+             terms_body, f"{DOMAIN}/legal/terminos/",
+             crumb_items=[(bi("Inicio", "Home"), "/"), (bi("Términos", "Terms"), None)],
+             title_en="Terms of Use — MiTehuacán"),
         encoding="utf-8")
 
     # ---- redirects (QR stickers + legacy paths) + a real 404.
