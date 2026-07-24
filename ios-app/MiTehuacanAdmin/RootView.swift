@@ -84,7 +84,9 @@ struct LoginGateView: View {
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
-            Text("MiTehuacán Admin").font(.title2.weight(.bold))
+            Image("BrandLogo").resizable().scaledToFit()
+                .frame(width: 160, height: 160)
+                .accessibilityLabel("MiTehuacán")
             Text("Inicia sesión").font(.subheadline).foregroundStyle(.secondary)
 
             VStack(spacing: 12) {
@@ -129,9 +131,13 @@ struct SectionTitle: View {
 
     var body: some View {
         Menu {
-            Picker("Sección", selection: $router.section) {
-                ForEach(AppSection.allCases) { s in
-                    Label(s.rawValue, systemImage: s.icon).tag(s)
+            // Explicit buttons (not a Picker) so the menu anchors to the title and
+            // flips to stay on screen — a Picker-in-Menu mis-positioned when scrolled.
+            ForEach(AppSection.allCases) { s in
+                Button {
+                    router.section = s
+                } label: {
+                    Label(s.rawValue, systemImage: router.section == s ? "checkmark" : s.icon)
                 }
             }
         } label: {
@@ -141,6 +147,7 @@ struct SectionTitle: View {
             }
             .contentShape(Rectangle())
         }
+        .menuOrder(.fixed)          // keep sections in declared order, anchored to the title
         .foregroundStyle(.primary)
     }
 }
