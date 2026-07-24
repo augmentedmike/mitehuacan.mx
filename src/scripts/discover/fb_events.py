@@ -93,14 +93,14 @@ class FacebookEventsAgent(DiscoveryAgent):
         if self.walled(page):
             return {}                      # logged out for this page — skip, don't kill the run
         d = {}
-        # og: tags are the most reliable structured data on an event page
-        for prop, field in (("og:image", "image"), ("og:description", "_ogdesc")):
-            try:
-                v = page.get_attribute(f'meta[property="{prop}"]', "content")
-                if v:
-                    d[field] = v
-            except Exception:  # noqa: BLE001
-                pass
+        # og:description is a reliable fallback blurb. (og:image is a lookaside
+        # crawler URL that won't hotlink onto our page, so we don't use it.)
+        try:
+            v = page.get_attribute('meta[property="og:description"]', "content")
+            if v:
+                d["_ogdesc"] = v
+        except Exception:  # noqa: BLE001
+            pass
         try:
             body = page.inner_text("body", timeout=4000)
         except Exception:  # noqa: BLE001
