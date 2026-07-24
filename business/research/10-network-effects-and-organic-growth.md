@@ -143,8 +143,10 @@ Everything collapses to this. Each section must map onto it or it does not belon
 - **One loop** — the invitation. "Invite your people to a thing." Fiestas, grupos,
   events. The only compounding growth engine; invest here disproportionately.
 - **One moat** — local density + verified reviews in a single city (§6).
-- **One rail** — self-serve OXXO/SPEI boost, webhook auto-publish. No salesperson,
-  no collections. (Already the design in Phase 2 §8.)
+- **One rail** — prepaid collection via SPEI/OXXO/bank. **Paid deals are salesperson-closed
+  with digital collection** (against the contract); a self-serve webhook is the *secondary*
+  channel. Growth (above) stays organic/free. See
+  [`../../financials/revenue-model-of-record.md`](../../financials/revenue-model-of-record.md) §2.1.
 
 ## 8. Verdicts on the three July-2026 ideas
 

@@ -1,3 +1,9 @@
+> **PARTIALLY SUPERSEDED (2026-07-24).** The **monthly-subscription** framing here is dead —
+> see [`financials/revenue-model-of-record.md`](financials/revenue-model-of-record.md)
+> (prepaid paquetes/seasons, no subscriptions). The route-sponsorship product and the
+> contract/SPEI **collection** flow it describes are **re-activated** as the sales-closed,
+> digitally-collected path (that model §2.1). Read the pricing/plan here as historical.
+
 # PRD — Phase 2: Sponsorship revenue
 
 **Status:** Written down 2026-07-14 (build after launch traction) · **Owner:** project owner

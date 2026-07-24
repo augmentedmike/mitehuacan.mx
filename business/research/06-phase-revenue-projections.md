@@ -1,3 +1,9 @@
+> **SUPERSEDED (2026-07-24).** These projections assume the sales-led, subscription model.
+> The revenue model of record is
+> [`../../financials/revenue-model-of-record.md`](../../financials/revenue-model-of-record.md);
+> the numbers here must be rebuilt on it (prepaid/referral, no subscriptions) before being
+> cited as forward figures.
+
 # Revenue Projections by Phase
 
 All figures in MXN. Each phase launches after the previous one (3 months apart) and

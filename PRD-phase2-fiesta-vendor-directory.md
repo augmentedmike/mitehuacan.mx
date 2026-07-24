@@ -11,6 +11,12 @@
 
 ---
 
+> **GTM note (2026-07-24):** Free self-serve listing (this PRD) stands. But paid upgrades
+> are closed by a **human salesperson** with **digital collection** (SPEI/OXXO/bank) against
+> the contract; the self-serve pay-link/webhook is the **secondary** channel, not the only
+> path. Growth stays organic/free. See
+> [`financials/revenue-model-of-record.md`](financials/revenue-model-of-record.md) §2.1.
+
 ## 1. Problem
 
 We have a live transport map with organic daily users (combi QR stickers) and a

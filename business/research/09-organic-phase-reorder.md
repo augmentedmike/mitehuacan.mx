@@ -7,6 +7,15 @@ document supersedes the phase ordering in `04-roadmap.md`,
 `05-marketplace-monetization-strategy.md`, and the letter scheme (A–G) in
 `financials/projections/`. Where those conflict with this doc, this doc wins.*
 
+> **CORRECTION (2026-07-24).** The **phase order** here stands and remains canonical
+> (supply → demand → money). But this doc's **"no sales team / no cash-collection staff"
+> premise is superseded.** Per
+> [`../../financials/revenue-model-of-record.md`](../../financials/revenue-model-of-record.md)
+> §2.1: **growth** is organic and free (as described here), but **monetization** is closed
+> by a **human salesperson** with **digital collection** (SPEI/OXXO/bank) against the
+> contract — not cash cobranza. This re-validates [`../marketing-plan.md`](../marketing-plan.md)
+> and `../roles/03-revenue-forecast-12mo.md` on the sales question.
+
 ---
 
 ## 1. Why the old ordering is invalid

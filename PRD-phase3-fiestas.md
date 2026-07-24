@@ -14,6 +14,11 @@ plan-a-thing graph reuses this loop)
 
 ---
 
+> **GTM note (2026-07-24):** Fiestas and free vendor leads stay organic/free. Paid
+> placement (§7b) is closed by a **human salesperson** with **digital collection**
+> (SPEI/OXXO/bank) against the contract; the self-serve pay-link is the secondary channel.
+> See [`financials/revenue-model-of-record.md`](financials/revenue-model-of-record.md) §2.1.
+
 ## 1. Problem
 
 Phase 2 seeds **supply** — fiesta vendors self-list via QR into `negocios`. But a

@@ -7,9 +7,11 @@ canonical growth + monetization thinking.**
 ## The arc in one line
 
 > Give the map away (transport, live) → seed supply via QR (directory) → turn on the
-> **viral loop** (fiesta invitations) → monetize **self-serve, prepaid, cash-native**
-> (freemium pages + boosts) → repeat the playbook per section. **Supply before demand
-> before money.**
+> **viral loop** (fiesta invitations) → monetize **sales-closed, prepaid, digitally
+> collected** (referral primitive: sponsorship + pages + boosts + referrals) → repeat the
+> playbook per section. **Supply before demand before money.** Growth is organic/free;
+> monetization is a human salesperson with digital collection — see
+> [`../../financials/revenue-model-of-record.md`](../../financials/revenue-model-of-record.md).
 
 ## Foundational (the original vision — partly superseded)
 
@@ -42,11 +44,13 @@ canonical growth + monetization thinking.**
 | 10 | `10-network-effects-and-organic-growth.md` | **Validates the path under a network-effects lens.** Distribution-primitive vs viral-loop vs NFX; the **plan-a-thing graph**; frequency ladder; "one city completely" moat; verdicts on double-dating / fiesta-loop / home-services; kill criteria. Identifies the keystone |
 | 11 | `11-storefront-freemium-monetization.md` | Freemium **store pages sold as prepaid seasons, not subscriptions**; promotions = the missing weekly habit; media tier funds its own R2 cost. Supersedes the $300/mo framing in `financials/projections/b-…` |
 | 12 | `12-seed-then-monetize-playbook.md` | Per-section GTM: seed 2–3 free **anchor-tenant** partnerships → flip newcomers to paid once pull is proven → **grandfather the anchors free forever**. Supersedes fake-logo seeding in `PRD-revenue.md` §3 |
+| 13 | `13-consistency-audit.md` | Cross-doc gaps/inconsistencies audit (4 clusters) + resolution status after the two revenue decisions |
 
 ## Related canonical docs (outside this folder)
 
 | Path | What it is |
 |---|---|
+| `../../financials/revenue-model-of-record.md` | **The canonical revenue model** — six lines on the referral primitive; growth organic/free, monetization sales-closed + digitally collected, prepaid, no rake, no subscriptions |
 | `../../PRD-phase2-fiesta-vendor-directory.md` | The self-serve, QR-seeded vendor **supply** layer (live) |
 | `../../PRD-phase3-fiestas.md` | **The keystone** — the fiesta **invitation loop** (the viral engine) + the earned-vs-paid trust rule for the fiesta recommendation (§7b) |
 | `../../docs/payments-rail-spec.md` | The build spec: **one webhook, three grants** (Página / directory boost / fiesta boost), schema-first |

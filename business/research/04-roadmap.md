@@ -1,3 +1,9 @@
+> **SUPERSEDED (2026-07-24).** The phase order here (Fiestas at Phase 7, sales-led) is
+> replaced by [`09-organic-phase-reorder.md`](09-organic-phase-reorder.md) and
+> [`10-network-effects-and-organic-growth.md`](10-network-effects-and-organic-growth.md);
+> the revenue model by [`../../financials/revenue-model-of-record.md`](../../financials/revenue-model-of-record.md).
+> Kept for the vision narrative. Do not treat its ordering or pricing as current.
+
 mitehuacan.mx Roadmap
 Building the Digital Homepage of Tehuacán
 Our Vision

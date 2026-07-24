@@ -20,6 +20,12 @@ Grounded in [`financials/phase2-revenue-capture.md`](../../financials/phase2-rev
 
 ---
 
+> **GTM note (2026-07-24):** Paid deals are closed by a **human salesperson** with
+> **digital collection** (SPEI/OXXO/bank) against the contract; any "self-serve /
+> no-salesperson / webhook auto-publish" flow below is the **secondary** channel, not the
+> only path. **Growth stays organic and free.** See
+> [`../../financials/revenue-model-of-record.md`](../../financials/revenue-model-of-record.md) §2.1.
+
 ## 1. The idea, stated
 
 Every business in the directory (`negocios`) gets its own **page**. A **freemium

@@ -1,3 +1,9 @@
+> **SUPERSEDED (2026-07-24).** This phase list (with Fiestas at 5, plus Reviews/Restaurants
+> phases that exist in no other doc) is replaced by
+> [`09-organic-phase-reorder.md`](09-organic-phase-reorder.md); the revenue model by
+> [`../../financials/revenue-model-of-record.md`](../../financials/revenue-model-of-record.md).
+> Kept for history. Do not treat its ordering or pricing as current.
+
 Marketplace Monetization Strategy
 Every Feature Creates Demand. Businesses Pay to Meet It.
 Our philosophy is simple:

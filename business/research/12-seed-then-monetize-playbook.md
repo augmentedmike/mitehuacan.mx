@@ -15,6 +15,11 @@ placeholder logos cannot.*
 
 ---
 
+> **GTM note (2026-07-24):** The "flip to paid" step below is closed by a **human
+> salesperson** with **digital collection** (SPEI/OXXO/bank) against the contract; the
+> self-serve pay-link is the secondary channel. Seeding + growth stay organic/free. See
+> [`../../financials/revenue-model-of-record.md`](../../financials/revenue-model-of-record.md) §2.1.
+
 ## 1. The idea, stated
 
 For each feature/section (fiesta recommendations, positioning, sponsorship,
