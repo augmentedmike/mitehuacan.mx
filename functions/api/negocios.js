@@ -29,7 +29,7 @@ export async function onRequestGet({ env }) {
   const { results } = await env.DB.prepare(
     `SELECT id, name, category, category2, category_other, description,
             whatsapp, phone, facebook, instagram, website,
-            colonia, service_area, hours, price_from, price_note, fiesta,
+            address, colonia, service_area, hours, price_from, price_note, fiesta,
             has_location, lat, lon, verified
        FROM negocios WHERE active = 1
        ORDER BY verified DESC, id DESC LIMIT 500`).all().catch(() => ({ results: [] }));
