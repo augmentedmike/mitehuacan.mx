@@ -15,10 +15,14 @@ final class SponsorStore: ObservableObject {
 
     init() { load() }
 
+    /// Decode off the main thread so it never blocks app launch; publish on main.
     func load() {
-        guard let data = try? Data(contentsOf: url),
-              let s = try? JSONDecoder().decode([Sponsor].self, from: data) else { return }
-        sponsors = s
+        let u = url
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let data = try? Data(contentsOf: u),
+                  let s = try? JSONDecoder().decode([Sponsor].self, from: data) else { return }
+            DispatchQueue.main.async { self?.sponsors = s }
+        }
     }
     func save() {
         if let data = try? JSONEncoder().encode(sponsors) { try? data.write(to: url) }

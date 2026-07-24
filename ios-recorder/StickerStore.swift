@@ -14,10 +14,14 @@ final class StickerStore: ObservableObject {
 
     init() { load() }
 
+    /// Decode off the main thread so it never blocks app launch; publish on main.
     func load() {
-        guard let data = try? Data(contentsOf: url),
-              let p = try? JSONDecoder().decode([StickerPlacement].self, from: data) else { return }
-        placements = p
+        let u = url
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let data = try? Data(contentsOf: u),
+                  let p = try? JSONDecoder().decode([StickerPlacement].self, from: data) else { return }
+            DispatchQueue.main.async { self?.placements = p }
+        }
     }
     func save() {
         if let data = try? JSONEncoder().encode(placements) { try? data.write(to: url) }

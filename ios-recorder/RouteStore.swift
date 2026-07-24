@@ -14,10 +14,15 @@ final class RouteStore: ObservableObject {
 
     init() { load() }
 
+    /// Decode off the main thread so it never blocks app launch (a large routes.json
+    /// used to freeze the first frame for seconds); publish on main when ready.
     func load() {
-        guard let data = try? Data(contentsOf: url),
-              let r = try? JSONDecoder().decode([Route].self, from: data) else { return }
-        routes = r
+        let u = url
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let data = try? Data(contentsOf: u),
+                  let r = try? JSONDecoder().decode([Route].self, from: data) else { return }
+            DispatchQueue.main.async { self?.routes = r }
+        }
     }
 
     func save() {

@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- A launch screen (even empty) makes iOS show an instant system splash instead
+	     of a black void until the first SwiftUI frame renders. Without this key the
+	     app shows a black screen during launch. -->
+	<key>UILaunchScreen</key>
+	<dict/>
+
 	<!-- Shown when the app first asks to use location (foreground). -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Graba el recorrido del combi mientras usas la app.</string>
