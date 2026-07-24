@@ -56,7 +56,7 @@
     if (soc.length) out += '<div class="np-soc">' + soc.join(' · ') + '</div>';
     var acts = '';
     if (w) acts += '<a class="np-wa" href="https://wa.me/52' + w + '" rel="nofollow noopener" aria-label="WhatsApp">' + WA + '</a>';
-    if (n.has_location && n.lat && n.lon) acts += '<a class="np-map" href="/?to=' + n.lon + ',' + n.lat + '&n=' + encodeURIComponent(n.name) + '">Ver en el mapa</a>';
+    if (n.has_location && n.lat && n.lon) acts += '<a class="np-map" href="/?to=' + n.lon + ',' + n.lat + '&n=' + encodeURIComponent(n.name) + '&biz=' + slugFor(n) + '">Ver en el mapa</a>';
     if (acts) out += '<div class="np-actions">' + acts + '</div>';
     return out;
   }

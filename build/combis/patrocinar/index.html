@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patrocina — MiTehuacán</title>
+<meta name="description" content="Pon tu marca donde se mueve la ciudad: en los stickers con QR de los combis y en el mapa en vivo. Cuatro niveles de patrocinio, desde tu logo en el sticker hasta socio de temporada.">
+<link rel="canonical" href="https://mitehuacan.mx/patrocinar/">
+<meta property="og:title" content="Patrocina — MiTehuacán">
+<meta property="og:description" content="Pon tu marca donde se mueve la ciudad: en los stickers con QR de los combis y en el mapa en vivo. Cuatro niveles de patrocinio, desde tu logo en el sticker hasta socio de temporada.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mitehuacan.mx/patrocinar/">
+<meta property="og:site_name" content="MiTehuacán">
+<meta property="og:locale" content="es_MX">
+<meta property="og:image" content="https://mitehuacan.mx/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mitehuacan.mx/og-image.png">
+<meta name="apple-mobile-web-app-title" content="MiTehuacán">
+<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<style>
+:root{--bg:#f5f5f7;--panel:rgba(255,255,255,.62);--ink:#1d1d1f;--ink2:#6e6e73;--line:rgba(0,0,0,.08);
+ --accent:#0071e3;--chip:rgba(255,255,255,.8);--glass:rgba(255,255,255,.55);--hl:rgba(255,255,255,.75);
+ --shadow:0 8px 32px rgba(0,0,0,.08);--g1:rgba(0,113,227,.10);--g2:rgba(255,150,70,.08);
+ --livebg:rgba(255,255,255,.72);--livebrd:rgba(0,113,227,.35);--ok:#1a7f37;--accsh:rgba(0,113,227,.30)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e0e12;--panel:rgba(28,28,34,.6);
+ --ink:#f5f5f7;--ink2:#98989d;--line:rgba(255,255,255,.10);--accent:#0a84ff;--chip:rgba(66,66,74,.5);
+ --glass:rgba(24,24,30,.55);--hl:rgba(255,255,255,.08);--shadow:0 8px 32px rgba(0,0,0,.5);
+ --g1:rgba(10,132,255,.14);--g2:rgba(255,140,60,.05);--livebg:rgba(16,42,74,.45);
+ --livebrd:rgba(10,132,255,.45);--ok:#2ecc71;--accsh:rgba(10,132,255,.35)}}
+:root[data-theme=dark]{--bg:#0e0e12;--panel:rgba(28,28,34,.6);
+ --ink:#f5f5f7;--ink2:#98989d;--line:rgba(255,255,255,.10);--accent:#0a84ff;--chip:rgba(66,66,74,.5);
+ --glass:rgba(24,24,30,.55);--hl:rgba(255,255,255,.08);--shadow:0 8px 32px rgba(0,0,0,.5);
+ --g1:rgba(10,132,255,.14);--g2:rgba(255,140,60,.05);--livebg:rgba(16,42,74,.45);
+ --livebrd:rgba(10,132,255,.45);--ok:#2ecc71;--accsh:rgba(10,132,255,.35)}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.55 system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+ background:radial-gradient(55% 45% at 8% 0%,var(--g1),transparent 65%),
+            radial-gradient(45% 40% at 94% 6%,var(--g2),transparent 60%)}
+header.site{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;
+ padding:0 14px;height:50px;border-bottom:1px solid var(--line);background:var(--glass);
+ -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%)}
+header.site .brand{color:var(--ink);text-decoration:none;font-weight:700;font-size:16px;flex:none;white-space:nowrap}
+header.site .brand span{color:var(--accent)}
+header.site nav{display:flex;gap:2px;margin-left:auto}
+header.site nav a{color:var(--ink2);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:8px;white-space:nowrap}
+header.site nav a.on,header.site nav a:active{color:var(--ink);background:var(--chip)}
+.crumbs{font-size:13px;color:var(--ink2);padding:10px 0 0}
+.crumbs a{color:var(--ink2);text-decoration:none}
+.crumbs a:active,.crumbs a:hover{color:var(--accent)}
+.crumbs .sep{margin:0 6px;opacity:.6}
+.wrap{max-width:480px;margin:0 auto;padding:0 16px 28px}
+h1{font-size:23px;margin:.7em 0 .35em;line-height:1.25}
+h2{font-size:18px;margin:1.5em 0 .5em}
+p{margin:.5em 0}.muted{color:var(--ink2);font-size:14px}
+a{color:var(--accent)}
+.btn{display:block;text-align:center;background:var(--accent);color:#fff;padding:12px 20px;border-radius:12px;
+ text-decoration:none;font-weight:600;margin:8px 0;box-shadow:0 4px 16px var(--accsh)}
+.btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btnrow{margin:14px 0}
+form#report-form{display:flex;flex-direction:column;gap:10px;max-width:560px}
+form#report-form input[type=text],form#report-form textarea{width:100%;padding:11px 12px;
+ border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);
+ font:inherit;font-size:15px}
+form#report-form input:focus,form#report-form textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+form#report-form .btn{margin:0;border:none;cursor:pointer;font:inherit;font-weight:600}
+footer.site{margin-top:36px;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+ border-top:1px solid var(--line);font-size:13px;color:var(--ink2)}
+footer.site .cols{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+footer.site a{color:var(--ink2)}
+footer.site .ft2{font-size:12.5px;opacity:.9}
+/* no desktop layout — mobile everywhere; on large screens the mobile column is
+   wrapped in a phone frame (see the min-width:701px block at the end). */
+html[lang=en] .es{display:none!important}
+html[lang=es] .en{display:none!important}
+header.site nav a.lng{padding:6px 8px;font-weight:600;font-size:12px;border:1px solid var(--line);border-radius:8px}
+html[lang=es] header.site nav a.lng[data-l=es]{display:none}
+html[lang=en] header.site nav a.lng[data-l=en]{display:none}
+header.site nav a.thm{padding:6px 8px;font-size:14px;line-height:1.3}
+.ic-sun{display:none}
+:root[data-theme=dark] .ic-sun{display:inline}
+:root[data-theme=dark] .ic-moon{display:none}
+@media(max-width:480px){header.site{gap:6px;padding:0 10px}header.site nav a{padding:6px 7px;font-size:13px}}
+/* All mobile: on anything wider than a phone, render the SAME mobile layout inside
+   a phone outline on a dark zinc backdrop — identical treatment to the rutas app,
+   so every module looks like one mobile app. The content scrolls inside the frame;
+   transform makes the body the containing block so the app-switcher stays in-frame. */
+@media(min-width:701px){
+ html{background:#18181b;display:flex;align-items:center;justify-content:center;height:100dvh;overflow:hidden}
+ body{width:412px;max-width:412px;height:min(884px,96dvh);min-height:0;margin:0;
+  border:11px solid #0a0a0b;border-radius:46px;
+  overflow-y:auto;overflow-x:hidden;position:relative;transform:translateZ(0)}
+}
+</style>
+<script>window.TITLES={"es": "Patrocina — MiTehuacán", "en": "Sponsor — MiTehuacán"}</script>
+<script>
+const LANG=(()=>{try{const s=localStorage.mtLang;if(s==='es'||s==='en')return s}catch(e){}
+return (navigator.language||'es').toLowerCase().startsWith('en')?'en':'es'})();
+document.documentElement.lang=LANG;
+const THEME=(()=>{try{const s=localStorage.mtTheme;if(s==='light'||s==='dark')return s}catch(e){}
+return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'})();
+document.documentElement.dataset.theme=THEME;
+function syncLang(){const L=document.documentElement.lang;
+if(window.TITLES&&TITLES[L])document.title=TITLES[L];
+document.querySelectorAll('[data-ph-es]').forEach(el=>el.placeholder=L==='en'?el.dataset.phEn:el.dataset.phEs);}
+function setLang(l){try{localStorage.mtLang=l}catch(e){}document.documentElement.lang=l;syncLang();return false}
+function toggleTheme(){const th=document.documentElement.dataset.theme==='dark'?'light':'dark';
+try{localStorage.mtTheme=th}catch(e){}document.documentElement.dataset.theme=th;return false}
+addEventListener('DOMContentLoaded',syncLang);
+</script>
+</head>
+<body>
+<header class="site">
+<a class="brand" href="/">mi<span>tehuacan</span>.mx</a>
+<nav>
+<a href="#" class="lng" data-l="es" onclick="return setLang('es')">ES</a>
+<a href="#" class="lng" data-l="en" onclick="return setLang('en')">EN</a>
+<a href="#" class="thm" onclick="return toggleTheme()" aria-label="tema / theme"><span class="ic-moon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span><span class="ic-sun"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></a>
+</nav>
+</header>
+<div class="wrap">
+<nav class="crumbs" aria-label="ruta de navegación"><a href="/"><span class="es">Inicio</span><span class="en">Home</span></a><span class="sep">›</span><span><span class="es">Patrocina</span><span class="en">Sponsor</span></span></nav>
+<style>
+.co-hero{padding:8px 0 2px}
+.co-hero h1{font-size:30px;margin:0;letter-spacing:-.4px}
+.co-hero h1 span{color:var(--accent)}
+.lead{font-size:16.5px;color:var(--ink2);line-height:1.6;margin:12px 0 0;max-width:40em}
+.co-sec{margin:30px 0 0}
+.co-sec>h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin:0 0 12px;font-weight:700}
+.co-p{font-size:15px;color:var(--ink);line-height:1.65;margin:0 0 12px;max-width:40em}
+.co-p.mut{color:var(--ink2)}
+.co-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.co-card{padding:16px 17px;border:1px solid var(--line);border-radius:16px;background:var(--panel);
+ box-shadow:var(--shadow),inset 0 1px 0 var(--hl)}
+.co-card .k{font-weight:700;font-size:16px;margin:0 0 5px}
+.co-card p{font-size:14px;color:var(--ink2);line-height:1.58;margin:0}
+.tier{position:relative;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel);
+ box-shadow:var(--shadow),inset 0 1px 0 var(--hl);margin:0 0 14px}
+.tier .lvl{font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em}
+.tier h3{font-size:19px;margin:2px 0 1px}
+.tier .price{font-size:13.5px;color:var(--ink2);font-weight:600;margin:0 0 11px}
+.tier ul{margin:0;padding-left:19px;font-size:14.5px;line-height:1.65;color:var(--ink)}
+.tier ul li{margin:2px 0}
+.tier ul li::marker{color:var(--accent)}
+.tier.top{border-color:var(--livebrd);background:var(--livebg)}
+.tier .ribbon{position:absolute;top:15px;right:16px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent);color:#fff;box-shadow:0 2px 10px var(--accsh)}
+.ldwrap{margin:26px 0 0;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl)}
+.ldwrap h2{font-size:18px;margin:0 0 4px}
+.ldwrap .sub{font-size:13.5px;color:var(--ink2);margin:0 0 12px;line-height:1.55}
+.ldform{display:flex;flex-direction:column;gap:9px}
+.ldform textarea,.ldform input.fb-contact,.ldform select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+.ldform textarea{min-height:76px;resize:vertical}
+.ldform textarea:focus,.ldform input:focus,.ldform select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.ldform button{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px;font:inherit;font-weight:600;cursor:pointer}
+.fb-hp{display:none!important}
+.fb-thanks{color:var(--accent);font-weight:600;margin:6px 0}
+.note{margin:20px 0 0;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--chip);font-size:13px;color:var(--ink2);line-height:1.55}
+.co-legal{margin:24px 0 0;font-size:13px;color:var(--ink2);line-height:1.6}
+.co-legal a{color:var(--accent);text-decoration:none}
+.lg{max-width:42em}
+.lg h1{font-size:27px;margin:0 0 4px}
+.lg .upd{font-size:13px;color:var(--ink2);margin:0 0 20px}
+.lg h2{font-size:17px;margin:24px 0 8px}
+.lg p{font-size:14.5px;line-height:1.65;color:var(--ink);margin:0 0 10px}
+.lg ul{padding-left:20px;margin:0 0 10px}
+.lg li{font-size:14.5px;line-height:1.6;color:var(--ink);margin:3px 0}
+.lg a{color:var(--accent)}
+</style><div class="co-hero"><h1><span class="es">Patrocina MiTehuacán</span><span class="en">Sponsor MiTehuacán</span></h1><p class="lead"><span class="es">Cada día, miles de personas se suben a un combi en Tehuacán. Tu marca puede viajar con ellas: en el sticker con código QR que abre el mapa, y en el mapa mismo.</span><span class="en">Every day, thousands of people board a combi in Tehuacán. Your brand can ride with them: on the QR sticker that opens the map, and on the map itself.</span></p></div><div class="co-sec"><h2><span class="es">Por qué funciona</span><span class="en">Why it works</span></h2><div class="co-grid"><div class="co-card"><div class="k"><span class="es">El QR es la puerta</span><span class="en">The QR is the doorway</span></div><p><span class="es">Cada combi lleva un sticker con QR que abre el mapa. Tu logo va justo en esa puerta, la que la gente escanea.</span><span class="en">Every combi carries a QR sticker that opens the map. Your logo sits right on that doorway —the one people scan.</span></p></div><div class="co-card"><div class="k"><span class="es">Presencia diaria</span><span class="en">Daily presence</span></div><p><span class="es">El combi es el medio más visto de la ciudad. Tu marca se ve en cada viaje, todos los días.</span><span class="en">The combi is the most-seen medium in the city. Your brand shows on every trip, every day.</span></p></div><div class="co-card"><div class="k"><span class="es">Local y medible</span><span class="en">Local and measurable</span></div><p><span class="es">Pines en el mapa por ruta y por zona, cerca de donde de verdad están tus clientes.</span><span class="en">Pins on the map by route and area, close to where your customers actually are.</span></p></div><div class="co-card"><div class="k"><span class="es">Apoyas algo de aquí</span><span class="en">You back something local</span></div><p><span class="es">Patrocinar mantiene gratis un servicio para toda la ciudad. Tu marca queda del lado bueno.</span><span class="en">Sponsoring keeps a citywide service free. Your brand ends up on the right side of it.</span></p></div></div></div><div class="co-sec"><h2><span class="es">Niveles de patrocinio</span><span class="en">Sponsorship levels</span></h2><div class="tier"><div class="lvl"><span class="es">Nivel 1</span><span class="en">Level 1</span></div><h3><span class="es">Aliado</span><span class="en">Ally</span></h3><p class="price"><span class="es">desde $199 MXN / mes · una ruta</span><span class="en">from $199 MXN / mo · one route</span></p><ul><li><span class="es">Tu logo en los stickers con QR dentro de los combis de una ruta.</span><span class="en">Your logo on the QR stickers inside one route's combis.</span></li><li><span class="es">Mención como aliado en esta página.</span><span class="en">Listed as an ally on this page.</span></li></ul></div><div class="tier"><div class="lvl"><span class="es">Nivel 2</span><span class="en">Level 2</span></div><h3><span class="es">Presencia</span><span class="en">Presence</span></h3><p class="price"><span class="es">desde $399 MXN / mes</span><span class="en">from $399 MXN / mo</span></p><ul><li><span class="es">Todo lo del Nivel 1.</span><span class="en">Everything in Level 1.</span></li><li><span class="es">Un mini-mapa de tus sucursales impreso en el sticker.</span><span class="en">A mini-map of your locations printed on the sticker.</span></li><li><span class="es">Pin de tu negocio en el mapa en vivo, como destino.</span><span class="en">A pin for your business on the live map, as a destination.</span></li></ul></div><div class="tier top"><span class="ribbon"><span class="es">Más popular</span><span class="en">Most popular</span></span><div class="lvl"><span class="es">Nivel 3</span><span class="en">Level 3</span></div><h3><span class="es">Destacado</span><span class="en">Featured</span></h3><p class="price"><span class="es">desde $799 MXN / mes · varias rutas</span><span class="en">from $799 MXN / mo · several routes</span></p><ul><li><span class="es">Todo lo del Nivel 2, en varias rutas o un corredor completo.</span><span class="en">Everything in Level 2, across several routes or a whole corridor.</span></li><li><span class="es">Logo y pin destacado en la app para las rutas que pasan cerca de ti.</span><span class="en">Featured logo and pin in the app for routes that pass near you.</span></li><li><span class="es">Apareces como "Recomendado" en tu categoría y zona.</span><span class="en">You appear as "Recommended" in your category and area.</span></li></ul></div><div class="tier"><div class="lvl"><span class="es">Nivel 4</span><span class="en">Level 4</span></div><h3><span class="es">Socio de temporada</span><span class="en">Season partner</span></h3><p class="price"><span class="es">a convenir · prepago por temporada</span><span class="en">let's talk · prepaid by season</span></p><ul><li><span class="es">Presencia en toda la ciudad, no solo una ruta.</span><span class="en">Presence across the whole city, not just one route.</span></li><li><span class="es">Colocación prioritaria y co-branding en materiales impresos.</span><span class="en">Priority placement and co-branding on printed materials.</span></li><li><span class="es">Sé el patrocinador ancla de tu categoría.</span><span class="en">Be the anchor sponsor for your category.</span></li></ul></div><p class="note"><span class="es">Precios de lanzamiento, indicativos. Se ajustan por ruta, zona y temporada, y hay opción de trueque (imprenta, publicidad, servicios). El acuerdo final siempre se firma por escrito.</span><span class="en">Indicative launch prices. They adjust by route, area and season, and barter is possible (printing, advertising, services). The final agreement is always put in writing.</span></p></div><div class="ldwrap" id="contacto"><h2><span class="es">Quiero patrocinar</span><span class="en">I want to sponsor</span></h2><p class="sub"><span class="es">Dinos qué nivel te interesa y de qué es tu negocio. Te mandamos los detalles por WhatsApp.</span><span class="en">Tell us which level interests you and what your business is. We'll send details on WhatsApp.</span></p><form class="ldform" data-tag="PATROCINIO"><select aria-label="Quiero patrocinar"><option value="" selected>Elige una opción / Choose one</option><option>Nivel 1 · Logo en sticker</option><option>Nivel 2 · Logo + mini-mapa</option><option>Nivel 3 · Destacado en el mapa</option><option>Nivel 4 · Socio de temporada</option><option>Trueque / otro</option></select><textarea required maxlength="1500" data-ph-es="Ej: tengo una farmacia en El Paseo, me interesa el Nivel 2…" data-ph-en="e.g. I run a pharmacy on El Paseo, I&#x27;m interested in Level 2…" placeholder="Ej: tengo una farmacia en El Paseo, me interesa el Nivel 2…"></textarea><input type="text" maxlength="120" class="fb-contact" data-ph-es="WhatsApp (así te contactamos)" data-ph-en="WhatsApp (so we can reach you)" placeholder="WhatsApp (así te contactamos)"><input type="text" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit"><span class="es">Enviar</span><span class="en">Send</span></button></form></div><p class="co-legal"><span class="es">Consulta nuestros </span><span class="en">See our </span><a href="/legal/terminos/"><span class="es">Términos</span><span class="en">Terms</span></a><span class="es"> y </span><span class="en"> and </span><a href="/legal/privacidad/"><span class="es">Aviso de Privacidad</span><span class="en">Privacy Notice</span></a>.</p><script>
+document.querySelectorAll('.ldform').forEach(function(f){
+ f.addEventListener('submit',function(e){e.preventDefault();
+  var hp=f.querySelector('.fb-hp').value;
+  var msg=f.querySelector('textarea').value.trim();
+  if(!hp&&msg.length<5)return;
+  var sel=f.querySelector('select');var role=sel&&sel.value?sel.value:'';
+  var tag=f.dataset.tag||'';
+  var full=(tag?'['+tag+(role?' · '+role:'')+'] ':'')+msg;
+  f.querySelector('button').disabled=true;
+  fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   kind:'idea',message:full,contact:f.querySelector('.fb-contact').value.trim(),page:location.pathname,website:hp
+  })}).then(function(){ldthx(f);}).catch(function(){ldthx(f);});
+ });
+});
+function ldthx(f){var en=document.documentElement.lang==='en';
+ f.innerHTML='<p class="fb-thanks">'+(en?'Thanks — we\'ll be in touch soon.':'¡Gracias! Te contactamos pronto.')+'</p>';}
+</script>
+</div>
+<footer class="site"><div class="cols">
+<div><a href="/">Combis</a> · <a href="/eventos/"><span class="es">Eventos</span><span class="en">Events</span></a> · <a href="/descubre/"><span class="es">Descubre</span><span class="en">Discover</span></a> · <a href="/directorio/"><span class="es">Directorio</span><span class="en">Directory</span></a> · <a href="/roadmap/">Roadmap</a></div>
+<div class="ft2"><a href="/nosotros/"><span class="es">Nosotros</span><span class="en">About</span></a> · <a href="/nosotros/#unete"><span class="es">Únete al equipo</span><span class="en">Join the team</span></a> · <a href="/patrocinar/"><span class="es">Patrocina</span><span class="en">Sponsor</span></a> · <a href="/legal/privacidad/"><span class="es">Privacidad</span><span class="en">Privacy</span></a> · <a href="/legal/terminos/"><span class="es">Términos</span><span class="en">Terms</span></a></div>
+</div></footer>
+<script src="/appsw.js" defer></script>
+</body>
+</html>

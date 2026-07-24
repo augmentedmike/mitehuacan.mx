@@ -2186,14 +2186,16 @@ function openAddBiz(prefill) {
   };
 }
 
-async function openDestPanel(label, coords, info) {
+async function openDestPanel(label, coords, info, bizSlug) {
   SEL_LABEL = label;
   SEL_C = coords || null;
   SEL_INFO = (info && (info.a || info.tel || info.h || info.lnk)) ? info : null;   // business details, else cleared
   saveStatus();
   if (document.body.dataset.mview === 'list') renderCards();
-  // location already known (blue dot / fresh fix)? don't ask again — just plan
-  if (hasKnownLocation()) {
+  // location already known (blue dot / fresh fix)? don't ask again — just plan.
+  // EXCEPT when arriving from a business profile: always show the destination
+  // panel so the "Ver perfil" back-link is available.
+  if (hasKnownLocation() && !bizSlug) {
     let c = coords;
     if (!c) {
       const res = await geocode(label + ', Tehuacán');
@@ -2207,6 +2209,8 @@ async function openDestPanel(label, coords, info) {
     '<span class="sh-name"><b>' + String(label).replace(/</g, '&lt;') + '</b></span>' +
     '<button class="iconbtn" id="p2-close">' + S_X + '</button></div>' +
     '<button class="sh-cta" id="d-go">' + S_NAV + t('goFromMe') + '</button>' +
+    (bizSlug ? '<a class="sh-cta" id="d-biz" style="background:var(--chip);color:var(--ink);margin-top:8px" href="/directorio/?n=' +
+      encodeURIComponent(bizSlug) + '">← ' + (document.documentElement.lang === 'en' ? 'Business profile' : 'Ver perfil del negocio') + '</a>' : '') +
     '<div class="dt-note" id="d-note" style="margin-top:8px"></div>';
   el.style.maxHeight = '';
   el.classList.remove('min');
@@ -2686,7 +2690,7 @@ const __onMapLoad = () => {
     if (!ids.length) ids = near.slice(0, 3).map(x => x.id);
     setSearchLabel(label);
     highlightRoutes(ids, label, c);
-    openDestPanel(label, c);
+    openDestPanel(label, c, null, (params.get('biz') || '').replace(/[^a-z0-9-]/gi, '').slice(0, 60));
   } else if (BOOT) {
     if (isMobile() && Array.isArray(BOOT.chips) && BOOT.chips.length) {
       M.chips = BOOT.chips.filter(c => c && feats.some(f => f.properties.id === c.id));

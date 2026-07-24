@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Eventos y fiestas de Tehuacán</title>
-<meta name="description" content="Agenda de eventos, ferias y fiestas patronales de Tehuacán, Puebla y su región.">
-<link rel="canonical" href="https://mitehuacan.mx/eventos/">
-<meta property="og:title" content="Eventos y fiestas de Tehuacán">
-<meta property="og:description" content="Agenda de eventos, ferias y fiestas patronales de Tehuacán, Puebla y su región.">
+<title>Aviso de Privacidad — MiTehuacán</title>
+<meta name="description" content="Cómo trata MiTehuacán tus datos: lo mínimo, sin publicidad ni rastreadores de terceros.">
+<link rel="canonical" href="https://mitehuacan.mx/legal/privacidad/">
+<meta property="og:title" content="Aviso de Privacidad — MiTehuacán">
+<meta property="og:description" content="Cómo trata MiTehuacán tus datos: lo mínimo, sin publicidad ni rastreadores de terceros.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://mitehuacan.mx/eventos/">
+<meta property="og:url" content="https://mitehuacan.mx/legal/privacidad/">
 <meta property="og:site_name" content="MiTehuacán">
 <meta property="og:locale" content="es_MX">
 <meta property="og:image" content="https://mitehuacan.mx/og-image.png">
@@ -98,7 +98,7 @@ header.site nav a.thm{padding:6px 8px;font-size:14px;line-height:1.3}
   overflow-y:auto;overflow-x:hidden;position:relative;transform:translateZ(0)}
 }
 </style>
-<script>window.TITLES={"es": "Eventos y fiestas de Tehuacán", "en": "Events & fiestas in Tehuacán"}</script>
+<script>window.TITLES={"es": "Aviso de Privacidad — MiTehuacán", "en": "Privacy Notice — MiTehuacán"}</script>
 <script>
 const LANG=(()=>{try{const s=localStorage.mtLang;if(s==='es'||s==='en')return s}catch(e){}
 return (navigator.language||'es').toLowerCase().startsWith('en')?'en':'es'})();
@@ -125,83 +125,53 @@ addEventListener('DOMContentLoaded',syncLang);
 </nav>
 </header>
 <div class="wrap">
-<nav class="crumbs" aria-label="ruta de navegación"><a href="/"><span class="es">Inicio</span><span class="en">Home</span></a><span class="sep">›</span><span><span class="es">Eventos</span><span class="en">Events</span></span></nav>
+<nav class="crumbs" aria-label="ruta de navegación"><a href="/"><span class="es">Inicio</span><span class="en">Home</span></a><span class="sep">›</span><span><span class="es">Privacidad</span><span class="en">Privacy</span></span></nav>
 <style>
-.ev-intro{color:var(--ink2);font-size:14.5px;max-width:44em}
-.ev-filters{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 4px}
-.ev-filters button{font:inherit;font-size:13px;cursor:pointer;padding:6px 12px;border-radius:99px;
- border:1px solid var(--line);background:var(--panel);color:var(--ink2)}
-.ev-filters button.on{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 3px 12px var(--accsh)}
-.month{font-size:14px;font-weight:700;color:var(--ink2);text-transform:capitalize;margin:24px 0 10px;
- letter-spacing:.02em;border-bottom:1px solid var(--line);padding-bottom:6px}
-.ev{display:flex;gap:14px;padding:13px 14px;border:1px solid var(--line);border-radius:14px;
- background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl);margin-bottom:10px}
-.ev .date{flex:none;width:50px;text-align:center;padding-top:2px}
-.ev .date .d{font-size:23px;font-weight:800;line-height:1;color:var(--ink)}
-.ev .date .m{font-size:11px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-top:2px}
-.ev .body{flex:1;min-width:0}
-.ev .t{font-weight:600;font-size:15.5px;line-height:1.35}
-.ev .meta{font-size:13px;color:var(--ink2);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:5px}
-.ev .meta a{font-weight:600}
-.cat{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;border:1px solid transparent}
-.cat.religioso{background:rgba(147,51,234,.14);color:#9333ea}
-.cat.feria{background:rgba(234,88,12,.14);color:#ea580c}
-.cat.cultural{background:rgba(2,132,199,.14);color:#0284c7}
-.cat.deportivo{background:rgba(22,163,74,.14);color:#16a34a}
-.cat.civico{background:rgba(220,38,38,.14);color:#dc2626}
-.cat.otro{background:var(--chip);color:var(--ink2)}
-.confirm{font-size:11px;font-weight:600;color:#b26b00;background:rgba(217,119,6,.13);padding:2px 8px;border-radius:99px}
-:root[data-theme=dark] .confirm{color:#f5b756}
-.ev-empty{color:var(--ink2);padding:30px 0}
-.ev-count{font-size:13px;color:var(--ink2);margin-top:4px}
-</style><h1><span class="es">Eventos y fiestas</span><span class="en">Events &amp; fiestas</span></h1><p class="ev-intro"><span class="es">La agenda de Tehuacán y su región: ferias, fiestas patronales, eventos culturales y deportivos. Las marcadas <b>“por confirmar”</b> se derivan del calendario del santo patrono y aún falta confirmar la fecha local.</span><span class="en">What's on in Tehuacán and its region: fairs, patron-saint fiestas, cultural and sporting events. Ones marked <b>“to confirm”</b> are derived from the patron saint's calendar and still need a confirmed local date.</span></p><div id="evfilters" class="ev-filters"></div><div id="evroot"></div><p class="muted" style="margin-top:22px"><a href="/"><span class="es">← Volver al mapa de combis</span><span class="en">← Back to the combi map</span></a></p><script src="/events.js"></script>
-<script>
-(function(){
- var root=document.getElementById('evroot'),bar=document.getElementById('evfilters');
- var data=(typeof EVENTS!=='undefined'&&EVENTS.events)||[];
- // show only today .. next 3 months (computed client-side so it never goes stale)
- (function(){var n=new Date();function p(x){return(x<10?'0':'')+x;}
-  function iso(d){return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
-  var t=iso(n),c=iso(new Date(n.getFullYear(),n.getMonth()+3,n.getDate()));
-  data=data.filter(function(e){return e.d>=t&&e.d<=c;});})();
- var MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
- var EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
- var CAT={religioso:['Religioso','Religious'],feria:['Feria','Fair'],cultural:['Cultural','Cultural'],
-  deportivo:['Deportivo','Sports'],civico:['Cívico','Civic'],otro:['Otro','Other']};
- var filter='all';
- function L(){return document.documentElement.lang==='en'?1:0;}
- function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
- function fmt(iso){var p=iso.split('-');return{y:+p[0],m:+p[1]-1,d:+p[2]};}
- function chips(){
-  var cats=['all'];data.forEach(function(e){if(cats.indexOf(e.k)<0)cats.push(e.k);});
-  bar.innerHTML=cats.map(function(c){
-   var lbl=c==='all'?(L()?'All':'Todos'):(CAT[c]||CAT.otro)[L()];
-   return '<button data-c="'+c+'"'+(c===filter?' class="on"':'')+'>'+lbl+'</button>';}).join('');
-  [].forEach.call(bar.children,function(b){b.onclick=function(){filter=b.dataset.c;chips();render();};});
- }
- function render(){
-  var list=data.filter(function(e){return filter==='all'||e.k===filter;});
-  if(!list.length){root.innerHTML='<p class="ev-empty">'+(L()?'No upcoming events.':'No hay eventos próximos.')+'</p>';return;}
-  var out='',cur='';
-  list.forEach(function(e){
-   var f=fmt(e.d),mk=f.y+'-'+f.m,MN=(L()?EN:MES);
-   if(mk!==cur){cur=mk;out+='<div class="month">'+MN[f.m]+' '+f.y+'</div>';}
-   var cat=CAT[e.k]||CAT.otro;
-   out+='<div class="ev"><div class="date"><div class="d">'+f.d+'</div><div class="m">'+MN[f.m].slice(0,3)+'</div></div>'+
-    '<div class="body"><div class="t">'+esc(e.t)+'</div><div class="meta">'+
-    '<span class="cat '+e.k+'">'+cat[L()]+'</span>'+
-    '<span>'+esc(e.v)+'</span>'+
-    (e.tm?'<span>'+e.tm+'</span>':'')+
-    (e.x?'<span class="confirm">'+(L()?'date to confirm':'fecha por confirmar')+'</span>':'')+
-    (e.u?'<a href="'+esc(e.u)+'" target="_blank" rel="noopener">'+(L()?'details':'ver más')+'</a>':'')+
-    '</div></div></div>';
-  });
-  root.innerHTML='<div class="ev-count">'+list.length+(L()?' events':' eventos')+'</div>'+out;
- }
- chips();render();
- [].forEach.call(document.querySelectorAll('.lng'),function(a){a.addEventListener('click',function(){setTimeout(function(){chips();render();},0);});});
-})();
-</script>
+.co-hero{padding:8px 0 2px}
+.co-hero h1{font-size:30px;margin:0;letter-spacing:-.4px}
+.co-hero h1 span{color:var(--accent)}
+.lead{font-size:16.5px;color:var(--ink2);line-height:1.6;margin:12px 0 0;max-width:40em}
+.co-sec{margin:30px 0 0}
+.co-sec>h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin:0 0 12px;font-weight:700}
+.co-p{font-size:15px;color:var(--ink);line-height:1.65;margin:0 0 12px;max-width:40em}
+.co-p.mut{color:var(--ink2)}
+.co-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.co-card{padding:16px 17px;border:1px solid var(--line);border-radius:16px;background:var(--panel);
+ box-shadow:var(--shadow),inset 0 1px 0 var(--hl)}
+.co-card .k{font-weight:700;font-size:16px;margin:0 0 5px}
+.co-card p{font-size:14px;color:var(--ink2);line-height:1.58;margin:0}
+.tier{position:relative;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel);
+ box-shadow:var(--shadow),inset 0 1px 0 var(--hl);margin:0 0 14px}
+.tier .lvl{font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em}
+.tier h3{font-size:19px;margin:2px 0 1px}
+.tier .price{font-size:13.5px;color:var(--ink2);font-weight:600;margin:0 0 11px}
+.tier ul{margin:0;padding-left:19px;font-size:14.5px;line-height:1.65;color:var(--ink)}
+.tier ul li{margin:2px 0}
+.tier ul li::marker{color:var(--accent)}
+.tier.top{border-color:var(--livebrd);background:var(--livebg)}
+.tier .ribbon{position:absolute;top:15px;right:16px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent);color:#fff;box-shadow:0 2px 10px var(--accsh)}
+.ldwrap{margin:26px 0 0;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:var(--shadow),inset 0 1px 0 var(--hl)}
+.ldwrap h2{font-size:18px;margin:0 0 4px}
+.ldwrap .sub{font-size:13.5px;color:var(--ink2);margin:0 0 12px;line-height:1.55}
+.ldform{display:flex;flex-direction:column;gap:9px}
+.ldform textarea,.ldform input.fb-contact,.ldform select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+.ldform textarea{min-height:76px;resize:vertical}
+.ldform textarea:focus,.ldform input:focus,.ldform select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.ldform button{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px;font:inherit;font-weight:600;cursor:pointer}
+.fb-hp{display:none!important}
+.fb-thanks{color:var(--accent);font-weight:600;margin:6px 0}
+.note{margin:20px 0 0;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--chip);font-size:13px;color:var(--ink2);line-height:1.55}
+.co-legal{margin:24px 0 0;font-size:13px;color:var(--ink2);line-height:1.6}
+.co-legal a{color:var(--accent);text-decoration:none}
+.lg{max-width:42em}
+.lg h1{font-size:27px;margin:0 0 4px}
+.lg .upd{font-size:13px;color:var(--ink2);margin:0 0 20px}
+.lg h2{font-size:17px;margin:24px 0 8px}
+.lg p{font-size:14.5px;line-height:1.65;color:var(--ink);margin:0 0 10px}
+.lg ul{padding-left:20px;margin:0 0 10px}
+.lg li{font-size:14.5px;line-height:1.6;color:var(--ink);margin:3px 0}
+.lg a{color:var(--accent)}
+</style><div class="lg"><div class="es"><h1>Aviso de Privacidad</h1><p class="upd">Última actualización: julio 2026</p><p>MiTehuacán es un proyecto local en Tehuacán, Puebla. Este aviso explica qué datos tratamos y cómo. En resumen: pedimos lo mínimo, no vendemos nada y no te rastreamos con publicidad.</p><h2>Qué NO hacemos</h2><ul><li>No necesitas cuenta ni contraseña para usar el mapa.</li><li>No usamos redes de publicidad ni rastreadores de terceros.</li><li>No vendemos ni compartimos tus datos con terceros para publicidad.</li><li>No enviamos correo no deseado.</li></ul><h2>Qué datos tratamos</h2><ul><li><b>Uso del mapa:</b> conteos anónimos y agregados. Tu dirección IP se convierte en un identificador irreversible (hash) solo para evitar spam; no la guardamos en claro.</li><li><b>Formularios (ideas, unirte al equipo, patrocinar):</b> guardamos tu mensaje y el contacto que nos dejes (por ejemplo tu WhatsApp o nombre) para responderte.</li><li><b>Alta de negocios:</b> los datos que publicas de tu negocio (nombre, categoría, contacto) se muestran de forma pública en el directorio, porque ese es su propósito.</li></ul><h2>Para qué los usamos</h2><p>Únicamente para operar el servicio: mostrar el directorio, responderte, moderar contenido y evitar abuso. Nada más.</p><h2>Tus derechos</h2><p>Puedes acceder, rectificar, cancelar u oponerte al tratamiento de tus datos (derechos ARCO, conforme a la ley mexicana). Escríbenos desde el formulario de <a href="/nosotros/#unete">Nosotros</a> y atenderemos tu solicitud.</p><h2>Cambios</h2><p>Si este aviso cambia, actualizaremos la fecha de arriba. El uso continuo del servicio implica la aceptación de la versión vigente.</p></div><div class="en"><h1>Privacy Notice</h1><p class="upd">Last updated: July 2026</p><p>MiTehuacán is a local project in Tehuacán, Puebla. This notice explains what data we handle and how. In short: we ask for the minimum, we sell nothing, and we don't track you with advertising.</p><h2>What we do NOT do</h2><ul><li>You don't need an account or password to use the map.</li><li>We use no ad networks and no third-party trackers.</li><li>We don't sell or share your data with third parties for advertising.</li><li>We don't send spam.</li></ul><h2>What data we handle</h2><ul><li><b>Map usage:</b> anonymous, aggregate counts. Your IP address is turned into an irreversible identifier (a hash) only to prevent spam; we don't store it in the clear.</li><li><b>Forms (ideas, joining the team, sponsoring):</b> we store your message and any contact you leave (such as your WhatsApp or name) so we can reply.</li><li><b>Business listings:</b> the business data you publish (name, category, contact) is shown publicly in the directory, because that is its purpose.</li></ul><h2>What we use it for</h2><p>Only to run the service: show the directory, reply to you, moderate content, and prevent abuse. Nothing else.</p><h2>Your rights</h2><p>You may access, rectify, cancel, or object to the handling of your data (ARCO rights, under Mexican law). Write to us from the form on <a href="/nosotros/#unete">About</a> and we'll handle your request.</p><h2>Changes</h2><p>If this notice changes, we'll update the date above. Continued use of the service means you accept the current version.</p></div></div>
 </div>
 <footer class="site"><div class="cols">
 <div><a href="/">Combis</a> · <a href="/eventos/"><span class="es">Eventos</span><span class="en">Events</span></a> · <a href="/descubre/"><span class="es">Descubre</span><span class="en">Discover</span></a> · <a href="/directorio/"><span class="es">Directorio</span><span class="en">Directory</span></a> · <a href="/roadmap/">Roadmap</a></div>
