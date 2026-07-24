@@ -18,6 +18,7 @@ Only current+upcoming events are published (past ones stay in the stores as
 history). Same stores => same file (deterministic).
 """
 import json
+import re
 import sqlite3
 from datetime import date, timedelta
 from pathlib import Path
@@ -46,6 +47,11 @@ def _junk(title, town):
     return len(t) < 5 or t.lower() in _TOWN_NORMS or _norm(t) == _norm(town)
 
 
+def _g(row, key):
+    """Read a column that may not exist on older stores (pre-enrichment schema)."""
+    return row[key] if key in row.keys() else None
+
+
 def main():
     stores = sorted(DISC.glob("*_events.db"))
     if not stores:
@@ -70,10 +76,14 @@ def main():
                 c = [round(r["lon"], 6), round(r["lat"], 6)]
             else:
                 c = geocode_event(town, town_of(town), cruces)
+            # prefer an exact scraped time; fall back to the date string's time
+            tm_raw = (_g(r, "time_") or "")
+            tm_m = re.search(r"\b(\d{1,2}:\d{2})\b", tm_raw)
+            tm = tm_m.group(1) if tm_m else parse_time_es(r["subcat"] or "")
             ev = {
                 "t": title[:90],
                 "d": when.isoformat(),
-                "tm": parse_time_es(r["subcat"] or ""),
+                "tm": tm,
                 "v": town,
                 "c": c,
                 "k": categorize(title),
@@ -82,6 +92,11 @@ def main():
                 "u": r["url"] or "",
                 "x": 1 if (r["handle"] == "approx") else 0,
             }
+            # richer detail — only emitted when we actually scraped it
+            for out_key, col in (("a", "addr"), ("de", "descr"), ("ho", "host"), ("im", "image")):
+                v = _g(r, col)
+                if v and str(v).strip():
+                    ev[out_key] = str(v).strip()[:600]
             key = (_norm(title)[:24], ev["d"], _norm(town))
             if key in merged:
                 m = merged[key]
@@ -89,6 +104,11 @@ def main():
                     m["src"].append(r["source"])
                 if not m["u"] and ev["u"]:
                     m["u"] = ev["u"]
+                if not m["tm"] and ev["tm"]:
+                    m["tm"] = ev["tm"]
+                for k2 in ("a", "de", "ho", "im"):   # backfill detail from any source
+                    if not m.get(k2) and ev.get(k2):
+                        m[k2] = ev[k2]
                 m["x"] = 1 if (m["x"] and ev["x"]) else 0   # confirmed by any real source
             else:
                 merged[key] = ev

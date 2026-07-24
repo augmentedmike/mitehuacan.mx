@@ -447,6 +447,8 @@ function thx(f){var en=document.documentElement.lang==='en';
 .evs-btn{display:block;text-align:center;padding:12px;border-radius:12px;font-weight:600;font-size:14.5px;
  border:1px solid var(--line);color:var(--ink);text-decoration:none}
 .evs-btn.primary{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 3px 12px var(--accsh)}
+.evs-img{width:100%;max-height:210px;object-fit:cover;border-radius:14px;margin:2px 0 14px;display:block;background:var(--panel)}
+.evs-desc{font-size:14px;line-height:1.55;color:var(--ink2);margin-top:14px;white-space:pre-line}
 </style>"""
     ev_script = """<script src="/events.js"></script>
 <script>
@@ -515,15 +517,19 @@ function thx(f){var en=document.documentElement.lang==='en';
   if(!backdrop)buildSheet();
   var f=fmt(e.d),MN=(L()?EN:MES),cat=CAT[e.k]||CAT.otro;
   var lon=e.c&&e.c[0],lat=e.c&&e.c[1],hasLoc=isFinite(lon)&&isFinite(lat);
-  var h='<div class="evs-handle"></div><button class="evs-x" aria-label="'+(L()?'Close':'Cerrar')+'">&times;</button>'+
-   '<div class="evs-date">'+f.d+' '+MN[f.m]+' '+f.y+'</div>'+
+  var h='<div class="evs-handle"></div><button class="evs-x" aria-label="'+(L()?'Close':'Cerrar')+'">&times;</button>';
+  if(e.im)h+='<img class="evs-img" src="'+esc(e.im)+'" alt="" loading="lazy" referrerpolicy="no-referrer">';
+  h+='<div class="evs-date">'+f.d+' '+MN[f.m]+' '+f.y+'</div>'+
    '<h2 class="evs-t">'+esc(e.t)+'</h2>'+
    '<div class="evs-tags"><span class="cat '+e.k+'">'+cat[L()]+'</span>'+
    (e.x?'<span class="confirm">'+(L()?'date to confirm':'fecha por confirmar')+'</span>':'')+'</div>';
   var rows='';
-  if(e.v)rows+='<div class="evs-row"><span class="evs-ic">📍</span><span>'+esc(e.v)+'</span></div>';
+  var place=e.a||e.v;   // a scraped street address beats the town name
+  if(place)rows+='<div class="evs-row"><span class="evs-ic">📍</span><span>'+esc(place)+'</span></div>';
   if(e.tm)rows+='<div class="evs-row"><span class="evs-ic">🕒</span><span>'+esc(e.tm)+'</span></div>';
+  if(e.ho)rows+='<div class="evs-row"><span class="evs-ic">👤</span><span>'+esc(e.ho)+'</span></div>';
   if(rows)h+='<div class="evs-rows">'+rows+'</div>';
+  if(e.de)h+='<div class="evs-desc">'+esc(e.de)+'</div>';
   var acts='';
   if(hasLoc)acts+='<a class="evs-btn primary" href="/?to='+(+lon).toFixed(5)+','+(+lat).toFixed(5)+
    '&n='+encodeURIComponent(e.t)+'">'+(L()?'Get there by combi':'Cómo llegar en combi')+'</a>';

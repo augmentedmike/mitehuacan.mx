@@ -106,6 +106,13 @@ class Store:
             first_seen TEXT, last_seen TEXT, times_seen INTEGER DEFAULT 1,
             status TEXT DEFAULT 'candidate', status_reason TEXT, status_at TEXT,
             last_verified TEXT)""")
+        # richer event detail (address, description, exact time, host, cover image).
+        # added late, so ALTER-in idempotently for stores created before this.
+        for col in ("addr", "descr", "time_", "host", "image"):
+            try:
+                self.db.execute(f"ALTER TABLE records ADD COLUMN {col} TEXT")
+            except sqlite3.OperationalError:
+                pass   # column already present
         self.db.execute("CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT)")
         self.db.execute("CREATE INDEX IF NOT EXISTS idx_status ON records(status)")
         self.db.commit()
@@ -128,16 +135,25 @@ class Store:
         key = rec["key"]
         row = self.db.execute("SELECT key FROM records WHERE key=?", (key,)).fetchone()
         if row:
+            # re-seen: bump counters and BACKFILL any detail we didn't have yet
+            # (a later deep-scrape can fill address/description on an existing row).
             self.db.execute(
                 "UPDATE records SET last_seen=?, times_seen=times_seen+1, "
-                "lat=COALESCE(lat,?), lon=COALESCE(lon,?), url=COALESCE(url,?) WHERE key=?",
-                (now, rec.get("lat"), rec.get("lon"), rec.get("url"), key))
+                "lat=COALESCE(lat,?), lon=COALESCE(lon,?), url=COALESCE(url,?), "
+                "addr=COALESCE(addr,?), descr=COALESCE(descr,?), time_=COALESCE(time_,?), "
+                "host=COALESCE(host,?), image=COALESCE(image,?) WHERE key=?",
+                (now, rec.get("lat"), rec.get("lon"), rec.get("url"),
+                 rec.get("addr"), rec.get("descr"), rec.get("time_"),
+                 rec.get("host"), rec.get("image"), key))
             return False
         self.db.execute(
             "INSERT INTO records(key,name,lat,lon,category,subcat,source,url,handle,where_,"
-            "first_seen,last_seen,times_seen,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,1,'candidate')",
+            "addr,descr,time_,host,image,first_seen,last_seen,times_seen,status) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1,'candidate')",
             (key, rec["name"], rec.get("lat"), rec.get("lon"), rec.get("category"), rec.get("subcat"),
-             rec.get("source"), rec.get("url"), rec.get("handle"), rec.get("where"), now, now))
+             rec.get("source"), rec.get("url"), rec.get("handle"), rec.get("where"),
+             rec.get("addr"), rec.get("descr"), rec.get("time_"), rec.get("host"), rec.get("image"),
+             now, now))
         return True
 
     def mark(self, key, status, reason, now):
