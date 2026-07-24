@@ -40,11 +40,12 @@ $300–$800/mo recurring; `z-master` encodes them. **Resolved in principle** —
 revenue-model-of-record forbids subscriptions (prepaid paquetes/seasons/wallet only).
 🔧 the `b–g` `$/mo` tables must be rebuilt on prepaid pricing; PRD-revenue banner added.
 
-**4. Merchant-of-record / RFC / IVA — unmodeled go-live blocker.** 🟡 **OPEN, first-order.**
-Every doc handles the *vendor's* RFC fear; none addresses that *MiTehuacán itself*
-needs a registered entity + RFC to hold the PSP account, issue facturas, and remit 16%
-IVA on revenue. The model books revenue, so this now gates going paid. **Needs a
-decision.**
+**4. Merchant-of-record / RFC / IVA.** ✅ **RESOLVED (2026-07-24).**
+Michael has an RFC → MiTehuacán is the merchant of record; it can hold the PSP account,
+issue facturas, and remit IVA. **Unit-economics follow-up:** IVA (16%) now comes off the
+*sale*, not just the PSP fee — treat prices as **IVA-included**, `net ≈ price/1.16 − PSP
+fee` (~15% below the prior model). `phase2-revenue-capture` §4 corrected. Default to
+público-general facturas (no vendor RFC to buy). Confirm régimen with a contador.
 
 **5. Boost/promotion launch price below the mandated fee-floor.** 🟡 OPEN.
 Payments research + `organic-v2`: "≥300 MXN required, thin below 200."

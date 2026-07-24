@@ -163,9 +163,14 @@ burned host tells the WhatsApp group.
   re-validated (with digital collection).
 - **#3 (subscriptions):** resolved — no line is a subscription; the `b–g` `$/mo` tiers
   are rebuilt on prepaid/referral pricing.
-- **#4 (merchant-of-record / RFC / IVA):** **still open and now first-order** — this
-  model books revenue through a PSP and (for SPEI/card) issues facturas + remits IVA, so
-  the platform's own legal/tax entity must be resolved before any line goes paid.
+- **#4 (merchant-of-record / RFC / IVA):** ✅ **resolved** — Michael has an RFC, so
+  MiTehuacán is the merchant of record and can hold the PSP account, issue facturas, and
+  remit IVA. **Consequence for unit economics:** IVA (16%) now comes out of the *sale*,
+  not just the PSP fee. Treat all prices as **IVA-included**: `net ≈ price/1.16 − PSP
+  fee` (a $199 boost nets ~$159, not ~$186 — a ~15% haircut). Default to
+  **público-general (global) facturas** so no *vendor* RFC is needed to buy; nominal
+  factura only on request. Confirm régimen (RESICO vs actividad empresarial) with a
+  contador. This strengthens the case for the ≥300 price floor (#5).
 - **#5 (price floor), #6 (conversion rate):** still open — per-line pricing and free→paid
   conversion remain **pilot measurements**.
 - **Ledger reconciliation:** re-opened — `0014 payments` (sales-closed) vs `pagos`

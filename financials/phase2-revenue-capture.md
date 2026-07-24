@@ -91,6 +91,15 @@ not "can they afford it" but "will they buy it," which only the pilot answers.
 
 ## 4. Unit economics per capture (verified fees)
 
+> **Correction (2026-07-24 — RFC confirmed, MiTehuacán is merchant of record):** the
+> table below subtracts only the PSP **fee** (and IVA *on the fee*). Now that we remit
+> IVA, **IVA on the *sale* also comes out.** Treat prices as **IVA-included**:
+> `net ≈ price/1.16 − PSP fee`. A $199 IVA-incl boost nets **~$159**, not ~$186 (~15%
+> haircut). This strengthens the ≥300 price-floor case (§3). Default: público-general
+> (global) facturas — no *vendor* RFC needed to buy; nominal factura only on request.
+> Confirm régimen (RESICO vs actividad empresarial) with a contador. See
+> `revenue-model-of-record.md` §7.
+
 | Sale | Rail | Gross | All-in fee (fee + IVA) | **Net to us** | Effective |
 |---|---|---|---|---|---|
 | $199 boost | OXXO cash (3.79%+$4) | $199 | ~$13.2 | **~$185.8** | 6.6% |
