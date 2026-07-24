@@ -63,6 +63,7 @@ async function runBackup(env) {
   const { results: idx } = await src.prepare(
     "SELECT sql FROM sqlite_master WHERE type='index' AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%'").all();
   for (const i of idx) { try { await bak.prepare(i.sql).run(); } catch (e) { /* index optional */ } }
+  dump.indexes = idx.map(i => i.sql).filter(Boolean);   // so a restore is faithful
 
   await bak.prepare("CREATE TABLE IF NOT EXISTS _backup_meta (ts TEXT PRIMARY KEY, tables INTEGER, rows INTEGER)").run();
   await bak.prepare("INSERT OR REPLACE INTO _backup_meta (ts, tables, rows) VALUES (?1,?2,?3)")

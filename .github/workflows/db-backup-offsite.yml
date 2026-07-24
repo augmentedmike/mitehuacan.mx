@@ -1,0 +1,66 @@
+name: DB backup off-site + freshness alert
+
+# Durability guard #2 and #3:
+#  - #2 pulls the nightly gzip archive OFF the single Cloudflare account into this
+#    repo's `db-backups` branch (GitHub = a different platform/account, so an
+#    account loss no longer takes prod + backup + archive all at once).
+#  - #3 FAILS the job (which emails the repo owner) if the backup is missing,
+#    corrupt, or stale (>25h) — so a silently-dead nightly backup gets noticed.
+#
+# Needs repo secret BACKUP_TOKEN (the Worker's token):  gh secret set BACKUP_TOKEN
+on:
+  schedule:
+    - cron: "0 10 * * *"   # 10:00 UTC, ~1h after the D1 backup Worker's 09:00 run
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  offsite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download + verify the latest archive (fresh, valid)
+        env:
+          BACKUP_TOKEN: ${{ secrets.BACKUP_TOKEN }}
+        run: |
+          set -euo pipefail
+          URL="https://mitehuacan-db-backup.mauriciotellezdev.workers.dev/?token=${BACKUP_TOKEN}&download=latest"
+          curl -fsS "$URL" -o archive.json.gz
+          gunzip -t archive.json.gz            # corruption check
+          TS=$(gunzip -c archive.json.gz | python3 -c "import sys,json;print(json.load(sys.stdin)['ts'])")
+          AGE=$(python3 -c "import datetime as d;t=d.datetime.fromisoformat('${TS}'.replace('Z','+00:00'));print((d.datetime.now(d.timezone.utc)-t).total_seconds())")
+          echo "archive ts=${TS}  age=${AGE}s"
+          if python3 -c "import sys;sys.exit(0 if float('${AGE}') > 90000 else 1)"; then
+            echo "::error::nightly DB backup is STALE (>25h old) — the backup Worker may be broken"
+            exit 1
+          fi
+          echo "TS=${TS}" >> "$GITHUB_ENV"
+          echo "DAY=$(date -u +%Y-%m-%d)" >> "$GITHUB_ENV"
+
+      - name: Store on the db-backups branch (off-site copy)
+        run: |
+          set -euo pipefail
+          git config user.name  "backup-bot"
+          git config user.email "backup-bot@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin db-backups >/dev/null 2>&1; then
+            git fetch origin db-backups
+            git checkout db-backups
+          else
+            git checkout --orphan db-backups
+            git rm -rf . >/dev/null 2>&1 || true   # start the branch empty (untracked archive.json.gz survives)
+          fi
+          mkdir -p archives
+          cp archive.json.gz "archives/${DAY}.json.gz"
+          cp archive.json.gz "archives/latest.json.gz"
+          # keep ~30 days of dated files in the working tree (git history retains all)
+          CUTOFF=$(date -u -d '30 days ago' +%Y-%m-%d)
+          for f in archives/2*.json.gz; do
+            b=$(basename "$f" .json.gz)
+            [ "$b" \< "$CUTOFF" ] && git rm -f "$f" >/dev/null 2>&1 || true
+          done
+          git add archives
+          git commit -m "off-site backup ${DAY} (${TS})" || { echo "nothing to commit"; exit 0; }
+          git push origin db-backups

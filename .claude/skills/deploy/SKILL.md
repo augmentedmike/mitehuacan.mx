@@ -96,8 +96,18 @@ Each run also writes a **gzipped point-in-time archive** into the backup DB
 (`_snapshots`, chunked BLOB rows — free, no R2), keeps ~10 days, and purges older.
 Token-gated endpoints on the Worker (`?token=$BACKUP_TOKEN`): `&list` enumerates
 archives, `&download=latest|<ts>` returns the `.json.gz` (a full JSON dump of every
-table, recoverable). BACKUP_TOKEN is a Worker secret (`cd backup && bunx wrangler
-secret put BACKUP_TOKEN`); it is NOT stored in the repo or memory.
+table + indexes, recoverable). BACKUP_TOKEN is a Worker secret (`cd backup && bunx
+wrangler secret put BACKUP_TOKEN`) AND a GitHub repo secret; it is NOT in the repo or memory.
+
+**Restore** (a backup you can't restore isn't a backup):
+`BACKUP_TOKEN=... python3 src/scripts/restore.py --from-worker latest --target staging`
+rebuilds every table + rows + indexes into the target D1. Defaults to staging; prod
+needs `--target production --yes`. Rehearse into staging periodically.
+
+**Off-site + monitoring**: `.github/workflows/db-backup-offsite.yml` (daily 10:00 UTC)
+copies the archive OFF the Cloudflare account onto the `db-backups` branch, and FAILS
+(emailing the repo owner) if the backup is missing/stale/corrupt — so a dead backup
+gets noticed. Prod, backup DB, and archives otherwise all live in the one CF account.
 
 ## The MapLibre testing gotcha (unrelated but costly)
 
